@@ -1,0 +1,64 @@
+spring:
+  application:
+    name: backend
+
+  # Database Connection
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/social_media_db}
+    username: ${SPRING_DATASOURCE_USERNAME:social_user}
+    password: ${SPRING_DATASOURCE_PASSWORD:social_password}
+    driver-class-name: org.postgresql.Driver
+
+  # Hibernate (JPA) Settings
+  jpa:
+    hibernate:
+      ddl-auto: ${SPRING_JPA_DDL_AUTO:update} # Automatically creates tables based on our Java Entities
+    show-sql: ${SPRING_JPA_SHOW_SQL:true} # Prints SQL queries in console for debugging
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  # Redis Connection
+  data:
+    redis:
+      host: ${SPRING_REDIS_HOST:localhost}
+      port: ${SPRING_REDIS_PORT:6379}
+      password: ${SPRING_REDIS_PASSWORD:}
+      ssl:
+        enabled: ${SPRING_REDIS_SSL_ENABLED:false}
+      connect-timeout: 5000
+      timeout: 5000
+
+  # Mail Server Setup (e.g. Mailtrap or Gmail)
+  mail:
+    host: ${SPRING_MAIL_HOST:smtp.gmail.com}
+    port: ${SPRING_MAIL_PORT:587}
+    username: ${SPRING_MAIL_USERNAME:kistareddypullagurla123@gmail.com}
+    password: ${SPRING_MAIL_PASSWORD:whdhmewdkjlmbldo}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+
+  # OAuth2 Setup (Google Login)
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID:}
+            client-secret: ${GOOGLE_CLIENT_SECRET:}
+            scope: email, profile
+
+server:
+  port: ${PORT:8080}
+  error:
+    include-message: always
+
+app:
+  api-url: ${APP_API_URL:http://localhost:8080}
+
+cloudinary:
+  cloud-name: ${CLOUDINARY_CLOUD_NAME:}
+  api-key: ${CLOUDINARY_API_KEY:}
+  api-secret: ${CLOUDINARY_API_SECRET:}

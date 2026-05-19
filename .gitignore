@@ -1,0 +1,23 @@
+# Backend ignores
+backend/target/
+backend/.mvn/
+backend/mvnw
+backend/mvnw.cmd
+backend/.idea/
+backend/*.jar
+
+# Frontend ignores
+frontend/.next/
+frontend/node_modules/
+frontend/out/
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local
+
+# General ignores
+.DS_Store
+Thumbs.db
+.vscode/
+uploads/
+*.log

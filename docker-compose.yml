@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  # 1. PostgreSQL Database Service
+  postgres:
+    image: postgres:15-alpine
+    container_name: social_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: social_user
+      POSTGRES_PASSWORD: social_password
+      POSTGRES_DB: social_media_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - social_network
+
+  # 2. Redis Cache Service
+  redis:
+    image: redis:7-alpine
+    container_name: social_redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - social_network
+
+# Define persistent storage so our data isn't lost when containers restart
+volumes:
+  postgres_data:
+  redis_data:
+
+# Define a private network so our containers can talk to each other
+networks:
+  social_network:
+    driver: bridge

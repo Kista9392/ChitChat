@@ -1,0 +1,385 @@
+package com.social.backend.service;
+
+import com.social.backend.dto.AuthResponse;
+import com.social.backend.dto.UserResponse;
+import com.social.backend.entity.Follow;
+import com.social.backend.entity.NotificationType;
+import com.social.backend.entity.User;
+import com.social.backend.repository.FollowRepository;
+import com.social.backend.repository.UserRepository;
+import com.social.backend.security.JwtService;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import com.social.backend.repository.PostRepository;
+import com.social.backend.repository.PostLikeRepository;
+import com.social.backend.repository.CommentRepository;
+import com.social.backend.entity.Post;
+import java.util.List;
+
+import java.util.Optional;
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
+
+@Service
+public class UserService {
+
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
+    private final StringRedisTemplate redisTemplate;
+    private final FollowRepository followRepository;
+    private final NotificationService notificationService;
+    private final EmailService emailService;
+    private final FileStorageService fileStorageService;
+    private final PostRepository postRepository;
+    private final PostLikeRepository postLikeRepository;
+    private final CommentRepository commentRepository;
+
+    @org.springframework.beans.factory.annotation.Value("${app.api-url:http://localhost:8080}")
+    private String apiUrl;
+
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder,
+                       JwtService jwtService, StringRedisTemplate redisTemplate,
+                       FollowRepository followRepository, NotificationService notificationService,
+                       EmailService emailService, FileStorageService fileStorageService,
+                       PostRepository postRepository, PostLikeRepository postLikeRepository,
+                       CommentRepository commentRepository) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
+        this.redisTemplate = redisTemplate;
+        this.followRepository = followRepository;
+        this.notificationService = notificationService;
+        this.emailService = emailService;
+        this.fileStorageService = fileStorageService;
+        this.postRepository = postRepository;
+        this.postLikeRepository = postLikeRepository;
+        this.commentRepository = commentRepository;
+    }
+
+
+    public User registerUser(String username, String email, String rawPassword, String phoneNumber) {
+        if (userRepository.findByEmail(email).isPresent()) {
+            throw new com.social.backend.exception.UserAlreadyExistsException("Email is already taken!");
+        }
+        if (userRepository.findByUsername(username).isPresent()) {
+            throw new com.social.backend.exception.UserAlreadyExistsException("Username is already taken!");
+        }
+
+        String hashedPassword = passwordEncoder.encode(rawPassword); 
+        User newUser = new User(username, email, hashedPassword, phoneNumber);
+        return userRepository.save(newUser);
+    }
+
+    public AuthResponse loginUser(String identifier, String rawPassword) {
+        User user = userRepository.findByEmail(identifier)
+                .or(() -> userRepository.findByPhoneNumber(identifier))
+                .orElseThrow(() -> new RuntimeException("Invalid credentials"));
+
+        if (!passwordEncoder.matches(rawPassword, user.getPasswordHash())) {
+            throw new RuntimeException("Invalid credentials");
+        }
+
+        String accessToken = jwtService.generateAccessToken(user.getEmail());
+        String refreshToken = jwtService.generateRefreshToken(user.getEmail());
+
+        // Commented out Redis storage to avoid slow timeouts if Redis port is not exposed.
+        // redisTemplate.opsForValue().set(
+        //         "refreshToken:" + user.getEmail(), 
+        //         refreshToken, 
+        //         7, 
+        //         TimeUnit.DAYS
+        // );
+
+        return new AuthResponse(accessToken, refreshToken, user.getUsername(), user.getAvatarUrl());
+    }
+
+    public AuthResponse refreshToken(String refreshToken) {
+        String email = jwtService.extractEmail(refreshToken);
+        if (email == null) {
+            throw new RuntimeException("Invalid refresh token");
+        }
+
+        // Removed Redis check to avoid slow timeouts if Redis is not running.
+        // We trust the JWT signature for now.
+        
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        String newAccessToken = jwtService.generateAccessToken(email);
+        
+        return new AuthResponse(newAccessToken, refreshToken, user.getUsername(), user.getAvatarUrl());
+    }
+
+    public String forgotPassword(String email) {
+        if (userRepository.findByEmail(email).isEmpty()) {
+            throw new RuntimeException("User with this email does not exist");
+        }
+        String otp = String.format("%06d", new Random().nextInt(999999));
+        redisTemplate.opsForValue().set("otp:" + email, otp, 5, TimeUnit.MINUTES);
+        emailService.sendOtpEmail(email, otp);
+        return "OTP sent to " + email;
+    }
+
+    public String resetPassword(String email, String otp, String newPassword) {
+        String savedOtp = redisTemplate.opsForValue().get("otp:" + email);
+        if (savedOtp == null || !savedOtp.equals(otp)) {
+            throw new RuntimeException("Invalid or expired OTP");
+        }
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+        redisTemplate.delete("otp:" + email);
+        return "Password successfully reset";
+    }
+
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+    public UserResponse getUserProfile(String username, String currentUserEmail) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        boolean isFollowing = false;
+        if (currentUserEmail != null) {
+            User currentUser = userRepository.findByEmail(currentUserEmail).orElse(null);
+            if (currentUser != null) {
+                isFollowing = followRepository.findByFollowerAndFollowing(currentUser, user).isPresent();
+            }
+        }
+
+        return new UserResponse(
+                user.getId(),
+                user.getUsername(),
+                user.getBio(),
+                user.getAvatarUrl(),
+                user.getFollowersCount(),
+                user.getFollowingCount(),
+                user.isShowActivityStatus(),
+                isFollowing,
+                user.isPrivateAccount()
+        );
+    }
+
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+    public UserResponse getUserProfileByEmail(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        return new UserResponse(
+                user.getId(),
+                user.getUsername(),
+                user.getBio(),
+                user.getAvatarUrl(),
+                user.getFollowersCount(),
+                user.getFollowingCount(),
+                user.isShowActivityStatus(),
+                false,
+                user.isPrivateAccount()
+        );
+    }
+
+    @org.springframework.transaction.annotation.Transactional
+    public String toggleFollow(String currentUserEmail, String targetUsername) {
+        User follower = userRepository.findByEmail(currentUserEmail)
+                .orElseThrow(() -> new RuntimeException("Current user not found"));
+
+        User following = userRepository.findByUsername(targetUsername)
+                .orElseThrow(() -> new RuntimeException("Target user not found"));
+
+        if (follower.getId().equals(following.getId())) {
+            throw new RuntimeException("You cannot follow yourself!");
+        }
+
+        Optional<Follow> existingFollow = followRepository.findByFollowerAndFollowing(follower, following);
+
+        if (existingFollow.isPresent()) {
+            followRepository.delete(existingFollow.get());
+            return "Unfollowed " + targetUsername + " successfully!";
+        } else {
+            Follow newFollow = new Follow(follower, following);
+            followRepository.save(newFollow);
+            notificationService.sendNotification(following.getId(), follower.getId(), NotificationType.FOLLOW, follower.getUsername() + " started following you");
+            return "Followed " + targetUsername + " successfully!";
+        }
+    }
+
+    @org.springframework.transaction.annotation.Transactional
+    public UserResponse updateBio(String email, String bio) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        user.setBio(bio);
+        userRepository.save(user);
+        return new UserResponse(user.getId(), user.getUsername(), user.getBio(), user.getAvatarUrl(), user.getFollowersCount(), user.getFollowingCount(), user.isShowActivityStatus(), false, user.isPrivateAccount());
+    }
+
+    @org.springframework.transaction.annotation.Transactional
+    public void updateSettings(String email, Boolean pushNotifications, Boolean emailNotifications, Boolean isPrivateAccount) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        if (pushNotifications != null) {
+            user.setPushNotificationsEnabled(pushNotifications);
+        }
+        if (emailNotifications != null) {
+            user.setEmailNotificationsEnabled(emailNotifications);
+        }
+        if (isPrivateAccount != null) {
+            user.setPrivateAccount(isPrivateAccount);
+        }
+        userRepository.save(user);
+    }
+
+    @org.springframework.transaction.annotation.Transactional
+    public UserResponse updateAvatar(String email, MultipartFile file) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        String filename = fileStorageService.save(file);
+        String avatarUrl = filename.startsWith("http") ? filename : (apiUrl + "/uploads/" + filename);
+        user.setAvatarUrl(avatarUrl);
+        userRepository.save(user);
+        return new UserResponse(user.getId(), user.getUsername(), user.getBio(), user.getAvatarUrl(), user.getFollowersCount(), user.getFollowingCount(), user.isShowActivityStatus(), false, user.isPrivateAccount());
+    }
+
+    @org.springframework.transaction.annotation.Transactional
+    public void changePassword(String email, String oldPassword, String newPassword) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        if (!passwordEncoder.matches(oldPassword, user.getPasswordHash())) {
+            throw new RuntimeException("Incorrect current password");
+        }
+        
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+    }
+
+    @org.springframework.transaction.annotation.Transactional
+    public void deleteAccount(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        // 1. Delete follows
+        followRepository.deleteByFollower(user);
+        followRepository.deleteByFollowing(user);
+        
+        // 2. Delete post likes
+        postLikeRepository.deleteByUser(user);
+        
+        // 3. Delete comments
+        commentRepository.deleteByAuthor(user);
+        
+        // 4. Delete posts and their relations
+        List<Post> posts = postRepository.findByAuthorOrderByCreatedAtDesc(user);
+        for (Post post : posts) {
+            postLikeRepository.deleteByPost(post);
+            commentRepository.deleteByPost(post);
+            postRepository.delete(post);
+        }
+        
+        // 5. Delete user
+        userRepository.delete(user);
+    }
+
+    @org.springframework.transaction.annotation.Transactional
+    public void updateActivityStatus(String email, boolean status) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        user.setShowActivityStatus(status);
+        userRepository.save(user);
+    }
+
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+    public List<UserResponse> getSuggestions(String email) {
+        User currentUser = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        List<User> allUsers = userRepository.findAll();
+        List<User> following = followRepository.findByFollower(currentUser).stream()
+                .map(com.social.backend.entity.Follow::getFollowing)
+                .toList();
+        
+        return allUsers.stream()
+                .filter(u -> !u.equals(currentUser))
+                .filter(u -> !following.contains(u))
+                .limit(5)
+                .map(u -> new UserResponse(
+                        u.getId(),
+                        u.getUsername(),
+                        u.getBio(),
+                        u.getAvatarUrl(),
+                        u.getFollowersCount(),
+                        u.getFollowingCount(),
+                        u.isShowActivityStatus(),
+                        false,
+                        u.isPrivateAccount()
+                ))
+                .toList();
+    }
+
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+    public List<UserResponse> getFollowers(String username, String currentUserEmail) {
+        User targetUser = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        User currentUser = userRepository.findByEmail(currentUserEmail)
+                .orElseThrow(() -> new RuntimeException("Current user not found"));
+        
+        if (!targetUser.equals(currentUser)) {
+            boolean isFollowing = followRepository.findByFollowerAndFollowing(currentUser, targetUser).isPresent();
+            if (!isFollowing) {
+                throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.FORBIDDEN, "You must follow this user to see their followers!");
+            }
+        }
+        
+        List<com.social.backend.entity.Follow> follows = followRepository.findByFollowing(targetUser);
+        
+        return follows.stream()
+                .map(com.social.backend.entity.Follow::getFollower)
+                .map(u -> new UserResponse(
+                        u.getId(),
+                        u.getUsername(),
+                        u.getBio(),
+                        u.getAvatarUrl(),
+                        u.getFollowersCount(),
+                        u.getFollowingCount(),
+                        u.isShowActivityStatus(),
+                        false,
+                        u.isPrivateAccount()
+                ))
+                .toList();
+    }
+
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+    public List<UserResponse> getFollowing(String username, String currentUserEmail) {
+        User targetUser = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        User currentUser = userRepository.findByEmail(currentUserEmail)
+                .orElseThrow(() -> new RuntimeException("Current user not found"));
+        
+        if (!targetUser.equals(currentUser)) {
+            boolean isFollowing = followRepository.findByFollowerAndFollowing(currentUser, targetUser).isPresent();
+            if (!isFollowing) {
+                throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.FORBIDDEN, "You must follow this user to see their following list!");
+            }
+        }
+        
+        List<com.social.backend.entity.Follow> follows = followRepository.findByFollower(targetUser);
+        
+        return follows.stream()
+                .map(com.social.backend.entity.Follow::getFollowing)
+                .map(u -> new UserResponse(
+                        u.getId(),
+                        u.getUsername(),
+                        u.getBio(),
+                        u.getAvatarUrl(),
+                        u.getFollowersCount(),
+                        u.getFollowingCount(),
+                        u.isShowActivityStatus(),
+                        false,
+                        u.isPrivateAccount()
+                ))
+                .toList();
+    }
+}

@@ -1,0 +1,92 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --background: #ffffff;
+  --foreground: #000000;
+}
+
+.dark {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+}
+
+/* Global Dark Mode Overrides */
+.dark body {
+  background-color: #0a0a0a !important;
+  color: #ededed !important;
+}
+
+.dark .bg-white {
+  background-color: #18181b !important;
+}
+
+.dark .bg-zinc-50 {
+  background-color: #09090b !important;
+}
+
+.dark .text-black {
+  color: #ffffff !important;
+}
+
+.dark .text-zinc-800 {
+  color: #e4e4e7 !important;
+}
+
+.dark .text-zinc-900 {
+  color: #ffffff !important;
+}
+
+.dark .border-zinc-100, 
+.dark .border-zinc-200,
+.dark .border-white\/60 {
+  border-color: #27272a !important;
+}
+
+.dark .bg-zinc-50\/50 {
+  background-color: transparent !important;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+}
+
+/* Hide scrollbars but keep functionality */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Smooth Transitions - applied specifically where needed instead of globally */
+.transition-standard {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #f8fafc;
+}
+::-webkit-scrollbar-thumb {
+  background: #e2e8f0;
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #cbd5e1;
+}
