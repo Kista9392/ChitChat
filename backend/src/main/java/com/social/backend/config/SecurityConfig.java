@@ -23,8 +23,8 @@ public class SecurityConfig {
     @Autowired(required = false)
     private OAuth2SuccessHandler oAuth2SuccessHandler;
 
-    @Value("${spring.security.oauth2.client.registration.google.client-id:placeholder}")
-    private String googleClientId;
+    @Autowired(required = false)
+    private org.springframework.security.oauth2.client.registration.ClientRegistrationRepository clientRegistrationRepository;
 
     public SecurityConfig(JwtAuthFilter jwtAuthFilter) {
         this.jwtAuthFilter = jwtAuthFilter;
@@ -33,13 +33,6 @@ public class SecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
-    }
-
-    private boolean isGoogleOAuthConfigured() {
-        return googleClientId != null
-                && !googleClientId.isBlank()
-                && !googleClientId.equals("placeholder")
-                && !googleClientId.equals("disabled");
     }
 
     @Bean
@@ -67,8 +60,9 @@ public class SecurityConfig {
             )
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
-        // Only configure OAuth2 if Google credentials are provided
-        if (isGoogleOAuthConfigured() && oAuth2SuccessHandler != null) {
+        // Only wire up OAuth2 login if Spring auto-configured a ClientRegistrationRepository
+        // (i.e. real GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET were provided)
+        if (clientRegistrationRepository != null && oAuth2SuccessHandler != null) {
             http.oauth2Login(oauth2 -> oauth2
                 .successHandler(oAuth2SuccessHandler)
             );
@@ -86,7 +80,8 @@ public class SecurityConfig {
             "http://localhost:3000",
             "http://127.0.0.1:3000",
             "http://localhost:3001",
-            "https://kittu9392-chitchat-backend.hf.space"
+            "https://kittu9392-chitchat-backend.hf.space",
+            "https://chit-chat-beta-seven.vercel.app"
         ));
         if (frontendUrl != null && !frontendUrl.isBlank()) {
             origins.add(frontendUrl);

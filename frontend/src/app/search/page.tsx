@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Sidebar from '@/components/Sidebar';
 import axiosInstance from '@/lib/axios';
 import { Search, User as UserIcon, Camera, Heart, MessageCircle } from 'lucide-react';
@@ -14,20 +14,7 @@ export default function SearchPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<'users' | 'posts'>('users');
 
-  useEffect(() => {
-    const delayDebounceFn = setTimeout(() => {
-      if (query.trim()) {
-        handleSearch();
-      } else {
-        setUsers([]);
-        setPosts([]);
-      }
-    }, 500); // Debounce search for 500ms
-
-    return () => clearTimeout(delayDebounceFn);
-  }, [query]);
-
-  const handleSearch = async () => {
+  const handleSearch = useCallback(async () => {
     setIsLoading(true);
     try {
       if (activeTab === 'users') {
@@ -42,14 +29,26 @@ export default function SearchPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [query, activeTab]);
+
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      if (query.trim()) {
+        handleSearch();
+      } else {
+        setUsers([]);
+        setPosts([]);
+      }
+    }, 500);
+    return () => clearTimeout(delayDebounceFn);
+  }, [query, handleSearch]);
 
   // Re-run search when tab changes if there is a query
   useEffect(() => {
     if (query.trim()) {
       handleSearch();
     }
-  }, [activeTab]);
+  }, [activeTab, handleSearch]);
 
   return (
     <div className="min-h-screen bg-white">
