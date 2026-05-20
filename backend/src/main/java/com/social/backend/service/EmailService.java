@@ -2,6 +2,7 @@ package com.social.backend.service;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
@@ -10,10 +11,12 @@ import org.springframework.stereotype.Service;
 @Service
 public class EmailService {
 
-    private final JavaMailSender mailSender;
+    // Optional injection — app starts even if mail is not configured
+    @Autowired(required = false)
+    private JavaMailSender mailSender;
 
-    public EmailService(JavaMailSender mailSender) {
-        this.mailSender = mailSender;
+    private boolean isMailConfigured() {
+        return mailSender != null;
     }
 
     @Async
@@ -21,21 +24,22 @@ public class EmailService {
         System.out.println("========================================");
         System.out.println("DEBUG: OTP for " + toEmail + " is: " + otp);
         System.out.println("========================================");
-        
+
+        if (!isMailConfigured()) {
+            System.err.println("Mail not configured — skipping OTP email. Check SPRING_MAIL_USERNAME and SPRING_MAIL_PASSWORD.");
+            return;
+        }
+
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-
             helper.setTo(toEmail);
             helper.setSubject("Your Password Reset Code");
-            
             String htmlContent = "<h2>Password Reset</h2>"
                     + "<p>You requested a password reset. Here is your 6-digit code:</p>"
                     + "<h1 style='color: #4F46E5; letter-spacing: 5px;'>" + otp + "</h1>"
                     + "<p>This code will expire in 5 minutes.</p>";
-
-            helper.setText(htmlContent, true); // true indicates HTML
-            
+            helper.setText(htmlContent, true);
             mailSender.send(message);
         } catch (MessagingException e) {
             System.err.println("FAILED TO SEND EMAIL: " + e.getMessage());
@@ -45,22 +49,21 @@ public class EmailService {
 
     @Async
     public void sendLoginNotificationEmail(String toEmail, String username) {
+        if (!isMailConfigured()) {
+            return; // Silently skip if mail not configured
+        }
+
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-
             helper.setTo(toEmail);
             helper.setSubject("New Login Detected - ChitChat");
-            
             String htmlContent = "<h2>New Login Detected</h2>"
                     + "<p>Hi <strong>" + username + "</strong>,</p>"
                     + "<p>Your ChitChat account was just logged into via Google.</p>"
-                    + "<p>If this was you, you can ignore this email. If this was not you, please secure your account immediately.</p>";
-
+                    + "<p>If this was you, you can ignore this email. If not, please secure your account immediately.</p>";
             helper.setText(htmlContent, true);
-            
             mailSender.send(message);
-            System.out.println("Login notification email sent to " + toEmail);
         } catch (MessagingException e) {
             System.err.println("FAILED TO SEND LOGIN EMAIL: " + e.getMessage());
         }
