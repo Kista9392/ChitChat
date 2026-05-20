@@ -1,11 +1,10 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import axiosInstance from '@/lib/axios';
 
-export default function OAuth2Redirect() {
+function OAuth2RedirectInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { login } = useAuth();
@@ -24,7 +23,6 @@ export default function OAuth2Redirect() {
     if (errorParam === 'not_registered') {
       setError('You have not registered yet using this email.');
     } else if (accessToken && refreshToken && username) {
-      console.log('Tokens and username received, logging in...');
       login(accessToken, refreshToken, username);
     } else {
       setError('Missing tokens or username in redirect URL.');
@@ -41,7 +39,6 @@ export default function OAuth2Redirect() {
         <div className="bg-red-50 border border-red-100 text-red-500 p-6 rounded-3xl max-w-sm text-center">
           <h2 className="font-bold text-lg mb-2">Auth Error</h2>
           <p className="text-sm">{error}</p>
-          
           {isNotRegistered ? (
             <button 
               onClick={() => router.push(`/register?email=${email}`)}
@@ -62,5 +59,13 @@ export default function OAuth2Redirect() {
       <div className="w-12 h-12 border-4 border-black border-t-transparent rounded-full animate-spin mb-4"></div>
       <h2 className="text-xl font-bold text-black tracking-tighter italic">Syncing with Google...</h2>
     </div>
+  );
+}
+
+export default function OAuth2Redirect() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-white flex items-center justify-center"><div className="w-12 h-12 border-4 border-black border-t-transparent rounded-full animate-spin" /></div>}>
+      <OAuth2RedirectInner />
+    </Suspense>
   );
 }

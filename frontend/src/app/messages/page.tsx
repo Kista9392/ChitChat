@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, Suspense } from 'react';
 import Sidebar from '@/components/Sidebar';
 import axiosInstance from '@/lib/axios';
 import { Send, Search, MessageCircle, Check, CheckCheck, SmilePlus, Camera, Mic, Play, X } from 'lucide-react';
@@ -30,7 +30,7 @@ interface Contact {
   showActivityStatus?: boolean;
 }
 
-export default function MessagesPage() {
+function MessagesPageInner() {
   const { user } = useAuth();
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [suggestions, setSuggestions] = useState<any[]>([]);
@@ -548,5 +548,14 @@ export default function MessagesPage() {
         </div>
       </main>
     </div>
+  );
+}
+
+
+export default function MessagesPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-white flex items-center justify-center"><div className="w-8 h-8 border-2 border-black border-t-transparent rounded-full animate-spin" /></div>}>
+      <MessagesPageInner />
+    </Suspense>
   );
 }

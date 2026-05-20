@@ -1,12 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import axiosInstance from '@/lib/axios';
 import { Key, Lock, ArrowRight, Camera, Eye, EyeOff } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-export default function ResetPasswordPage() {
+function ResetPasswordPageInner() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const email = searchParams.get('email') || '';
@@ -112,5 +112,13 @@ export default function ResetPasswordPage() {
         </form>
       </motion.div>
     </div>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-zinc-50 flex items-center justify-center"><div className="w-8 h-8 border-2 border-black border-t-transparent rounded-full animate-spin" /></div>}>
+      <ResetPasswordPageInner />
+    </Suspense>
   );
 }
