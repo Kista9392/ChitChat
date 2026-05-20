@@ -38,7 +38,8 @@ public class SecurityConfig {
     private boolean isGoogleOAuthConfigured() {
         return googleClientId != null
                 && !googleClientId.isBlank()
-                && !googleClientId.equals("placeholder");
+                && !googleClientId.equals("placeholder")
+                && !googleClientId.equals("disabled");
     }
 
     @Bean
