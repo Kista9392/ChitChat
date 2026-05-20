@@ -72,9 +72,14 @@ public class AuthController {
     public ResponseEntity<Map<String, String>> debugOauth() {
         String preview = googleClientId == null ? "null" :
                 googleClientId.length() > 10 ? googleClientId.substring(0, 10) + "..." : googleClientId;
+        // Also check raw env var
+        String rawEnv = System.getenv("GOOGLE_CLIENT_ID");
+        String rawPreview = rawEnv == null ? "null" : rawEnv.length() > 10 ? rawEnv.substring(0, 10) + "..." : rawEnv;
         return ResponseEntity.ok(Map.of(
             "googleClientIdPreview", preview,
-            "length", String.valueOf(googleClientId == null ? 0 : googleClientId.length())
+            "length", String.valueOf(googleClientId == null ? 0 : googleClientId.length()),
+            "rawEnvPreview", rawPreview,
+            "rawEnvLength", String.valueOf(rawEnv == null ? 0 : rawEnv.length())
         ));
     }
 }
