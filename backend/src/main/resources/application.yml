@@ -58,14 +58,14 @@ logging:
       mail.smtp.connectiontimeout: 10000
       mail.smtp.timeout: 10000
 
-  # OAuth2 Setup (Google Login)
+  # OAuth2 Setup (Google Login) - only active when real credentials are provided
   security:
     oauth2:
       client:
         registration:
           google:
-            client-id: ${GOOGLE_CLIENT_ID:placeholder}
-            client-secret: ${GOOGLE_CLIENT_SECRET:placeholder}
+            client-id: ${GOOGLE_CLIENT_ID:}
+            client-secret: ${GOOGLE_CLIENT_SECRET:}
             scope: email, profile
 
 server:
