@@ -26,10 +26,16 @@ spring:
       hibernate:
         format_sql: false
         dialect: org.hibernate.dialect.PostgreSQLDialect
-        # Neon DB uses SSL - required
         jdbc:
           lob:
             non_contextual_creation: true
+
+logging:
+  level:
+    org.hibernate.SQL: ERROR
+    com.zaxxer.hikari: DEBUG
+    org.springframework.jdbc: DEBUG
+    com.social.backend: INFO
 
   # Redis Connection (Upstash - always SSL)
   data:
