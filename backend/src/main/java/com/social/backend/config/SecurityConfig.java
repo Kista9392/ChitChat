@@ -50,6 +50,7 @@ public class SecurityConfig {
                     "/api/v1/auth/debug/oauth",
                     "/oauth2/**",
                     "/login/oauth2/**",
+                    "/login/**",
                     "/uploads/**"
                 ).permitAll()
                 .anyRequest().authenticated()
