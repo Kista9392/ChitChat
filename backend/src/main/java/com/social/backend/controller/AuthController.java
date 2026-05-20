@@ -3,15 +3,21 @@ package com.social.backend.controller;
 import com.social.backend.dto.*;
 import com.social.backend.entity.User;
 import com.social.backend.service.UserService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/auth")
 public class AuthController {
 
     private final UserService userService;
+
+    @Value("${spring.security.oauth2.client.registration.google.client-id:NOT_SET}")
+    private String googleClientId;
 
     public AuthController(UserService userService) {
         this.userService = userService;
@@ -59,5 +65,16 @@ public class AuthController {
     public ResponseEntity<String> resetPassword(@RequestBody ResetPasswordRequest request) {
         String result = userService.resetPassword(request.getEmail(), request.getOtp(), request.getNewPassword());
         return ResponseEntity.ok(result);
+    }
+
+    // Temporary debug endpoint - shows first 10 chars of Google Client ID
+    @GetMapping("/debug/oauth")
+    public ResponseEntity<Map<String, String>> debugOauth() {
+        String preview = googleClientId == null ? "null" :
+                googleClientId.length() > 10 ? googleClientId.substring(0, 10) + "..." : googleClientId;
+        return ResponseEntity.ok(Map.of(
+            "googleClientIdPreview", preview,
+            "length", String.valueOf(googleClientId == null ? 0 : googleClientId.length())
+        ));
     }
 }
