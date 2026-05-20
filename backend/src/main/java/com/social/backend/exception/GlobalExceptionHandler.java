@@ -47,11 +47,11 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiErrorResponse> handleMaxUploadSizeExceeded(org.springframework.web.multipart.MaxUploadSizeExceededException ex) {
         ApiErrorResponse response = new ApiErrorResponse(
                 LocalDateTime.now(),
-                HttpStatus.CONTENT_TOO_LARGE.value(),
-                HttpStatus.CONTENT_TOO_LARGE.getReasonPhrase(),
-                "File size exceeds the allowed limit"
+                HttpStatus.PAYLOAD_TOO_LARGE.value(),
+                "Payload Too Large",
+                "File size exceeds the allowed limit of 50MB"
         );
-        return new ResponseEntity<>(response, HttpStatus.CONTENT_TOO_LARGE);
+        return new ResponseEntity<>(response, HttpStatus.PAYLOAD_TOO_LARGE);
     }
 
     @ExceptionHandler(org.springframework.web.server.ResponseStatusException.class)
