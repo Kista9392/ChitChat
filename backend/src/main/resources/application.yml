@@ -63,7 +63,7 @@ spring:
             scope: email, profile
 
 server:
-  port: ${PORT:8080}
+  port: ${PORT:7860}
   error:
     include-message: always
   servlet:
@@ -72,7 +72,7 @@ server:
       max-request-size: 55MB
 
 app:
-  api-url: ${APP_API_URL:http://localhost:8080}
+  api-url: ${APP_API_URL:http://localhost:7860}
   frontend-url: ${FRONTEND_URL:http://localhost:3000}
   jwt-secret: ${JWT_SECRET:3cfa76ef14937c1c0ea519f8fc057a80fcd04a7420f8e8bcd0a756b5c8d0a061}
   encryption-key: ${ENCRYPTION_KEY:ThisIsASecretKey}
