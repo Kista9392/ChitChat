@@ -22,6 +22,9 @@ public class SecurityConfig {
     @Autowired(required = false)
     private OAuth2SuccessHandler oAuth2SuccessHandler;
 
+    @Autowired(required = false)
+    private org.springframework.security.oauth2.client.registration.ClientRegistrationRepository clientRegistrationRepository;
+
     public SecurityConfig(JwtAuthFilter jwtAuthFilter) {
         this.jwtAuthFilter = jwtAuthFilter;
     }
@@ -55,12 +58,12 @@ public class SecurityConfig {
                 .authenticationEntryPoint(new org.springframework.security.web.authentication.HttpStatusEntryPoint(
                     org.springframework.http.HttpStatus.UNAUTHORIZED))
             )
-            .oauth2Login(oauth2 -> {
-                if (oAuth2SuccessHandler != null) {
-                    oauth2.successHandler(oAuth2SuccessHandler);
-                }
-            })
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+
+        // Only enable OAuth2 login if Spring auto-configured a ClientRegistrationRepository
+        if (clientRegistrationRepository != null && oAuth2SuccessHandler != null) {
+            http.oauth2Login(oauth2 -> oauth2.successHandler(oAuth2SuccessHandler));
+        }
 
         return http.build();
     }
@@ -68,12 +71,10 @@ public class SecurityConfig {
     @Bean
     public org.springframework.web.cors.CorsConfigurationSource corsConfigurationSource() {
         org.springframework.web.cors.CorsConfiguration configuration = new org.springframework.web.cors.CorsConfiguration();
-
         String frontendUrl = System.getenv("FRONTEND_URL");
         java.util.List<String> origins = new java.util.ArrayList<>(java.util.Arrays.asList(
             "http://localhost:3000",
             "http://127.0.0.1:3000",
-            "http://localhost:3001",
             "https://kittu9392-chitchat-backend.hf.space",
             "https://chit-chat-beta-seven.vercel.app"
         ));
@@ -85,7 +86,6 @@ public class SecurityConfig {
         configuration.setAllowedHeaders(java.util.Arrays.asList("Authorization", "Content-Type", "X-Requested-With", "Accept", "Origin"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
-
         org.springframework.web.cors.UrlBasedCorsConfigurationSource source = new org.springframework.web.cors.UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
