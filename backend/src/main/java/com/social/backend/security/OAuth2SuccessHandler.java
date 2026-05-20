@@ -6,6 +6,7 @@ import com.social.backend.service.EmailService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
@@ -19,6 +20,9 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     private final UserRepository userRepository;
     private final JwtService jwtService;
     private final EmailService emailService;
+
+    @Value("${app.frontend-url:http://localhost:3000}")
+    private String frontendUrl;
 
     public OAuth2SuccessHandler(UserRepository userRepository, JwtService jwtService, EmailService emailService) {
         this.userRepository = userRepository;
@@ -36,7 +40,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         java.util.Optional<User> userOpt = userRepository.findByEmail(email);
         if (userOpt.isEmpty()) {
             // Redirect back to frontend with error and pre-filled email
-            String errorUrl = "http://localhost:3000/oauth2/redirect?error=not_registered&email=" + email;
+            String errorUrl = frontendUrl + "/oauth2/redirect?error=not_registered&email=" + email;
             getRedirectStrategy().sendRedirect(request, response, errorUrl);
             return;
         }
@@ -54,9 +58,11 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
             System.err.println("Failed to send login notification email: " + e.getMessage());
         }
 
-        // 3. Redirect back to the Frontend (Next.js) with the tokens and username
-        String frontendUrl = "http://localhost:3000/oauth2/redirect?accessToken=" + accessToken + "&refreshToken=" + refreshToken + "&username=" + user.getUsername();
+        // 3. Redirect back to the Frontend with the tokens and username
+        String redirectUrl = frontendUrl + "/oauth2/redirect?accessToken=" + accessToken
+                + "&refreshToken=" + refreshToken
+                + "&username=" + user.getUsername();
         
-        getRedirectStrategy().sendRedirect(request, response, frontendUrl);
+        getRedirectStrategy().sendRedirect(request, response, redirectUrl);
     }
 }

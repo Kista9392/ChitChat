@@ -41,11 +41,11 @@ public class UserService {
     private String apiUrl;
 
     public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder,
-                       JwtService jwtService, StringRedisTemplate redisTemplate,
-                       FollowRepository followRepository, NotificationService notificationService,
-                       EmailService emailService, FileStorageService fileStorageService,
-                       PostRepository postRepository, PostLikeRepository postLikeRepository,
-                       CommentRepository commentRepository) {
+            JwtService jwtService, StringRedisTemplate redisTemplate,
+            FollowRepository followRepository, NotificationService notificationService,
+            EmailService emailService, FileStorageService fileStorageService,
+            PostRepository postRepository, PostLikeRepository postLikeRepository,
+            CommentRepository commentRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
@@ -59,7 +59,6 @@ public class UserService {
         this.commentRepository = commentRepository;
     }
 
-
     public User registerUser(String username, String email, String rawPassword, String phoneNumber) {
         if (userRepository.findByEmail(email).isPresent()) {
             throw new com.social.backend.exception.UserAlreadyExistsException("Email is already taken!");
@@ -68,7 +67,7 @@ public class UserService {
             throw new com.social.backend.exception.UserAlreadyExistsException("Username is already taken!");
         }
 
-        String hashedPassword = passwordEncoder.encode(rawPassword); 
+        String hashedPassword = passwordEncoder.encode(rawPassword);
         User newUser = new User(username, email, hashedPassword, phoneNumber);
         return userRepository.save(newUser);
     }
@@ -85,12 +84,13 @@ public class UserService {
         String accessToken = jwtService.generateAccessToken(user.getEmail());
         String refreshToken = jwtService.generateRefreshToken(user.getEmail());
 
-        // Commented out Redis storage to avoid slow timeouts if Redis port is not exposed.
+        // Commented out Redis storage to avoid slow timeouts if Redis port is not
+        // exposed.
         // redisTemplate.opsForValue().set(
-        //         "refreshToken:" + user.getEmail(), 
-        //         refreshToken, 
-        //         7, 
-        //         TimeUnit.DAYS
+        // "refreshToken:" + user.getEmail(),
+        // refreshToken,
+        // 7,
+        // TimeUnit.DAYS
         // );
 
         return new AuthResponse(accessToken, refreshToken, user.getUsername(), user.getAvatarUrl());
@@ -104,12 +104,12 @@ public class UserService {
 
         // Removed Redis check to avoid slow timeouts if Redis is not running.
         // We trust the JWT signature for now.
-        
+
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         String newAccessToken = jwtService.generateAccessToken(email);
-        
+
         return new AuthResponse(newAccessToken, refreshToken, user.getUsername(), user.getAvatarUrl());
     }
 
@@ -159,8 +159,7 @@ public class UserService {
                 user.isShowActivityStatus(),
                 isFollowing,
                 user.isPrivateAccount(),
-                isUserOnline(user.getUsername())
-        );
+                isUserOnline(user.getUsername()));
     }
 
     @org.springframework.transaction.annotation.Transactional(readOnly = true)
@@ -178,8 +177,7 @@ public class UserService {
                 user.isShowActivityStatus(),
                 false,
                 user.isPrivateAccount(),
-                isUserOnline(user.getUsername())
-        );
+                isUserOnline(user.getUsername()));
     }
 
     @org.springframework.transaction.annotation.Transactional
@@ -202,7 +200,8 @@ public class UserService {
         } else {
             Follow newFollow = new Follow(follower, following);
             followRepository.save(newFollow);
-            notificationService.sendNotification(following.getId(), follower.getId(), NotificationType.FOLLOW, follower.getUsername() + " started following you");
+            notificationService.sendNotification(following.getId(), follower.getId(), NotificationType.FOLLOW,
+                    follower.getUsername() + " started following you");
             return "Followed " + targetUsername + " successfully!";
         }
     }
@@ -213,11 +212,14 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
         user.setBio(bio);
         userRepository.save(user);
-        return new UserResponse(user.getId(), user.getUsername(), user.getBio(), user.getAvatarUrl(), user.getFollowersCount(), user.getFollowingCount(), user.isShowActivityStatus(), false, user.isPrivateAccount(), true);
+        return new UserResponse(user.getId(), user.getUsername(), user.getBio(), user.getAvatarUrl(),
+                user.getFollowersCount(), user.getFollowingCount(), user.isShowActivityStatus(), false,
+                user.isPrivateAccount(), true);
     }
 
     @org.springframework.transaction.annotation.Transactional
-    public void updateSettings(String email, Boolean pushNotifications, Boolean emailNotifications, Boolean isPrivateAccount) {
+    public void updateSettings(String email, Boolean pushNotifications, Boolean emailNotifications,
+            Boolean isPrivateAccount) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         if (pushNotifications != null) {
@@ -240,18 +242,20 @@ public class UserService {
         String avatarUrl = filename.startsWith("http") ? filename : (apiUrl + "/uploads/" + filename);
         user.setAvatarUrl(avatarUrl);
         userRepository.save(user);
-        return new UserResponse(user.getId(), user.getUsername(), user.getBio(), user.getAvatarUrl(), user.getFollowersCount(), user.getFollowingCount(), user.isShowActivityStatus(), false, user.isPrivateAccount(), true);
+        return new UserResponse(user.getId(), user.getUsername(), user.getBio(), user.getAvatarUrl(),
+                user.getFollowersCount(), user.getFollowingCount(), user.isShowActivityStatus(), false,
+                user.isPrivateAccount(), true);
     }
 
     @org.springframework.transaction.annotation.Transactional
     public void changePassword(String email, String oldPassword, String newPassword) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        
+
         if (!passwordEncoder.matches(oldPassword, user.getPasswordHash())) {
             throw new RuntimeException("Incorrect current password");
         }
-        
+
         user.setPasswordHash(passwordEncoder.encode(newPassword));
         userRepository.save(user);
     }
@@ -260,17 +264,17 @@ public class UserService {
     public void deleteAccount(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        
+
         // 1. Delete follows
         followRepository.deleteByFollower(user);
         followRepository.deleteByFollowing(user);
-        
+
         // 2. Delete post likes
         postLikeRepository.deleteByUser(user);
-        
+
         // 3. Delete comments
         commentRepository.deleteByAuthor(user);
-        
+
         // 4. Delete posts and their relations
         List<Post> posts = postRepository.findByAuthorOrderByCreatedAtDesc(user);
         for (Post post : posts) {
@@ -278,7 +282,7 @@ public class UserService {
             commentRepository.deleteByPost(post);
             postRepository.delete(post);
         }
-        
+
         // 5. Delete user
         userRepository.delete(user);
     }
@@ -313,12 +317,12 @@ public class UserService {
     public List<UserResponse> getSuggestions(String email) {
         User currentUser = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        
+
         List<User> allUsers = userRepository.findAll();
         List<User> following = followRepository.findByFollower(currentUser).stream()
                 .map(com.social.backend.entity.Follow::getFollowing)
                 .toList();
-        
+
         return allUsers.stream()
                 .filter(u -> !u.equals(currentUser))
                 .filter(u -> !following.contains(u))
@@ -333,8 +337,7 @@ public class UserService {
                         u.isShowActivityStatus(),
                         false,
                         u.isPrivateAccount(),
-                        isUserOnline(u.getUsername())
-                ))
+                        isUserOnline(u.getUsername())))
                 .toList();
     }
 
@@ -342,19 +345,21 @@ public class UserService {
     public List<UserResponse> getFollowers(String username, String currentUserEmail) {
         User targetUser = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        
+
         User currentUser = userRepository.findByEmail(currentUserEmail)
                 .orElseThrow(() -> new RuntimeException("Current user not found"));
-        
+
         if (!targetUser.equals(currentUser)) {
             boolean isFollowing = followRepository.findByFollowerAndFollowing(currentUser, targetUser).isPresent();
             if (!isFollowing) {
-                throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.FORBIDDEN, "You must follow this user to see their followers!");
+                throw new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.FORBIDDEN,
+                        "You must follow this user to see their followers!");
             }
         }
-        
+
         List<com.social.backend.entity.Follow> follows = followRepository.findByFollowing(targetUser);
-        
+
         return follows.stream()
                 .map(com.social.backend.entity.Follow::getFollower)
                 .map(u -> new UserResponse(
@@ -367,8 +372,7 @@ public class UserService {
                         u.isShowActivityStatus(),
                         false,
                         u.isPrivateAccount(),
-                        isUserOnline(u.getUsername())
-                ))
+                        isUserOnline(u.getUsername())))
                 .toList();
     }
 
@@ -376,19 +380,21 @@ public class UserService {
     public List<UserResponse> getFollowing(String username, String currentUserEmail) {
         User targetUser = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        
+
         User currentUser = userRepository.findByEmail(currentUserEmail)
                 .orElseThrow(() -> new RuntimeException("Current user not found"));
-        
+
         if (!targetUser.equals(currentUser)) {
             boolean isFollowing = followRepository.findByFollowerAndFollowing(currentUser, targetUser).isPresent();
             if (!isFollowing) {
-                throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.FORBIDDEN, "You must follow this user to see their following list!");
+                throw new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.FORBIDDEN,
+                        "You must follow this user to see their following list!");
             }
         }
-        
+
         List<com.social.backend.entity.Follow> follows = followRepository.findByFollower(targetUser);
-        
+
         return follows.stream()
                 .map(com.social.backend.entity.Follow::getFollowing)
                 .map(u -> new UserResponse(
@@ -401,8 +407,7 @@ public class UserService {
                         u.isShowActivityStatus(),
                         false,
                         u.isPrivateAccount(),
-                        isUserOnline(u.getUsername())
-                ))
+                        isUserOnline(u.getUsername())))
                 .toList();
     }
 }

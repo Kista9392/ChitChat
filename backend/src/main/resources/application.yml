@@ -2,43 +2,55 @@ spring:
   application:
     name: backend
 
-  # Database Connection
+  # Database Connection (Neon DB - PostgreSQL)
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/social_media_db}
-    username: ${SPRING_DATASOURCE_USERNAME:social_user}
-    password: ${SPRING_DATASOURCE_PASSWORD:social_password}
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
     driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 1
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      # Required for Neon DB serverless connections
+      connection-init-sql: SELECT 1
 
   # Hibernate (JPA) Settings
   jpa:
     hibernate:
-      ddl-auto: ${SPRING_JPA_DDL_AUTO:update} # Automatically creates tables based on our Java Entities
-    show-sql: ${SPRING_JPA_SHOW_SQL:true} # Prints SQL queries in console for debugging
+      ddl-auto: ${SPRING_JPA_DDL_AUTO:update}
+    show-sql: false
     properties:
       hibernate:
-        format_sql: true
+        format_sql: false
         dialect: org.hibernate.dialect.PostgreSQLDialect
+        # Neon DB uses SSL - required
+        jdbc:
+          lob:
+            non_contextual_creation: true
 
-  # Redis Connection
+  # Redis Connection (Upstash - always SSL)
   data:
     redis:
-      host: ${SPRING_REDIS_HOST:localhost}
-      port: ${SPRING_REDIS_PORT:6379}
-      password: ${SPRING_REDIS_PASSWORD:}
+      url: ${SPRING_REDIS_URL}
       ssl:
-        enabled: ${SPRING_REDIS_SSL_ENABLED:false}
-      connect-timeout: 5000
-      timeout: 5000
+        enabled: true
+      connect-timeout: 10000
+      timeout: 10000
 
-  # Mail Server Setup (e.g. Mailtrap or Gmail)
+  # Mail Server Setup
   mail:
     host: ${SPRING_MAIL_HOST:smtp.gmail.com}
     port: ${SPRING_MAIL_PORT:587}
-    username: ${SPRING_MAIL_USERNAME:kistareddypullagurla123@gmail.com}
-    password: ${SPRING_MAIL_PASSWORD:whdhmewdkjlmbldo}
+    username: ${SPRING_MAIL_USERNAME}
+    password: ${SPRING_MAIL_PASSWORD}
     properties:
       mail.smtp.auth: true
       mail.smtp.starttls.enable: true
+      mail.smtp.connectiontimeout: 10000
+      mail.smtp.timeout: 10000
 
   # OAuth2 Setup (Google Login)
   security:
@@ -46,19 +58,21 @@ spring:
       client:
         registration:
           google:
-            client-id: ${GOOGLE_CLIENT_ID:}
-            client-secret: ${GOOGLE_CLIENT_SECRET:}
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
             scope: email, profile
 
 server:
-  port: ${PORT:8080}
+  port: ${PORT:7860}
   error:
     include-message: always
 
 app:
-  api-url: ${APP_API_URL:http://localhost:8080}
+  api-url: ${APP_API_URL:http://localhost:7860}
+  frontend-url: ${FRONTEND_URL:http://localhost:3000}
+  jwt-secret: ${JWT_SECRET:3cfa76ef14937c1c0ea519f8fc057a80fcd04a7420f8e8bcd0a756b5c8d0a061}
 
 cloudinary:
-  cloud-name: ${CLOUDINARY_CLOUD_NAME:}
-  api-key: ${CLOUDINARY_API_KEY:}
-  api-secret: ${CLOUDINARY_API_SECRET:}
+  cloud-name: ${CLOUDINARY_CLOUD_NAME}
+  api-key: ${CLOUDINARY_API_KEY}
+  api-secret: ${CLOUDINARY_API_SECRET}

@@ -13,9 +13,8 @@ import java.util.Date;
 @Service
 public class JwtService {
 
-    // In a production app, this MUST be stored in a .env file and never committed to code!
-    // Using a hardcoded secret here for learning purposes (Must be at least 256 bits)
-    private static final String SECRET_KEY = "3cfa76ef14937c1c0ea519f8fc057a80fcd04a7420f8e8bcd0a756b5c8d0a061";
+    @org.springframework.beans.factory.annotation.Value("${app.jwt-secret:3cfa76ef14937c1c0ea519f8fc057a80fcd04a7420f8e8bcd0a756b5c8d0a061}")
+    private String SECRET_KEY;
     
     // Access token valid for 15 minutes
     private static final long ACCESS_TOKEN_EXPIRATION = 1000 * 60 * 15;

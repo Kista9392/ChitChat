@@ -75,4 +75,13 @@ public class NotificationService {
                         notif.getCreatedAt()
                 ));
     }
+
+    @Transactional
+    public void markAllAsRead(String userEmail) {
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        java.util.List<Notification> unread = notificationRepository.findByRecipientAndIsReadFalse(user);
+        unread.forEach(n -> n.setRead(true));
+        notificationRepository.saveAll(unread);
+    }
 }

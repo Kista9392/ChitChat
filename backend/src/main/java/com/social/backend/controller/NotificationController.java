@@ -29,4 +29,10 @@ public class NotificationController {
         );
         return ResponseEntity.ok(response);
     }
+
+    @PostMapping("/read-all")
+    public ResponseEntity<Void> markAllAsRead(Authentication authentication) {
+        notificationService.markAllAsRead(authentication.getName());
+        return ResponseEntity.ok().build();
+    }
 }
