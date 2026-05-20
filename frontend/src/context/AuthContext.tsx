@@ -9,6 +9,10 @@ interface User {
   email?: string;
   showActivityStatus?: boolean;
   avatarUrl?: string;
+  pushNotificationsEnabled?: boolean;
+  emailNotificationsEnabled?: boolean;
+  isPrivateAccount?: boolean;
+  bio?: string;
 }
 
 interface AuthContextType {
@@ -62,6 +66,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       document.documentElement.classList.add('dark');
     }
   }, []);
+
+  // Periodic online status heartbeat
+  useEffect(() => {
+    if (!user?.username) return;
+    
+    const ping = () => {
+      axiosInstance.post('/users/me/ping').catch(() => {});
+    };
+    
+    ping();
+    
+    const interval = setInterval(ping, 30000);
+    return () => clearInterval(interval);
+  }, [user]);
 
   const toggleDarkMode = () => {
     const newDark = !darkMode;

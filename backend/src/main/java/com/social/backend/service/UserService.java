@@ -158,7 +158,8 @@ public class UserService {
                 user.getFollowingCount(),
                 user.isShowActivityStatus(),
                 isFollowing,
-                user.isPrivateAccount()
+                user.isPrivateAccount(),
+                isUserOnline(user.getUsername())
         );
     }
 
@@ -176,7 +177,8 @@ public class UserService {
                 user.getFollowingCount(),
                 user.isShowActivityStatus(),
                 false,
-                user.isPrivateAccount()
+                user.isPrivateAccount(),
+                isUserOnline(user.getUsername())
         );
     }
 
@@ -211,7 +213,7 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
         user.setBio(bio);
         userRepository.save(user);
-        return new UserResponse(user.getId(), user.getUsername(), user.getBio(), user.getAvatarUrl(), user.getFollowersCount(), user.getFollowingCount(), user.isShowActivityStatus(), false, user.isPrivateAccount());
+        return new UserResponse(user.getId(), user.getUsername(), user.getBio(), user.getAvatarUrl(), user.getFollowersCount(), user.getFollowingCount(), user.isShowActivityStatus(), false, user.isPrivateAccount(), true);
     }
 
     @org.springframework.transaction.annotation.Transactional
@@ -238,7 +240,7 @@ public class UserService {
         String avatarUrl = filename.startsWith("http") ? filename : (apiUrl + "/uploads/" + filename);
         user.setAvatarUrl(avatarUrl);
         userRepository.save(user);
-        return new UserResponse(user.getId(), user.getUsername(), user.getBio(), user.getAvatarUrl(), user.getFollowersCount(), user.getFollowingCount(), user.isShowActivityStatus(), false, user.isPrivateAccount());
+        return new UserResponse(user.getId(), user.getUsername(), user.getBio(), user.getAvatarUrl(), user.getFollowersCount(), user.getFollowingCount(), user.isShowActivityStatus(), false, user.isPrivateAccount(), true);
     }
 
     @org.springframework.transaction.annotation.Transactional
@@ -289,6 +291,24 @@ public class UserService {
         userRepository.save(user);
     }
 
+    public void pingUserOnline(String email) {
+        try {
+            userRepository.findByEmail(email).ifPresent(user -> {
+                redisTemplate.opsForValue().set("online:" + user.getUsername(), "true", 45, TimeUnit.SECONDS);
+            });
+        } catch (Exception e) {
+            // Redis might be down, ignore to keep app functional
+        }
+    }
+
+    public boolean isUserOnline(String username) {
+        try {
+            return Boolean.TRUE.equals(redisTemplate.hasKey("online:" + username));
+        } catch (Exception e) {
+            return false; // Safely default to offline if Redis is down
+        }
+    }
+
     @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public List<UserResponse> getSuggestions(String email) {
         User currentUser = userRepository.findByEmail(email)
@@ -312,7 +332,8 @@ public class UserService {
                         u.getFollowingCount(),
                         u.isShowActivityStatus(),
                         false,
-                        u.isPrivateAccount()
+                        u.isPrivateAccount(),
+                        isUserOnline(u.getUsername())
                 ))
                 .toList();
     }
@@ -345,7 +366,8 @@ public class UserService {
                         u.getFollowingCount(),
                         u.isShowActivityStatus(),
                         false,
-                        u.isPrivateAccount()
+                        u.isPrivateAccount(),
+                        isUserOnline(u.getUsername())
                 ))
                 .toList();
     }
@@ -378,7 +400,8 @@ public class UserService {
                         u.getFollowingCount(),
                         u.isShowActivityStatus(),
                         false,
-                        u.isPrivateAccount()
+                        u.isPrivateAccount(),
+                        isUserOnline(u.getUsername())
                 ))
                 .toList();
     }

@@ -11,5 +11,6 @@ public record UserResponse(
         int followingCount,
         boolean showActivityStatus,
         boolean isFollowing,
-        boolean isPrivateAccount
+        boolean isPrivateAccount,
+        boolean isOnline
 ) {}

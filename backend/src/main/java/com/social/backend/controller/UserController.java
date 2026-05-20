@@ -88,6 +88,12 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
+    @PostMapping("/me/ping")
+    public ResponseEntity<Void> pingOnline(Authentication authentication) {
+        userService.pingUserOnline(authentication.getName());
+        return ResponseEntity.ok().build();
+    }
+
     @GetMapping("/suggestions")
     public ResponseEntity<java.util.List<UserResponse>> getSuggestions(Authentication authentication) {
         return ResponseEntity.ok(userService.getSuggestions(authentication.getName()));

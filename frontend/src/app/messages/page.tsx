@@ -25,6 +25,9 @@ interface Message {
 
 interface Contact {
   username: string;
+  avatarUrl?: string;
+  isOnline?: boolean;
+  showActivityStatus?: boolean;
 }
 
 export default function MessagesPage() {
@@ -80,6 +83,21 @@ export default function MessagesPage() {
       }
     };
     fetchContacts();
+  }, [user?.username]);
+
+  // Poll contacts in background every 20 seconds to keep online status fresh
+  useEffect(() => {
+    if (!user?.username) return;
+    const pollContacts = async () => {
+      try {
+        const res = await axiosInstance.get(`/users/${user.username}/following`);
+        setContacts(res.data);
+      } catch (err) {
+        console.error('Failed to poll online status', err);
+      }
+    };
+    const interval = setInterval(pollContacts, 20000);
+    return () => clearInterval(interval);
   }, [user?.username]);
 
   // Filter contacts by search (Local filter of people you follow!)
@@ -343,8 +361,13 @@ export default function MessagesPage() {
                     : 'hover:bg-zinc-50/80'
                 )}
               >
-                <div className="w-11 h-11 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
-                  {c.username[0].toUpperCase()}
+                <div className="relative flex-shrink-0">
+                  <div className="w-11 h-11 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-white font-bold text-sm">
+                    {c.username[0].toUpperCase()}
+                  </div>
+                  {c.showActivityStatus && c.isOnline && (
+                    <span className="absolute bottom-0 right-0 block h-3.5 w-3.5 rounded-full ring-2 ring-white dark:ring-zinc-900 bg-green-500 animate-pulse" title="Active Now" />
+                  )}
                 </div>
                 <div className="flex-1 overflow-hidden">
                   <p className="font-bold text-sm text-black dark:text-white truncate">{c.username}</p>
@@ -375,7 +398,11 @@ export default function MessagesPage() {
                 </div>
                 <div>
                   <Link href={`/${selectedUser}`} className="font-bold text-black text-sm hover:underline dark:text-white">{selectedUser}</Link>
-                  <p className="text-[11px] text-green-500 font-medium">{isConnected ? '● Online' : '○ Offline'}</p>
+                  {contacts.find(c => c.username === selectedUser)?.showActivityStatus && contacts.find(c => c.username === selectedUser)?.isOnline ? (
+                    <p className="text-[11px] text-green-500 font-bold">● Active now</p>
+                  ) : (
+                    <p className="text-[11px] text-zinc-400">Offline</p>
+                  )}
                 </div>
               </div>
 

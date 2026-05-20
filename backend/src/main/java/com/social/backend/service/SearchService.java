@@ -21,11 +21,21 @@ public class SearchService {
     private final UserRepository userRepository;
     private final PostRepository postRepository;
     private final FollowRepository followRepository;
+    private final org.springframework.data.redis.core.StringRedisTemplate redisTemplate;
 
-    public SearchService(UserRepository userRepository, PostRepository postRepository, FollowRepository followRepository) {
+    public SearchService(UserRepository userRepository, PostRepository postRepository, FollowRepository followRepository, org.springframework.data.redis.core.StringRedisTemplate redisTemplate) {
         this.userRepository = userRepository;
         this.postRepository = postRepository;
         this.followRepository = followRepository;
+        this.redisTemplate = redisTemplate;
+    }
+
+    private boolean isUserOnline(String username) {
+        try {
+            return Boolean.TRUE.equals(redisTemplate.hasKey("online:" + username));
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     @Transactional(readOnly = true)
@@ -49,7 +59,8 @@ public class SearchService {
                         user.getFollowingCount(),
                         user.isShowActivityStatus(),
                         currentUser != null ? followRepository.findByFollowerAndFollowing(currentUser, user).isPresent() : false,
-                        user.isPrivateAccount()
+                        user.isPrivateAccount(),
+                        isUserOnline(user.getUsername())
                 ))
                 .collect(Collectors.toList());
     }
@@ -69,7 +80,8 @@ public class SearchService {
                         u.getFollowingCount(),
                         u.isShowActivityStatus(),
                         false,
-                        u.isPrivateAccount()
+                        u.isPrivateAccount(),
+                        isUserOnline(u.getUsername())
                 ))
                 .collect(Collectors.toList());
     }
