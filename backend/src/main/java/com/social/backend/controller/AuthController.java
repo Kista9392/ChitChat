@@ -16,7 +16,7 @@ public class AuthController {
 
     private final UserService userService;
 
-    @Value("${spring.security.oauth2.client.registration.google.client-id:NOT_SET}")
+    @Value("${GOOGLE_CLIENT_ID:NOT_SET}")
     private String googleClientId;
 
     public AuthController(UserService userService) {
