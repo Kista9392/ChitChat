@@ -1,4 +1,4 @@
-# Multi-stage build for Spring Boot Backend on Hugging Face Spaces
+# Multi-stage build for Spring Boot Backend
 FROM maven:3.9.6-eclipse-temurin-17-alpine AS build
 WORKDIR /app
 
@@ -21,15 +21,15 @@ USER appuser
 
 COPY --from=build /app/target/*.jar app.jar
 
-# Hugging Face Spaces requires port 7860
-EXPOSE 7860
+# Railway injects $PORT dynamically — expose it
+EXPOSE 8080
 
-# Optimized JVM flags for low-memory container environment
+# Optimized JVM flags for container environment
+# PORT env var is injected by Railway at runtime
 ENTRYPOINT ["java", \
-  "-XX:+UseSerialGC", \
+  "-XX:+UseG1GC", \
   "-XX:MaxRAMPercentage=75.0", \
-  "-Xms64m", \
-  "-Xmx450m", \
+  "-Xms128m", \
+  "-Xmx512m", \
   "-Djava.security.egd=file:/dev/./urandom", \
-  "-Dserver.port=7860", \
   "-jar", "app.jar"]
