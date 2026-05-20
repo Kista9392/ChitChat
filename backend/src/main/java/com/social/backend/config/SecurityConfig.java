@@ -3,7 +3,6 @@ package com.social.backend.config;
 import com.social.backend.security.JwtAuthFilter;
 import com.social.backend.security.OAuth2SuccessHandler;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -22,9 +21,6 @@ public class SecurityConfig {
 
     @Autowired(required = false)
     private OAuth2SuccessHandler oAuth2SuccessHandler;
-
-    @Autowired(required = false)
-    private org.springframework.security.oauth2.client.registration.ClientRegistrationRepository clientRegistrationRepository;
 
     public SecurityConfig(JwtAuthFilter jwtAuthFilter) {
         this.jwtAuthFilter = jwtAuthFilter;
@@ -59,15 +55,12 @@ public class SecurityConfig {
                 .authenticationEntryPoint(new org.springframework.security.web.authentication.HttpStatusEntryPoint(
                     org.springframework.http.HttpStatus.UNAUTHORIZED))
             )
+            .oauth2Login(oauth2 -> {
+                if (oAuth2SuccessHandler != null) {
+                    oauth2.successHandler(oAuth2SuccessHandler);
+                }
+            })
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
-
-        // Only wire up OAuth2 login if Spring auto-configured a ClientRegistrationRepository
-        // (i.e. real GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET were provided)
-        if (clientRegistrationRepository != null && oAuth2SuccessHandler != null) {
-            http.oauth2Login(oauth2 -> oauth2
-                .successHandler(oAuth2SuccessHandler)
-            );
-        }
 
         return http.build();
     }
