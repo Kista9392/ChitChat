@@ -3,6 +3,7 @@ package com.social.backend.controller;
 import com.social.backend.dto.*;
 import com.social.backend.entity.User;
 import com.social.backend.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -15,6 +16,9 @@ import java.util.Map;
 public class AuthController {
 
     private final UserService userService;
+
+    @Autowired(required = false)
+    private org.springframework.security.oauth2.client.registration.ClientRegistrationRepository clientRegistrationRepository;
 
     @Value("${GOOGLE_CLIENT_ID:NOT_SET}")
     private String googleClientId;
@@ -75,7 +79,7 @@ public class AuthController {
         return ResponseEntity.ok(result);
     }
 
-    // Temporary debug endpoint - shows first 10 chars of Google Client ID
+    // Temporary debug endpoint - shows first 10 chars of Google Client ID and bean status
     @GetMapping("/debug/oauth")
     public ResponseEntity<Map<String, String>> debugOauth() {
         String preview = googleClientId == null ? "null" :
@@ -87,7 +91,8 @@ public class AuthController {
             "googleClientIdPreview", preview,
             "length", String.valueOf(googleClientId == null ? 0 : googleClientId.length()),
             "rawEnvPreview", rawPreview,
-            "rawEnvLength", String.valueOf(rawEnv == null ? 0 : rawEnv.length())
+            "rawEnvLength", String.valueOf(rawEnv == null ? 0 : rawEnv.length()),
+            "clientRegistrationRepositoryPresent", String.valueOf(clientRegistrationRepository != null)
         ));
     }
 }
