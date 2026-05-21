@@ -86,9 +86,12 @@ export default function RegisterPage() {
             <div className="space-y-4">
               <div className="relative group">
                 <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400 group-focus-within:text-indigo-600 transition-colors" />
+                <label htmlFor="username" className="sr-only">Username</label>
                 <input
+                  id="username"
                   name="username"
                   type="text"
+                  autoComplete="username"
                   required
                   className="w-full bg-zinc-50 border border-zinc-200 text-black pl-12 pr-4 py-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:text-zinc-400"
                   placeholder="Username"
@@ -98,9 +101,12 @@ export default function RegisterPage() {
               </div>
               <div className="relative group">
                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400 group-focus-within:text-indigo-600 transition-colors" />
+                <label htmlFor="email" className="sr-only">Email address</label>
                 <input
+                  id="email"
                   name="email"
                   type="email"
+                  autoComplete="email"
                   required
                   className="w-full bg-zinc-50 border border-zinc-200 text-black pl-12 pr-4 py-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:text-zinc-400"
                   placeholder="Email address"
@@ -110,9 +116,12 @@ export default function RegisterPage() {
               </div>
               <div className="relative group">
                 <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400 group-focus-within:text-indigo-600 transition-colors" />
+                <label htmlFor="phoneNumber" className="sr-only">Phone number</label>
                 <input
+                  id="phoneNumber"
                   name="phoneNumber"
                   type="tel"
+                  autoComplete="tel"
                   required
                   className="w-full bg-zinc-50 border border-zinc-200 text-black pl-12 pr-4 py-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:text-zinc-400"
                   placeholder="Phone number"
@@ -122,9 +131,12 @@ export default function RegisterPage() {
               </div>
               <div className="relative group">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400 group-focus-within:text-indigo-600 transition-colors" />
+                <label htmlFor="password" className="sr-only">Password</label>
                 <input
+                  id="password"
                   name="password"
                   type={showPassword ? "text" : "password"}
+                  autoComplete="new-password"
                   required
                   className="w-full bg-zinc-50 border border-zinc-200 text-black pl-12 pr-12 py-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:text-zinc-400"
                   placeholder="Password"

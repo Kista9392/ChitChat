@@ -79,8 +79,12 @@ export default function LoginPage() {
             <div className="space-y-4">
               <div className="relative group">
                 <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400 group-focus-within:text-indigo-600 transition-colors" />
+                <label htmlFor="identifier" className="sr-only">Email or Phone Number</label>
                 <input
+                  id="identifier"
+                  name="identifier"
                   type="text"
+                  autoComplete="username"
                   required
                   className="w-full bg-zinc-50 border border-zinc-200 text-black pl-12 pr-4 py-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:text-zinc-400"
                   placeholder="Email or Phone Number"
@@ -90,8 +94,12 @@ export default function LoginPage() {
               </div>
               <div className="relative group">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400 group-focus-within:text-indigo-600 transition-colors" />
+                <label htmlFor="password" className="sr-only">Password</label>
                 <input
+                  id="password"
+                  name="password"
                   type={showPassword ? "text" : "password"}
+                  autoComplete="current-password"
                   required
                   className="w-full bg-zinc-50 border border-zinc-200 text-black pl-12 pr-12 py-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:text-zinc-400"
                   placeholder="Password"
@@ -110,8 +118,13 @@ export default function LoginPage() {
 
             <div className="flex items-center justify-between text-sm">
               <div className="flex items-center">
-                <input type="checkbox" className="w-4 h-4 rounded border-zinc-300 text-indigo-600 focus:ring-indigo-500" />
-                <label className="ml-2 text-zinc-500">Remember me</label>
+                <input
+                  id="remember-me"
+                  name="remember-me"
+                  type="checkbox"
+                  className="w-4 h-4 rounded border-zinc-300 text-indigo-600 focus:ring-indigo-500"
+                />
+                <label htmlFor="remember-me" className="ml-2 text-zinc-500">Remember me</label>
               </div>
               <Link href="/forgot-password" global-title="Forgot Password" className="text-indigo-600 hover:text-indigo-500 transition-colors font-medium">
                 Forgot password?
