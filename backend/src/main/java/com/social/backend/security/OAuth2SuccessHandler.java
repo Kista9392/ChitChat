@@ -35,12 +35,13 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
         
         String email = oAuth2User.getAttribute("email");
+        // Sanitize frontendUrl to remove any CR/LF characters
+        String cleanFrontendUrl = frontendUrl.replaceAll("[\\r\\n]", "").trim();
 
         // 1. Check if user exists. If not, do NOT register them automatically!
         java.util.Optional<User> userOpt = userRepository.findByEmail(email);
         if (userOpt.isEmpty()) {
-            // Redirect back to frontend with error and pre-filled email
-            String errorUrl = frontendUrl + "/oauth2/redirect?error=not_registered&email=" + email;
+            String errorUrl = cleanFrontendUrl + "/oauth2/redirect?error=not_registered&email=" + email;
             getRedirectStrategy().sendRedirect(request, response, errorUrl);
             return;
         }
@@ -59,7 +60,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         }
 
         // 3. Redirect back to the Frontend with the tokens and username
-        String redirectUrl = frontendUrl + "/oauth2/redirect?accessToken=" + accessToken
+        String redirectUrl = cleanFrontendUrl + "/oauth2/redirect?accessToken=" + accessToken
                 + "&refreshToken=" + refreshToken
                 + "&username=" + user.getUsername();
         

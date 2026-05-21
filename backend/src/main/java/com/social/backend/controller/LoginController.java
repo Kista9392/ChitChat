@@ -19,6 +19,8 @@ public class LoginController {
 
     @GetMapping("/login")
     public void redirectToFrontendLogin(HttpServletResponse response) throws IOException {
-        response.sendRedirect(frontendUrl + "/login");
+        // Sanitize to remove any CR/LF that might have been added when saving the env var
+        String cleanUrl = frontendUrl.replaceAll("[\\r\\n]", "").trim();
+        response.sendRedirect(cleanUrl + "/login");
     }
 }
