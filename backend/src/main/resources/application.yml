@@ -83,6 +83,10 @@ app:
   jwt-secret: ${JWT_SECRET:3cfa76ef14937c1c0ea519f8fc057a80fcd04a7420f8e8bcd0a756b5c8d0a061}
   encryption-key: ${ENCRYPTION_KEY:ThisIsASecretKey}
 
+google:
+  oauth:
+    enabled: ${GOOGLE_OAUTH_ENABLED:false}
+
 cloudinary:
   cloud-name: ${CLOUDINARY_CLOUD_NAME}
   api-key: ${CLOUDINARY_API_KEY}

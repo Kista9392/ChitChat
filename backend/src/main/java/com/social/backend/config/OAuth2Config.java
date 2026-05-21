@@ -1,5 +1,6 @@
 package com.social.backend.config;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
@@ -13,16 +14,10 @@ import org.springframework.security.oauth2.core.oidc.IdTokenClaimNames;
 public class OAuth2Config {
 
     @Bean
+    @ConditionalOnProperty(name = "google.oauth.enabled", havingValue = "true")
     public ClientRegistrationRepository clientRegistrationRepository() {
-        // Read directly from environment variables — bypasses Spring property binding issues
         String clientId = System.getenv("GOOGLE_CLIENT_ID");
         String clientSecret = System.getenv("GOOGLE_CLIENT_SECRET");
-
-        // If not configured, return null so SecurityConfig skips OAuth2
-        if (clientId == null || clientId.isBlank() ||
-            clientSecret == null || clientSecret.isBlank()) {
-            return null;
-        }
 
         ClientRegistration googleRegistration = ClientRegistration.withRegistrationId("google")
             .clientId(clientId)
