@@ -24,6 +24,9 @@ public class SecurityConfig {
     private OAuth2SuccessHandler oAuth2SuccessHandler;
 
     @Autowired(required = false)
+    private com.social.backend.security.OAuth2FailureHandler oAuth2FailureHandler;
+
+    @Autowired(required = false)
     private ClientRegistrationRepository clientRegistrationRepository;
 
     public SecurityConfig(JwtAuthFilter jwtAuthFilter) {
@@ -65,6 +68,9 @@ public class SecurityConfig {
             http.oauth2Login(oauth2 -> {
                 if (oAuth2SuccessHandler != null) {
                     oauth2.successHandler(oAuth2SuccessHandler);
+                }
+                if (oAuth2FailureHandler != null) {
+                    oauth2.failureHandler(oAuth2FailureHandler);
                 }
             });
         }

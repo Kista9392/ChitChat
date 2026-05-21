@@ -1,5 +1,6 @@
 package com.social.backend.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,9 +19,14 @@ public class LoginController {
     private String frontendUrl;
 
     @GetMapping("/login")
-    public void redirectToFrontendLogin(HttpServletResponse response) throws IOException {
+    public void redirectToFrontendLogin(HttpServletRequest request, HttpServletResponse response) throws IOException {
         // Sanitize to remove any CR/LF that might have been added when saving the env var
         String cleanUrl = frontendUrl.replaceAll("[\\r\\n]", "").trim();
-        response.sendRedirect(cleanUrl + "/login");
+        String queryString = request.getQueryString();
+        if (queryString != null && !queryString.isEmpty()) {
+            response.sendRedirect(cleanUrl + "/login?" + queryString);
+        } else {
+            response.sendRedirect(cleanUrl + "/login");
+        }
     }
 }
