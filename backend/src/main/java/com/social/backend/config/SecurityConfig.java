@@ -12,6 +12,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 
 @Configuration
 @EnableWebSecurity
@@ -21,6 +22,9 @@ public class SecurityConfig {
 
     @Autowired(required = false)
     private OAuth2SuccessHandler oAuth2SuccessHandler;
+
+    @Autowired(required = false)
+    private ClientRegistrationRepository clientRegistrationRepository;
 
     public SecurityConfig(JwtAuthFilter jwtAuthFilter) {
         this.jwtAuthFilter = jwtAuthFilter;
@@ -55,13 +59,17 @@ public class SecurityConfig {
             .exceptionHandling(exceptions -> exceptions
                 .authenticationEntryPoint(new org.springframework.security.web.authentication.HttpStatusEntryPoint(
                     org.springframework.http.HttpStatus.UNAUTHORIZED))
-            )
-            .oauth2Login(oauth2 -> {
+            );
+
+        if (clientRegistrationRepository != null) {
+            http.oauth2Login(oauth2 -> {
                 if (oAuth2SuccessHandler != null) {
                     oauth2.successHandler(oAuth2SuccessHandler);
                 }
-            })
-            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+            });
+        }
+
+        http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

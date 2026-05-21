@@ -30,13 +30,6 @@ spring:
           lob:
             non_contextual_creation: true
 
-logging:
-  level:
-    org.hibernate.SQL: ERROR
-    com.zaxxer.hikari: DEBUG
-    org.springframework.jdbc: DEBUG
-    com.social.backend: INFO
-
   # Redis Connection (Upstash - always SSL)
   data:
     redis:
@@ -67,6 +60,13 @@ logging:
             client-id: ${GOOGLE_CLIENT_ID:not-set}
             client-secret: ${GOOGLE_CLIENT_SECRET:not-set}
             scope: email, profile
+
+logging:
+  level:
+    org.hibernate.SQL: ERROR
+    com.zaxxer.hikari: DEBUG
+    org.springframework.jdbc: DEBUG
+    com.social.backend: INFO
 
 server:
   port: ${PORT:7860}
