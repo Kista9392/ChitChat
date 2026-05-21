@@ -56,20 +56,12 @@ public class SecurityConfig {
                 .authenticationEntryPoint(new org.springframework.security.web.authentication.HttpStatusEntryPoint(
                     org.springframework.http.HttpStatus.UNAUTHORIZED))
             )
+            .oauth2Login(oauth2 -> {
+                if (oAuth2SuccessHandler != null) {
+                    oauth2.successHandler(oAuth2SuccessHandler);
+                }
+            })
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
-
-        // Enable OAuth2 login - ClientRegistrationRepository always exists
-        // (uses real credentials if set, dummy if not)
-        String googleClientId = System.getenv("GOOGLE_CLIENT_ID");
-        boolean googleConfigured = googleClientId != null && !googleClientId.isBlank();
-        
-        if (googleConfigured && oAuth2SuccessHandler != null) {
-            http.oauth2Login(oauth2 -> oauth2
-                .successHandler(oAuth2SuccessHandler)
-                .authorizationEndpoint(auth -> auth.baseUri("/oauth2/authorization"))
-                .redirectionEndpoint(redir -> redir.baseUri("/login/oauth2/code/*"))
-            );
-        }
 
         return http.build();
     }
@@ -85,7 +77,7 @@ public class SecurityConfig {
             "https://chit-chat-beta-seven.vercel.app"
         ));
         if (frontendUrl != null && !frontendUrl.isBlank()) {
-            origins.add(frontendUrl);
+            origins.add(frontendUrl.replaceAll("[\\r\\n]", "").trim());
         }
         configuration.setAllowedOrigins(origins);
         configuration.setAllowedMethods(java.util.Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
