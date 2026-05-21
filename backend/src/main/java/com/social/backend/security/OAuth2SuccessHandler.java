@@ -38,15 +38,42 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         // Sanitize frontendUrl to remove any CR/LF characters
         String cleanFrontendUrl = frontendUrl.replaceAll("[\\r\\n]", "").trim();
 
-        // 1. Check if user exists. If not, do NOT register them automatically!
+        // 1. Check if user exists. If not, register them automatically!
         java.util.Optional<User> userOpt = userRepository.findByEmail(email);
+        User user;
         if (userOpt.isEmpty()) {
-            String errorUrl = cleanFrontendUrl + "/oauth2/redirect?error=not_registered&email=" + email;
-            getRedirectStrategy().sendRedirect(request, response, errorUrl);
-            return;
+            String name = oAuth2User.getAttribute("name");
+            String givenName = oAuth2User.getAttribute("given_name");
+            String picture = oAuth2User.getAttribute("picture");
+            
+            // Generate a clean, unique username
+            String baseUsername = (givenName != null && !givenName.isBlank()) ? givenName.toLowerCase() : 
+                                  ((name != null && !name.isBlank()) ? name.replaceAll("\\s+", "").toLowerCase() : 
+                                  email.split("@")[0].toLowerCase());
+            
+            baseUsername = baseUsername.replaceAll("[^a-zA-Z0-9]", "");
+            if (baseUsername.length() > 30) {
+                baseUsername = baseUsername.substring(0, 30);
+            } else if (baseUsername.isEmpty()) {
+                baseUsername = "user";
+            }
+            
+            String username = baseUsername;
+            int counter = 1;
+            while (userRepository.findByUsername(username).isPresent()) {
+                username = baseUsername + counter++;
+            }
+            
+            user = new User();
+            user.setUsername(username);
+            user.setEmail(email);
+            user.setPasswordHash(new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder().encode(java.util.UUID.randomUUID().toString()));
+            user.setAvatarUrl(picture);
+            
+            user = userRepository.save(user);
+        } else {
+            user = userOpt.get();
         }
-        
-        User user = userOpt.get();
         
         // 2. Generate our custom JWT tokens
         String accessToken = jwtService.generateAccessToken(user.getEmail());
