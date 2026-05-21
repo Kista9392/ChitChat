@@ -51,9 +51,9 @@ export default function SearchPage() {
   }, [activeTab, handleSearch]);
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-zinc-950">
       <Sidebar />
-      <main className="pl-20 xl:pl-64 min-h-screen bg-zinc-50/30 flex flex-col items-center p-4 md:p-8">
+      <main className="pl-0 md:pl-20 xl:pl-64 pb-16 md:pb-0 min-h-screen bg-zinc-50/30 dark:bg-transparent flex flex-col items-center p-4 md:p-8">
         <div className="max-w-2xl w-full space-y-6">
           
           {/* Search Bar */}
@@ -62,23 +62,23 @@ export default function SearchPage() {
             <input
               type="text"
               placeholder="Search for users or posts..."
-              className="w-full bg-white border border-zinc-200 pl-12 pr-4 py-4 rounded-3xl focus:outline-none focus:ring-2 focus:ring-zinc-100 shadow-sm text-black font-medium"
+              className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 pl-12 pr-4 py-4 rounded-3xl focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all shadow-sm text-black dark:text-white font-medium"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />
           </div>
 
           {/* Tabs */}
-          <div className="flex gap-4 border-b border-zinc-100">
+          <div className="flex gap-4 border-b border-zinc-100 dark:border-zinc-800">
             <button
               onClick={() => setActiveTab('users')}
-              className={`pb-2 text-sm font-bold transition-colors ${activeTab === 'users' ? 'text-black border-b-2 border-black' : 'text-zinc-400 hover:text-black'}`}
+              className={`pb-2 text-sm font-bold transition-colors ${activeTab === 'users' ? 'text-black dark:text-white border-b-2 border-black dark:border-white' : 'text-zinc-400 hover:text-black dark:hover:text-white'}`}
             >
               Accounts
             </button>
             <button
               onClick={() => setActiveTab('posts')}
-              className={`pb-2 text-sm font-bold transition-colors ${activeTab === 'posts' ? 'text-black border-b-2 border-black' : 'text-zinc-400 hover:text-black'}`}
+              className={`pb-2 text-sm font-bold transition-colors ${activeTab === 'posts' ? 'text-black dark:text-white border-b-2 border-black dark:border-white' : 'text-zinc-400 hover:text-black dark:hover:text-white'}`}
             >
               Posts
             </button>
@@ -89,11 +89,11 @@ export default function SearchPage() {
             {isLoading ? (
               // Skeleton Loader
               [1, 2, 3].map((i) => (
-                <div key={i} className="flex items-center gap-4 p-4 bg-white rounded-2xl border border-zinc-100 animate-pulse">
-                  <div className="w-12 h-12 bg-zinc-200 rounded-full" />
+                <div key={i} className="flex items-center gap-4 p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-100 dark:border-zinc-800 animate-pulse">
+                  <div className="w-12 h-12 bg-zinc-200 dark:bg-zinc-850 rounded-full" />
                   <div className="flex-1 space-y-2">
-                    <div className="h-4 bg-zinc-200 rounded w-1/3" />
-                    <div className="h-3 bg-zinc-200 rounded w-1/2" />
+                    <div className="h-4 bg-zinc-200 dark:bg-zinc-850 rounded w-1/3" />
+                    <div className="h-3 bg-zinc-200 dark:bg-zinc-850 rounded w-1/2" />
                   </div>
                 </div>
               ))
@@ -103,22 +103,22 @@ export default function SearchPage() {
                   <Link 
                     href={`/${user.username}`} 
                     key={user.id}
-                    className="flex items-center gap-4 p-4 bg-white rounded-2xl border border-zinc-100 hover:bg-zinc-50 transition-colors shadow-sm"
+                    className="flex items-center gap-4 p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors shadow-sm animate-fade-in"
                   >
-                    <div className="w-12 h-12 rounded-full bg-zinc-100 flex items-center justify-center font-bold text-black">
+                    <div className="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center font-bold text-black dark:text-white">
                       {user.username[0].toUpperCase()}
                     </div>
                     <div>
-                      <p className="font-bold text-sm text-black">{user.username}</p>
+                      <p className="font-bold text-sm text-black dark:text-white">{user.username}</p>
                       <p className="text-xs text-zinc-400">{user.bio || 'Official ChitChat User'}</p>
                     </div>
-                    <div className="ml-auto text-xs font-bold text-indigo-600">
+                    <div className="ml-auto text-xs font-bold text-indigo-600 dark:text-indigo-400">
                       View Profile
                     </div>
                   </Link>
                 ))
               ) : query.trim() !== '' ? (
-                <div className="text-center py-20 text-zinc-400">
+                <div className="text-center py-20 text-zinc-400 dark:text-zinc-500">
                   No users found for "{query}"
                 </div>
               ) : null
@@ -129,7 +129,7 @@ export default function SearchPage() {
                     <Link 
                       href={`/${post.authorUsername}`} 
                       key={post.id}
-                      className="aspect-square bg-zinc-100 rounded-xl overflow-hidden relative group cursor-pointer"
+                      className="aspect-square bg-zinc-100 dark:bg-zinc-900 rounded-xl overflow-hidden relative group cursor-pointer border border-zinc-200/20 dark:border-zinc-800"
                     >
                       {post.mediaType === 'VIDEO' ? (
                         <video src={post.mediaUrl} className="w-full h-full object-cover" />
@@ -148,17 +148,17 @@ export default function SearchPage() {
                   ))}
                 </div>
               ) : query.trim() !== '' ? (
-                <div className="text-center py-20 text-zinc-400">
+                <div className="text-center py-20 text-zinc-400 dark:text-zinc-500">
                   No posts found for "{query}"
                 </div>
               ) : null
             )}
             
             {!isLoading && query.trim() === '' && (
-              <div className="text-center py-20 text-zinc-300">
+              <div className="text-center py-20 text-zinc-300 dark:text-zinc-700">
                 <Search className="w-16 h-16 mx-auto mb-4 opacity-30" />
-                <p className="text-lg font-bold">Search ChitChat</p>
-                <p className="text-sm">Find your friends and interests</p>
+                <p className="text-lg font-bold text-zinc-800 dark:text-zinc-200">Search ChitChat</p>
+                <p className="text-sm text-zinc-400 dark:text-zinc-500">Find your friends and interests</p>
               </div>
             )}
           </div>

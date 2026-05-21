@@ -57,11 +57,11 @@ function RegisterPageInner() {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex items-center justify-center p-4">
       <motion.div 
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="max-w-md w-full space-y-8 bg-white p-10 rounded-3xl border border-zinc-200 shadow-xl shadow-zinc-200/50"
+        className="max-w-md w-full space-y-8 bg-white dark:bg-zinc-900 p-10 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-xl shadow-zinc-200/50 dark:shadow-none"
       >
         <div className="text-center">
           <div className="flex justify-center">
@@ -69,14 +69,14 @@ function RegisterPageInner() {
               <Camera className="w-10 h-10 text-white" />
             </div>
           </div>
-          <h2 className="mt-6 text-3xl font-extrabold text-black tracking-tight italic">ChitChat</h2>
-          <p className="mt-2 text-sm text-zinc-500 font-medium">Join our community</p>
+          <h2 className="mt-6 text-3xl font-extrabold text-black dark:text-white tracking-tight italic">ChitChat</h2>
+          <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400 font-medium">Join our community</p>
         </div>
 
         <div className="space-y-4">
           <button
             onClick={handleGoogleLogin}
-            className="w-full flex items-center justify-center gap-3 py-3 px-4 border border-zinc-200 rounded-2xl text-sm font-bold text-zinc-700 bg-white hover:bg-zinc-50 transition-all shadow-sm"
+            className="w-full flex items-center justify-center gap-3 py-3 px-4 border border-zinc-200 dark:border-zinc-800 rounded-2xl text-sm font-bold text-zinc-700 dark:text-zinc-300 bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700/50 transition-all shadow-sm"
           >
             <img src="https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png" className="w-5 h-5" alt="Google" />
             Sign up with Google
@@ -84,16 +84,16 @@ function RegisterPageInner() {
 
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-zinc-100"></div>
+              <div className="w-full border-t border-zinc-100 dark:border-zinc-800"></div>
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white px-4 text-zinc-400 font-bold tracking-widest">Or</span>
+              <span className="bg-white dark:bg-zinc-900 px-4 text-zinc-400 dark:text-zinc-500 font-bold tracking-widest">Or</span>
             </div>
           </div>
 
           <form className="space-y-4" onSubmit={handleSubmit}>
             {error && (
-              <div className="bg-red-50 border border-red-100 text-red-500 p-3 rounded-xl text-sm text-center">
+              <div className="bg-red-50 dark:bg-red-950/20 border border-red-100 dark:border-red-900/30 text-red-500 dark:text-red-400 p-3 rounded-xl text-sm text-center">
                 {error}
               </div>
             )}
@@ -108,7 +108,7 @@ function RegisterPageInner() {
                   type="text"
                   autoComplete="username"
                   required
-                  className="w-full bg-zinc-50 border border-zinc-200 text-black pl-12 pr-4 py-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:text-zinc-400"
+                  className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 text-black dark:text-white pl-12 pr-4 py-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-500"
                   placeholder="Username"
                   value={formData.username}
                   onChange={handleChange}
@@ -123,7 +123,7 @@ function RegisterPageInner() {
                   type="email"
                   autoComplete="email"
                   required
-                  className="w-full bg-zinc-50 border border-zinc-200 text-black pl-12 pr-4 py-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:text-zinc-400"
+                  className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 text-black dark:text-white pl-12 pr-4 py-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-500"
                   placeholder="Email address"
                   value={formData.email}
                   onChange={handleChange}
@@ -138,7 +138,7 @@ function RegisterPageInner() {
                   type="tel"
                   autoComplete="tel"
                   required
-                  className="w-full bg-zinc-50 border border-zinc-200 text-black pl-12 pr-4 py-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:text-zinc-400"
+                  className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 text-black dark:text-white pl-12 pr-4 py-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-500"
                   placeholder="Phone number"
                   value={formData.phoneNumber}
                   onChange={handleChange}
@@ -153,7 +153,7 @@ function RegisterPageInner() {
                   type={showPassword ? "text" : "password"}
                   autoComplete="new-password"
                   required
-                  className="w-full bg-zinc-50 border border-zinc-200 text-black pl-12 pr-12 py-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:text-zinc-400"
+                  className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 text-black dark:text-white pl-12 pr-12 py-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-500"
                   placeholder="Password"
                   value={formData.password}
                   onChange={handleChange}
@@ -161,7 +161,7 @@ function RegisterPageInner() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 transition-colors"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors"
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
@@ -170,7 +170,7 @@ function RegisterPageInner() {
 
             <button
               type="submit"
-              className="w-full flex justify-center py-4 px-4 bg-black text-white font-bold rounded-2xl hover:bg-zinc-800 transition-all shadow-lg"
+              className="w-full flex justify-center py-4 px-4 bg-black dark:bg-indigo-600 text-white font-bold rounded-2xl hover:bg-zinc-800 dark:hover:bg-indigo-700 transition-all shadow-lg"
             >
               Create Account
               <ArrowRight className="ml-2 w-5 h-5" />
@@ -178,9 +178,9 @@ function RegisterPageInner() {
           </form>
         </div>
 
-        <p className="text-center text-sm text-zinc-400">
+        <p className="text-center text-sm text-zinc-400 dark:text-zinc-500">
           Already have an account?{' '}
-          <Link href="/login" className="text-indigo-600 hover:text-indigo-500 font-bold transition-colors">
+          <Link href="/login" className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300 font-bold transition-colors">
             Sign in
           </Link>
         </p>
@@ -192,7 +192,7 @@ function RegisterPageInner() {
 export default function RegisterPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-zinc-50 flex items-center justify-center">
+      <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
       </div>
     }>

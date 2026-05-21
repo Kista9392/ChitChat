@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback, Suspense } from 'react';
 import Sidebar from '@/components/Sidebar';
 import axiosInstance from '@/lib/axios';
-import { Send, Search, MessageCircle, Check, CheckCheck, SmilePlus, Camera, Mic, Play, X } from 'lucide-react';
+import { Send, Search, MessageCircle, Check, CheckCheck, SmilePlus, Camera, Mic, Play, X, ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
@@ -288,10 +288,10 @@ function MessagesPageInner() {
   return (
     <div className="min-h-screen bg-white dark:bg-zinc-950">
       <Sidebar />
-      <main className="pl-20 xl:pl-64 h-screen flex overflow-hidden bg-zinc-50/50 dark:bg-transparent">
+      <main className="pl-0 md:pl-20 xl:pl-64 pb-16 md:pb-0 h-screen flex overflow-hidden bg-zinc-50/50 dark:bg-transparent">
 
         {/* LEFT: Contacts */}
-        <div className="w-72 xl:w-80 border-r border-zinc-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex flex-col flex-shrink-0">
+        <div className={cn("w-full md:w-72 xl:w-80 border-r border-zinc-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex flex-col flex-shrink-0", selectedUser ? "hidden md:flex" : "flex")}>
           {/* Header */}
           <div className="p-5 border-b border-zinc-100 dark:border-zinc-800">
             <div className="flex items-center justify-between mb-4">
@@ -357,8 +357,8 @@ function MessagesPageInner() {
                 className={cn(
                   'w-full flex items-center gap-3 px-4 py-3 transition-colors text-left cursor-pointer',
                   selectedUser === c.username
-                    ? 'bg-zinc-50 border-r-2 border-black'
-                    : 'hover:bg-zinc-50/80'
+                    ? 'bg-zinc-50 dark:bg-zinc-800 border-r-2 border-black dark:border-white'
+                    : 'hover:bg-zinc-50/80 dark:hover:bg-zinc-800/50'
                 )}
               >
                 <div className="relative flex-shrink-0">
@@ -388,11 +388,14 @@ function MessagesPageInner() {
         </div>
 
         {/* RIGHT: Chat Window */}
-        <div className="flex-1 flex flex-col overflow-hidden">
+        <div className={cn("flex-1 flex flex-col overflow-hidden", selectedUser ? "flex" : "hidden md:flex")}>
           {selectedUser ? (
             <>
               {/* Chat Header */}
-              <div className="px-6 py-4 border-b border-zinc-100 bg-white flex items-center gap-3 flex-shrink-0">
+              <div className="px-6 py-4 border-b border-zinc-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex items-center gap-3 flex-shrink-0">
+                <button onClick={() => setSelectedUser(null)} className="md:hidden p-1 mr-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors text-zinc-500 hover:text-black dark:hover:text-white flex-shrink-0">
+                  <ChevronLeft className="w-6 h-6" />
+                </button>
                 <div className="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-white font-bold text-sm">
                   {selectedUser[0].toUpperCase()}
                 </div>
@@ -441,8 +444,8 @@ function MessagesPageInner() {
                           <div className={cn(
                             'max-w-xs xl:max-w-sm px-4 py-2.5 rounded-2xl text-sm leading-relaxed break-words',
                             isMe
-                              ? 'bg-black text-white rounded-br-sm'
-                              : 'bg-white text-black border border-zinc-100 rounded-bl-sm shadow-sm'
+                              ? 'bg-black dark:bg-zinc-100 text-white dark:text-black rounded-br-sm'
+                              : 'bg-white dark:bg-zinc-800 text-black dark:text-white border border-zinc-100 dark:border-zinc-700 rounded-bl-sm shadow-sm'
                           )}>
                             {m.messageType === 'IMAGE' ? (
                               <img src={m.mediaUrl} alt="Sent image" className="rounded-lg max-w-full h-auto" />
@@ -483,14 +486,14 @@ function MessagesPageInner() {
 
               {/* Input Bar */}
               <form onSubmit={sendMessage} className="px-6 py-4 border-t border-zinc-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex items-center gap-3 flex-shrink-0">
-                <label className="cursor-pointer text-zinc-400 hover:text-black transition-colors flex-shrink-0">
+                <label className="cursor-pointer text-zinc-400 hover:text-black dark:hover:text-white transition-colors flex-shrink-0">
                   <Camera className="w-6 h-6" />
                   <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
                 </label>
                 <button
                   type="button"
                   onClick={isRecording ? stopRecording : startRecording}
-                  className={cn("cursor-pointer transition-colors flex-shrink-0", isRecording ? "text-red-500 animate-pulse" : "text-zinc-400 hover:text-black")}
+                  className={cn("cursor-pointer transition-colors flex-shrink-0", isRecording ? "text-red-500 animate-pulse" : "text-zinc-400 hover:text-black dark:hover:text-white")}
                 >
                   <Mic className="w-6 h-6" />
                 </button>
@@ -499,7 +502,7 @@ function MessagesPageInner() {
                     ref={inputRef}
                     type="text"
                     placeholder="Message..."
-                    className="w-full bg-zinc-50 border border-zinc-200 rounded-full px-5 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all pr-12"
+                    className="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-black dark:text-white rounded-full px-5 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10 focus:border-black dark:focus:border-white transition-all pr-12"
                     value={newMessage}
                     onChange={e => setNewMessage(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && !e.shiftKey && sendMessage(e as any)}
@@ -512,8 +515,8 @@ function MessagesPageInner() {
                   className={cn(
                     'w-10 h-10 rounded-full flex items-center justify-center transition-all flex-shrink-0',
                     newMessage.trim()
-                      ? 'bg-black text-white hover:bg-zinc-800 shadow-md'
-                      : 'bg-zinc-100 text-zinc-400 cursor-not-allowed'
+                      ? 'bg-black dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200 shadow-md'
+                      : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-600 cursor-not-allowed'
                   )}
                 >
                   <Send className="w-4 h-4" />
@@ -522,13 +525,13 @@ function MessagesPageInner() {
             </>
           ) : (
             /* Empty state */
-            <div className="flex-1 flex flex-col items-center justify-center gap-5 text-zinc-300">
-              <div className="w-24 h-24 rounded-full bg-zinc-50 border-2 border-zinc-100 flex items-center justify-center">
+            <div className="flex-1 flex flex-col items-center justify-center gap-5 text-zinc-300 dark:text-zinc-700">
+              <div className="w-24 h-24 rounded-full bg-zinc-50 dark:bg-zinc-900 border-2 border-zinc-100 dark:border-zinc-800 flex items-center justify-center">
                 <MessageCircle className="w-12 h-12" />
               </div>
               <div className="text-center">
-                <p className="font-bold text-xl text-zinc-800">Your Messages</p>
-                <p className="text-zinc-400 text-sm mt-1">Select a contact to start chatting!</p>
+                <p className="font-bold text-xl text-zinc-800 dark:text-zinc-200">Your Messages</p>
+                <p className="text-zinc-400 dark:text-zinc-500 text-sm mt-1">Select a contact to start chatting!</p>
               </div>
             </div>
           )}

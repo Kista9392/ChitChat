@@ -208,13 +208,13 @@ export default function ReelsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-violet-50 via-white to-rose-50 dark:bg-zinc-950 dark:bg-none">
       <Sidebar />
-      <div className="pl-20 xl:pl-64 min-h-screen flex gap-6 p-4 md:p-8 items-start">
+      <div className="pl-0 md:pl-20 xl:pl-64 pb-16 md:pb-0 min-h-screen flex flex-col md:flex-row gap-6 p-2 md:p-8 items-center justify-center md:items-start md:justify-start">
 
         {/* LEFT: arrows + card */}
         <div className="flex gap-4 items-center pt-6">
 
           {/* Nav arrows stacked on left */}
-          <div className="flex flex-col gap-3">
+          <div className="hidden md:flex flex-col gap-3">
             <button onClick={goPrev} disabled={currentIndex === 0}
               className="p-3 bg-white border border-zinc-200 rounded-full text-zinc-400 hover:text-black hover:border-black disabled:opacity-20 transition-all shadow-sm">
               <ChevronUp className="w-5 h-5" />
@@ -226,7 +226,7 @@ export default function ReelsPage() {
           </div>
 
           {/* Reel Card */}
-          <div className="relative w-[340px] h-[620px] rounded-3xl overflow-hidden shadow-2xl shadow-black/20 flex-shrink-0">
+          <div className="relative w-full max-w-[340px] h-[600px] xs:h-[620px] md:w-[340px] md:h-[620px] rounded-3xl overflow-hidden shadow-2xl shadow-black/20 flex-shrink-0">
             <AnimatePresence mode="wait">
               <motion.div key={currentIndex}
                 initial={{ y: '100%', opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: '-100%', opacity: 0 }}
@@ -311,99 +311,109 @@ export default function ReelsPage() {
         {/* RIGHT: Comments Panel */}
         <AnimatePresence>
           {showComments && (
-            <motion.div initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 40 }}
-              transition={{ duration: 0.25 }}
-              className="w-80 h-[620px] bg-white rounded-3xl shadow-xl border border-zinc-100 flex flex-col overflow-hidden flex-shrink-0 mt-6">
-              <div className="p-4 border-b border-zinc-100 flex items-center justify-between">
-                <p className="font-bold text-black">Comments</p>
-                <button onClick={() => setShowComments(false)} className="text-zinc-400 hover:text-black"><X className="w-5 h-5" /></button>
-              </div>
-              <div className="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar">
-                {comments.length === 0
-                  ? <p className="text-zinc-400 text-sm text-center mt-8 italic">No comments yet. Be the first!</p>
-                  : comments.map((c, i) => (
-                    <div key={i} className="flex gap-3 text-sm justify-between items-start">
-                      <div className="flex gap-3">
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-yellow-400 to-purple-600 p-[1.5px] shrink-0">
-                          <div className="w-full h-full rounded-full bg-white flex items-center justify-center text-[9px] font-bold overflow-hidden">
-                            {c.authorAvatarUrl ? (
-                              <img src={c.authorAvatarUrl} alt={c.authorUsername} className="w-full h-full object-cover" />
-                            ) : (
-                              c.authorUsername?.[0]?.toUpperCase()
-                            )}
+            <>
+              {/* Backdrop on mobile only */}
+              <div 
+                className="md:hidden fixed inset-0 bg-black/40 z-40" 
+                onClick={() => setShowComments(false)}
+              />
+              <motion.div 
+                initial={{ opacity: 0, y: 100 }} 
+                animate={{ opacity: 1, y: 0 }} 
+                exit={{ opacity: 0, y: 100 }}
+                transition={{ duration: 0.25 }}
+                className="fixed bottom-0 left-0 right-0 h-[60vh] md:relative md:h-[620px] md:w-80 bg-white dark:bg-zinc-900 rounded-t-3xl md:rounded-3xl shadow-2xl md:shadow-xl border-t md:border border-zinc-100 dark:border-zinc-800 flex flex-col overflow-hidden flex-shrink-0 mt-0 md:mt-6 z-50"
+              >
+                <div className="p-4 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
+                  <p className="font-bold text-black dark:text-white">Comments</p>
+                  <button onClick={() => setShowComments(false)} className="text-zinc-400 hover:text-black dark:hover:text-white"><X className="w-5 h-5" /></button>
+                </div>
+                <div className="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar">
+                  {comments.length === 0
+                    ? <p className="text-zinc-400 dark:text-zinc-500 text-sm text-center mt-8 italic">No comments yet. Be the first!</p>
+                    : comments.map((c, i) => (
+                      <div key={i} className="flex gap-3 text-sm justify-between items-start">
+                        <div className="flex gap-3">
+                          <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-yellow-400 to-purple-600 p-[1.5px] shrink-0">
+                            <div className="w-full h-full rounded-full bg-white dark:bg-zinc-800 flex items-center justify-center text-[9px] font-bold overflow-hidden text-black dark:text-white">
+                              {c.authorAvatarUrl ? (
+                                <img src={c.authorAvatarUrl} alt={c.authorUsername} className="w-full h-full object-cover" />
+                              ) : (
+                                c.authorUsername?.[0]?.toUpperCase()
+                              )}
+                            </div>
                           </div>
+                          <div><span className="font-bold text-black dark:text-white mr-2">{c.authorUsername}</span><span className="text-zinc-600 dark:text-zinc-300">{c.content}</span></div>
                         </div>
-                        <div><span className="font-bold text-black mr-2">{c.authorUsername}</span><span className="text-zinc-600">{c.content}</span></div>
+                        <button onClick={() => handleLikeComment(c.id)} className="flex flex-col items-center gap-0.5 shrink-0">
+                          <Heart className={cn("w-4 h-4 transition-colors", c.isLiked ? "fill-red-500 text-red-500" : "text-zinc-400 dark:text-zinc-500 hover:text-red-500")} />
+                          <span className="text-[10px] text-zinc-400 dark:text-zinc-500 font-medium">{c.likeCount}</span>
+                        </button>
                       </div>
-                      <button onClick={() => handleLikeComment(c.id)} className="flex flex-col items-center gap-0.5 shrink-0">
-                        <Heart className={cn("w-4 h-4 transition-colors", c.isLiked ? "fill-red-500 text-red-500" : "text-zinc-400 hover:text-red-500")} />
-                        <span className="text-[10px] text-zinc-400 font-medium">{c.likeCount}</span>
-                      </button>
-                    </div>
-                  ))
-                }
-              </div>
-              <form onSubmit={handleAddComment} className="p-4 border-t border-zinc-100 flex gap-2">
-                <input type="text" placeholder="Add a comment..."
-                  className="flex-1 text-sm bg-zinc-50 border border-zinc-200 rounded-full px-4 py-2 focus:outline-none focus:ring-1 focus:ring-black"
-                  value={newComment} onChange={e => setNewComment(e.target.value)} />
-                <button type="submit" disabled={isSubmittingComment || !newComment.trim()} className="p-2 bg-black text-white rounded-full disabled:opacity-30">
-                  <Send className="w-4 h-4" />
-                </button>
-              </form>
-            </motion.div>
+                    ))
+                  }
+                </div>
+                <form onSubmit={handleAddComment} className="p-4 border-t border-zinc-100 dark:border-zinc-800 flex gap-2">
+                  <input type="text" placeholder="Add a comment..."
+                    className="flex-1 text-sm bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-full px-4 py-2 focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white text-black dark:text-white"
+                    value={newComment} onChange={e => setNewComment(e.target.value)} />
+                  <button type="submit" disabled={isSubmittingComment || !newComment.trim()} className="p-2 bg-black dark:bg-white text-white dark:text-black rounded-full disabled:opacity-30">
+                    <Send className="w-4 h-4" />
+                  </button>
+                </form>
+              </motion.div>
+            </>
           )}
         </AnimatePresence>
         {/* Share Modal */}
       <AnimatePresence>
         {showShareModal && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.9 }} 
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }} 
               animate={{ opacity: 1, scale: 1 }} 
-              exit={{ opacity: 0, scale: 0.9 }}
-              className="bg-white rounded-3xl w-96 max-h-[450px] flex flex-col overflow-hidden"
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-white dark:bg-zinc-900 border dark:border-zinc-800 rounded-3xl w-96 max-h-[450px] flex flex-col overflow-hidden shadow-2xl"
             >
-              <div className="p-4 border-b border-zinc-100 flex items-center justify-between">
-                <p className="font-bold text-black">Share Reel</p>
-                <button onClick={() => setShowShareModal(false)} className="text-zinc-400 hover:text-black">
+              <div className="p-4 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
+                <p className="font-bold text-black dark:text-white">Share Reel</p>
+                <button onClick={() => setShowShareModal(false)} className="text-zinc-400 hover:text-black dark:hover:text-white">
                   <X className="w-5 h-5" />
                 </button>
               </div>
               
-              <div className="p-4 border-b border-zinc-100">
+              <div className="p-4 border-b border-zinc-100 dark:border-zinc-800">
                 <button 
                   onClick={async () => {
                     await handleShare();
                     setShowShareModal(false);
                   }}
-                  className="w-full py-2 bg-gradient-to-r from-yellow-400 to-purple-600 text-white font-bold rounded-full text-sm hover:opacity-90"
+                  className="w-full py-2 bg-gradient-to-r from-yellow-400 to-purple-600 text-white font-bold rounded-full text-sm hover:opacity-90 cursor-pointer"
                 >
                   Share to My Story
                 </button>
               </div>
 
               <div className="flex-1 overflow-y-auto p-4 space-y-3 no-scrollbar">
-                <p className="text-xs font-bold text-zinc-400 uppercase">Send to Friends</p>
+                <p className="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase">Send to Friends</p>
                 {followers.length === 0 ? (
-                  <p className="text-zinc-400 text-sm text-center mt-4">No followers found.</p>
+                  <p className="text-zinc-400 dark:text-zinc-500 text-sm text-center mt-4">No followers found.</p>
                 ) : (
                   followers.map((f, i) => (
                     <div key={i} className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-yellow-400 to-purple-600 p-[1.5px] shrink-0">
-                          <div className="w-full h-full rounded-full bg-white flex items-center justify-center text-sm font-bold">
+                          <div className="w-full h-full rounded-full bg-white dark:bg-zinc-800 flex items-center justify-center text-sm font-bold text-black dark:text-white">
                             {f.username?.[0]?.toUpperCase()}
                           </div>
                         </div>
                         <div>
-                          <p className="font-bold text-black text-sm">{f.username}</p>
-                          <p className="text-zinc-400 text-xs">{f.bio || "No bio"}</p>
+                          <p className="font-bold text-black dark:text-white text-sm">{f.username}</p>
+                          <p className="text-zinc-400 dark:text-zinc-500 text-xs">{f.bio || "No bio"}</p>
                         </div>
                       </div>
                       <button 
                         onClick={() => handleShareToFriend(f.username)}
-                        className="px-4 py-1.5 bg-black text-white text-xs font-bold rounded-full hover:bg-zinc-800"
+                        className="px-4 py-1.5 bg-black dark:bg-white text-white dark:text-black text-xs font-bold rounded-full hover:bg-zinc-800 dark:hover:bg-zinc-200 cursor-pointer"
                       >
                         Send
                       </button>

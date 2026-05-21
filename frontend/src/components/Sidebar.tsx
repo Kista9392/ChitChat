@@ -68,16 +68,18 @@ export default function Sidebar() {
             href={`/${user?.username || 'profile'}`}
             title="Profile"
             className={cn(
-              "flex items-center gap-4 p-2.5 rounded-2xl transition-all duration-300 group hover:bg-white/50",
-              pathname === `/${user?.username}` ? "bg-indigo-50/70 font-bold text-indigo-600" : "text-zinc-500 hover:text-indigo-600"
+              "flex items-center gap-4 p-2.5 rounded-2xl transition-all duration-300 group hover:bg-white/50 dark:hover:bg-zinc-800/50",
+              pathname === `/${user?.username}` 
+                ? "bg-indigo-50/70 dark:bg-indigo-900/30 font-bold text-indigo-600 dark:text-indigo-400" 
+                : "text-zinc-500 dark:text-zinc-400 hover:text-indigo-600 dark:hover:text-indigo-400"
             )}
           >
             <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-600 p-[2px] group-hover:scale-110 transition-transform shrink-0">
-              <div className="w-full h-full rounded-full bg-white flex items-center justify-center overflow-hidden">
+              <div className="w-full h-full rounded-full bg-white dark:bg-zinc-800 flex items-center justify-center overflow-hidden">
                 {user?.avatarUrl ? (
                   <img src={user.avatarUrl} alt={user.username} className="w-full h-full object-cover" />
                 ) : (
-                  <User className="w-4 h-4 text-black" />
+                  <User className="w-4 h-4 text-black dark:text-white" />
                 )}
               </div>
             </div>
@@ -91,18 +93,23 @@ export default function Sidebar() {
           <Link
             href="/settings"
             className={cn(
-              "flex items-center gap-4 p-2.5 rounded-2xl transition-all duration-300 text-zinc-500 hover:bg-white/50 hover:text-indigo-600",
-              pathname === '/settings' && "bg-indigo-50/70 font-bold text-indigo-600"
+              "flex items-center gap-4 p-2.5 rounded-2xl transition-all duration-300 group hover:bg-white/50 dark:hover:bg-zinc-800/50",
+              pathname === '/settings' 
+                ? "bg-indigo-50/70 dark:bg-indigo-900/30 font-bold text-indigo-600 dark:text-indigo-400" 
+                : "text-zinc-500 dark:text-zinc-400 hover:text-indigo-600 dark:hover:text-indigo-400"
             )}
           >
-            <Settings className="w-6 h-6" />
+            <Settings className={cn(
+              "w-6 h-6 transition-all duration-300 shrink-0",
+              pathname === '/settings' ? "scale-110 text-indigo-600 dark:text-indigo-400" : "opacity-70 group-hover:opacity-100 group-hover:scale-110"
+            )} />
             <span className="hidden xl:block text-base tracking-tight">Settings</span>
           </Link>
         </div>
       </div>
 
       {/* Mobile Bottom Bar */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 h-16 border-t border-zinc-100 bg-white/90 backdrop-blur-xl flex items-center justify-around px-2 z-50">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 h-16 border-t border-zinc-100 dark:border-zinc-800 bg-white/90 dark:bg-zinc-950/90 backdrop-blur-xl flex items-center justify-around px-2 z-50">
         {navItems.filter(item => ['Home', 'Search', 'Create', 'Messages', 'Notifications'].includes(item.label)).map((item) => {
           const isActive = pathname === item.href;
           return (
@@ -131,11 +138,11 @@ export default function Sidebar() {
             "w-6 h-6 rounded-full bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-600 p-[2px]",
             pathname === `/${user?.username}` ? "scale-110" : "opacity-70"
           )}>
-            <div className="w-full h-full rounded-full bg-white flex items-center justify-center overflow-hidden">
+            <div className="w-full h-full rounded-full bg-white dark:bg-zinc-800 flex items-center justify-center overflow-hidden">
               {user?.avatarUrl ? (
                 <img src={user.avatarUrl} alt={user.username} className="w-full h-full object-cover" />
               ) : (
-                <User className="w-4 h-4 text-black" />
+                <User className="w-4 h-4 text-black dark:text-white" />
               )}
             </div>
           </div>

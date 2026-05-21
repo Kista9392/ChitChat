@@ -31,27 +31,24 @@ public class FileStorageService {
 
     @PostConstruct
     public void init() {
+        // ALWAYS try to create local uploads directory as a fallback
+        localUploadRoot = Paths.get("uploads");
+        try {
+            if (!Files.exists(localUploadRoot)) {
+                Files.createDirectories(localUploadRoot);
+            }
+        } catch (IOException e) {
+            System.err.println("Warning: Could not create local uploads directory. Configure Cloudinary for production.");
+            localUploadRoot = null;
+        }
+
         if (cloudName != null && !cloudName.trim().isEmpty()) {
-            // Cloudinary is configured — use it, no local storage needed
             cloudinary = new Cloudinary(ObjectUtils.asMap(
                 "cloud_name", cloudName,
                 "api_key", apiKey,
                 "api_secret", apiSecret,
                 "secure", true
             ));
-        } else {
-            // Fallback: try to create local uploads directory
-            localUploadRoot = Paths.get("uploads");
-            try {
-                if (!Files.exists(localUploadRoot)) {
-                    Files.createDirectories(localUploadRoot);
-                }
-            } catch (IOException e) {
-                // On read-only filesystems (like HF Spaces), this will fail.
-                // That's fine — Cloudinary should be configured in production.
-                System.err.println("Warning: Could not create local uploads directory. Configure Cloudinary for production.");
-                localUploadRoot = null;
-            }
         }
     }
 
@@ -65,7 +62,10 @@ public class FileStorageService {
                 );
                 return (String) uploadResult.get("secure_url");
             } catch (Exception e) {
-                throw new RuntimeException("Could not upload to Cloudinary: " + e.getMessage());
+                System.err.println("Cloudinary upload failed: " + e.getMessage() + ". Attempting local fallback...");
+                if (localUploadRoot == null) {
+                    throw new RuntimeException("Could not upload to Cloudinary: " + e.getMessage() + " (and no local storage fallback is configured)");
+                }
             }
         }
 
@@ -90,3 +90,4 @@ public class FileStorageService {
         return fileName.substring(lastIndex);
     }
 }
+

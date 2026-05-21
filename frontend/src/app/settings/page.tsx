@@ -242,8 +242,8 @@ export default function SettingsPage() {
       type="button"
       onClick={() => setEnabled(!enabled)}
       className={cn(
-        "relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2",
-        enabled ? "bg-black" : "bg-zinc-200"
+        "relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-900",
+        enabled ? "bg-black dark:bg-indigo-600" : "bg-zinc-200 dark:bg-zinc-700"
       )}
     >
       <span
@@ -257,34 +257,34 @@ export default function SettingsPage() {
   );
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-zinc-950">
       <Sidebar />
       <main className="pl-0 md:pl-20 xl:pl-64 pb-16 md:pb-0 min-h-screen bg-zinc-50/30 dark:bg-zinc-950">
-        <div className="max-w-5xl mx-auto p-6 md:p-10">
+        <div className="max-w-5xl mx-auto p-4 md:p-10">
           
           <div className="flex items-center gap-4 mb-8">
-            <div className="w-12 h-12 bg-black text-white rounded-2xl flex items-center justify-center shadow-lg">
+            <div className="w-12 h-12 bg-black dark:bg-indigo-600 text-white rounded-2xl flex items-center justify-center shadow-lg">
               <SettingsIcon className="w-6 h-6" />
             </div>
             <div>
               <h1 className="text-2xl font-black text-black dark:text-white">Settings</h1>
-              <p className="text-sm text-zinc-400">Manage your account and app preferences</p>
+              <p className="text-sm text-zinc-400 dark:text-zinc-500">Manage your account and app preferences</p>
             </div>
           </div>
 
           <div className="flex flex-col md:flex-row gap-6">
             {/* Left Column: Navigation */}
             <div className="w-full md:w-64 flex-shrink-0">
-              <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-100 dark:border-zinc-800 p-2 space-y-1 shadow-sm">
+              <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-100 dark:border-zinc-800 p-2 md:space-y-1 shadow-sm flex md:flex-col overflow-x-auto md:overflow-x-visible gap-2 md:gap-1 scrollbar-none">
                 {tabs.map((tab) => (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id as TabType)}
                     className={cn(
-                      "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all",
+                      "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all whitespace-nowrap",
                       activeTab === tab.id
-                        ? "bg-black text-white shadow-md"
-                        : "text-zinc-500 hover:bg-zinc-50 dark:hover:bg-zinc-800 hover:text-black dark:hover:text-white"
+                        ? "bg-black dark:bg-indigo-600 text-white shadow-md"
+                        : "text-zinc-500 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 hover:text-black dark:hover:text-white"
                     )}
                   >
                     {tab.icon}
@@ -292,15 +292,24 @@ export default function SettingsPage() {
                   </button>
                 ))}
                 
-                <div className="border-t border-zinc-100 my-2 pt-2">
+                <div className="hidden md:block border-t border-zinc-100 dark:border-zinc-800 my-2 pt-2">
                   <button
                     onClick={logout}
-                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-red-500 hover:bg-red-50 transition-colors"
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
                   >
                     <LogOut className="w-5 h-5" />
                     Log Out
                   </button>
                 </div>
+              </div>
+              <div className="flex md:hidden mt-2 px-1">
+                <button
+                  onClick={logout}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-red-500 bg-red-500/10 hover:bg-red-500/20 dark:bg-red-950/20 dark:hover:bg-red-950/30 transition-colors border border-red-500/20"
+                >
+                  <LogOut className="w-4 h-4" />
+                  Log Out
+                </button>
               </div>
             </div>
 
@@ -312,35 +321,35 @@ export default function SettingsPage() {
                 {activeTab === 'account' && (
                   <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
                     <div className="flex items-center gap-3 mb-6">
-                      <User className="w-5 h-5 text-black" />
-                      <h2 className="font-bold text-lg text-black">Account Information</h2>
+                      <User className="w-5 h-5 text-black dark:text-white" />
+                      <h2 className="font-bold text-lg text-black dark:text-white">Account Information</h2>
                     </div>
 
                     <div className="space-y-4 max-w-md">
                       <div>
-                        <label className="text-xs font-bold text-zinc-500 mb-1 block uppercase">Username</label>
+                        <label className="text-xs font-bold text-zinc-500 dark:text-zinc-400 mb-1 block uppercase">Username</label>
                         <input
                           type="text"
-                          className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-sm text-zinc-500 cursor-not-allowed"
+                          className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 text-sm text-zinc-500 dark:text-zinc-400 cursor-not-allowed"
                           value={user?.username || ''}
                           disabled
                         />
                       </div>
 
                       <div>
-                        <label className="text-xs font-bold text-zinc-500 mb-1 block uppercase">Email Address</label>
+                        <label className="text-xs font-bold text-zinc-500 dark:text-zinc-400 mb-1 block uppercase">Email Address</label>
                         <input
                           type="email"
-                          className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-sm text-zinc-500 cursor-not-allowed"
+                          className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 text-sm text-zinc-500 dark:text-zinc-400 cursor-not-allowed"
                           value={user?.email || ''}
                           disabled
                         />
                       </div>
 
                       <div>
-                        <label className="text-xs font-bold text-zinc-500 mb-1 block uppercase">Bio</label>
+                        <label className="text-xs font-bold text-zinc-500 dark:text-zinc-400 mb-1 block uppercase">Bio</label>
                         <textarea
-                          className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all"
+                          className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl px-4 py-3 text-sm text-black dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10 focus:border-black dark:focus:border-white transition-all"
                           value={bio}
                           onChange={(e) => setBio(e.target.value)}
                           placeholder="Tell us about yourself..."
@@ -351,16 +360,16 @@ export default function SettingsPage() {
                       <button
                         onClick={handleUpdateBio}
                         disabled={isUpdatingBio}
-                        className="px-6 py-2.5 bg-black text-white rounded-xl text-sm font-bold hover:bg-zinc-800 transition-colors disabled:opacity-50"
+                        className="px-6 py-2.5 bg-black dark:bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-zinc-800 dark:hover:bg-indigo-700 transition-colors disabled:opacity-50"
                       >
                         {isUpdatingBio ? 'Saving...' : 'Save Bio'}
                       </button>
 
-                      <div className="border-t border-zinc-100 mt-6 pt-6">
+                      <div className="border-t border-zinc-100 dark:border-zinc-800 mt-6 pt-6">
                         <h3 className="text-sm font-bold text-red-500 mb-2">Danger Zone</h3>
                         <button 
                           onClick={handleDeleteAccount}
-                          className="px-5 py-2.5 bg-red-50 text-red-600 rounded-xl text-sm font-bold hover:bg-red-100 transition-colors flex items-center gap-2"
+                          className="px-5 py-2.5 bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 rounded-xl text-sm font-bold hover:bg-red-100 dark:hover:bg-red-950/30 transition-colors flex items-center gap-2 border border-red-100 dark:border-red-900/30"
                         >
                           <Trash2 className="w-4 h-4" />
                           Delete Account
@@ -374,23 +383,23 @@ export default function SettingsPage() {
                 {activeTab === 'privacy' && (
                   <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
                     <div className="flex items-center gap-3 mb-6">
-                      <EyeOff className="w-5 h-5 text-black" />
-                      <h2 className="font-bold text-lg text-black">Account Privacy</h2>
+                      <EyeOff className="w-5 h-5 text-black dark:text-white" />
+                      <h2 className="font-bold text-lg text-black dark:text-white">Account Privacy</h2>
                     </div>
 
                     <div className="space-y-4 max-w-md">
-                      <div className="flex items-center justify-between p-4 bg-zinc-50 rounded-xl border border-zinc-100">
+                      <div className="flex items-center justify-between p-4 bg-zinc-50 dark:bg-zinc-800/30 rounded-xl border border-zinc-100 dark:border-zinc-800">
                         <div>
-                          <p className="font-bold text-sm text-black">Private Account</p>
-                          <p className="text-xs text-zinc-400">Only approved accounts can see your posts.</p>
+                          <p className="font-bold text-sm text-black dark:text-white">Private Account</p>
+                          <p className="text-xs text-zinc-400 dark:text-zinc-500">Only approved accounts can see your posts.</p>
                         </div>
                         <Toggle enabled={isPrivateAccount} setEnabled={handleTogglePrivateAccount} />
                       </div>
 
-                      <div className="flex items-center justify-between p-4 bg-zinc-50 rounded-xl border border-zinc-100">
+                      <div className="flex items-center justify-between p-4 bg-zinc-50 dark:bg-zinc-800/30 rounded-xl border border-zinc-100 dark:border-zinc-800">
                         <div>
-                          <p className="font-bold text-sm text-black">Show Activity Status</p>
-                          <p className="text-xs text-zinc-400">Allow accounts you follow to see when you were last active.</p>
+                          <p className="font-bold text-sm text-black dark:text-white">Show Activity Status</p>
+                          <p className="text-xs text-zinc-400 dark:text-zinc-500">Allow accounts you follow to see when you were last active.</p>
                         </div>
                         <Toggle enabled={showActivity} setEnabled={handleToggleActivity} />
                       </div>
@@ -402,16 +411,16 @@ export default function SettingsPage() {
                 {activeTab === 'security' && (
                   <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
                     <div className="flex items-center gap-3 mb-6">
-                      <Lock className="w-5 h-5 text-black" />
-                      <h2 className="font-bold text-lg text-black">Change Password</h2>
+                      <Lock className="w-5 h-5 text-black dark:text-white" />
+                      <h2 className="font-bold text-lg text-black dark:text-white">Change Password</h2>
                     </div>
 
                     <form onSubmit={handlePasswordChange} className="space-y-4 max-w-md">
                       <div>
-                        <label className="text-xs font-bold text-zinc-500 mb-1 block uppercase">Current Password</label>
+                        <label className="text-xs font-bold text-zinc-500 dark:text-zinc-400 mb-1 block uppercase">Current Password</label>
                         <input
                           type="password"
-                          className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all"
+                          className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl px-4 py-3 text-sm text-black dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10 focus:border-black dark:focus:border-white transition-all"
                           value={oldPassword}
                           onChange={(e) => setOldPassword(e.target.value)}
                           required
@@ -419,10 +428,10 @@ export default function SettingsPage() {
                       </div>
 
                       <div>
-                        <label className="text-xs font-bold text-zinc-500 mb-1 block uppercase">New Password</label>
+                        <label className="text-xs font-bold text-zinc-500 dark:text-zinc-400 mb-1 block uppercase">New Password</label>
                         <input
                           type="password"
-                          className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all"
+                          className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl px-4 py-3 text-sm text-black dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10 focus:border-black dark:focus:border-white transition-all"
                           value={newPassword}
                           onChange={(e) => setNewPassword(e.target.value)}
                           required
@@ -430,10 +439,10 @@ export default function SettingsPage() {
                       </div>
 
                       <div>
-                        <label className="text-xs font-bold text-zinc-500 mb-1 block uppercase">Confirm New Password</label>
+                        <label className="text-xs font-bold text-zinc-500 dark:text-zinc-400 mb-1 block uppercase">Confirm New Password</label>
                         <input
                           type="password"
-                          className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all"
+                          className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl px-4 py-3 text-sm text-black dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10 focus:border-black dark:focus:border-white transition-all"
                           value={confirmPassword}
                           onChange={(e) => setConfirmPassword(e.target.value)}
                           required
@@ -448,7 +457,7 @@ export default function SettingsPage() {
                             exit={{ opacity: 0, height: 0 }}
                             className={cn(
                               "flex items-center gap-2 p-3 rounded-xl text-sm font-medium",
-                              passwordStatus.type === 'success' ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"
+                              passwordStatus.type === 'success' ? "bg-green-50 dark:bg-emerald-950/20 text-green-700 dark:text-emerald-400" : "bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-400"
                             )}
                           >
                             {passwordStatus.type === 'success' ? <Check className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
@@ -460,7 +469,7 @@ export default function SettingsPage() {
                       <button
                         type="submit"
                         disabled={isChangingPassword}
-                        className="px-6 py-3 bg-black text-white rounded-xl font-bold text-sm hover:bg-zinc-800 transition-colors disabled:opacity-50"
+                        className="px-6 py-3 bg-black dark:bg-indigo-600 text-white rounded-xl font-bold text-sm hover:bg-zinc-800 dark:hover:bg-indigo-700 transition-colors disabled:opacity-50"
                       >
                         {isChangingPassword ? 'Updating...' : 'Update Password'}
                       </button>
@@ -472,23 +481,23 @@ export default function SettingsPage() {
                 {activeTab === 'notifications' && (
                   <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
                     <div className="flex items-center gap-3 mb-6">
-                      <Bell className="w-5 h-5 text-black" />
-                      <h2 className="font-bold text-lg text-black">Notification Settings</h2>
+                      <Bell className="w-5 h-5 text-black dark:text-white" />
+                      <h2 className="font-bold text-lg text-black dark:text-white">Notification Settings</h2>
                     </div>
 
                     <div className="space-y-3 max-w-md">
-                      <div className="flex items-center justify-between p-4 bg-zinc-50 rounded-xl border border-zinc-100">
+                      <div className="flex items-center justify-between p-4 bg-zinc-50 dark:bg-zinc-800/30 rounded-xl border border-zinc-100 dark:border-zinc-800">
                         <div>
-                          <p className="font-bold text-sm text-black">Push Notifications</p>
-                          <p className="text-xs text-zinc-400">Get instant alerts on your device</p>
+                          <p className="font-bold text-sm text-black dark:text-white">Push Notifications</p>
+                          <p className="text-xs text-zinc-400 dark:text-zinc-500">Get instant alerts on your device</p>
                         </div>
                         <Toggle enabled={pushNotifications} setEnabled={handleTogglePushNotifications} />
                       </div>
 
-                      <div className="flex items-center justify-between p-4 bg-zinc-50 rounded-xl border border-zinc-100">
+                      <div className="flex items-center justify-between p-4 bg-zinc-50 dark:bg-zinc-800/30 rounded-xl border border-zinc-100 dark:border-zinc-800">
                         <div>
-                          <p className="font-bold text-sm text-black">Email Notifications</p>
-                          <p className="text-xs text-zinc-400">Receive digests and updates</p>
+                          <p className="font-bold text-sm text-black dark:text-white">Email Notifications</p>
+                          <p className="text-xs text-zinc-400 dark:text-zinc-500">Receive digests and updates</p>
                         </div>
                         <Toggle enabled={emailNotifications} setEnabled={handleToggleEmailNotifications} />
                       </div>
@@ -500,25 +509,25 @@ export default function SettingsPage() {
                 {activeTab === 'activity' && (
                   <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
                     <div className="flex items-center gap-3 mb-6">
-                      <BarChart2 className="w-5 h-5 text-black" />
-                      <h2 className="font-bold text-lg text-black">My Activity</h2>
+                      <BarChart2 className="w-5 h-5 text-black dark:text-white" />
+                      <h2 className="font-bold text-lg text-black dark:text-white">My Activity</h2>
                     </div>
 
                     <div className="space-y-6">
                       {/* Liked Reels/Posts */}
                       <div>
-                        <h3 className="font-bold text-sm text-black mb-3 flex items-center gap-2">
+                        <h3 className="font-bold text-sm text-black dark:text-white mb-3 flex items-center gap-2">
                           <Heart className="w-4 h-4 text-red-500" />
                           Liked Posts & Reels
                         </h3>
                         {isLoadingLiked ? (
                           <div className="text-sm text-zinc-400">Loading liked posts...</div>
                         ) : likedPosts.length === 0 ? (
-                          <div className="text-sm text-zinc-400 p-4 bg-zinc-50 rounded-xl border border-zinc-100">You haven't liked any posts yet.</div>
+                          <div className="text-sm text-zinc-400 p-4 bg-zinc-50 dark:bg-zinc-800/30 rounded-xl border border-zinc-100 dark:border-zinc-800">You haven't liked any posts yet.</div>
                         ) : (
                           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                             {likedPosts.map((post) => (
-                              <div key={post.id} className="relative group bg-zinc-100 rounded-xl overflow-hidden aspect-square">
+                              <div key={post.id} className="relative group bg-zinc-100 dark:bg-zinc-800 rounded-xl overflow-hidden aspect-square">
                                 {post.mediaUrl ? (
                                   post.mediaType === 'VIDEO' ? (
                                     <video src={post.mediaUrl} className="w-full h-full object-cover" preload="metadata" muted />
@@ -533,14 +542,14 @@ export default function SettingsPage() {
                                 <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
                                   <button 
                                     onClick={() => setSelectedPostForView({ mediaUrl: post.mediaUrl, mediaType: post.mediaType })}
-                                    className="p-2 bg-white rounded-full text-black hover:scale-110 transition-transform"
+                                    className="p-2 bg-white dark:bg-zinc-800 rounded-full text-black dark:text-white hover:scale-110 transition-transform"
                                     title="View"
                                   >
                                     <Eye className="w-4 h-4" />
                                   </button>
                                   <button 
                                     onClick={() => handleUnlike(post.id)}
-                                    className="p-2 bg-white rounded-full text-red-500 hover:scale-110 transition-transform"
+                                    className="p-2 bg-white dark:bg-zinc-800 rounded-full text-red-500 hover:scale-110 transition-transform"
                                     title="Unlike"
                                   >
                                     <X className="w-4 h-4" />
@@ -553,31 +562,31 @@ export default function SettingsPage() {
                       </div>
 
                       {/* Not Interested */}
-                      <div className="border-t border-zinc-100 pt-6">
-                        <h3 className="font-bold text-sm text-black mb-3 flex items-center gap-2">
+                      <div className="border-t border-zinc-100 dark:border-zinc-800 pt-6">
+                        <h3 className="font-bold text-sm text-black dark:text-white mb-3 flex items-center gap-2">
                           <EyeOff className="w-4 h-4 text-zinc-500" />
                           Not Interested
                         </h3>
-                        <p className="text-xs text-zinc-400 mb-3">Posts you've marked as not interested will appear here. You can remove them to see them again.</p>
+                        <p className="text-xs text-zinc-400 dark:text-zinc-500 mb-3">Posts you've marked as not interested will appear here. You can remove them to see them again.</p>
                         
                         <div className="space-y-2">
                           {notInterestedPosts.map((item) => (
-                            <div key={item.id} className="flex items-center justify-between p-3 bg-zinc-50 rounded-xl border border-zinc-100">
+                            <div key={item.id} className="flex items-center justify-between p-3 bg-zinc-50 dark:bg-zinc-800/30 rounded-xl border border-zinc-100 dark:border-zinc-800">
                               <div className="flex items-center gap-3">
                                 {item.type === 'VIDEO' ? <Film className="w-4 h-4 text-zinc-400" /> : <Globe className="w-4 h-4 text-zinc-400" />}
-                                <span className="text-sm font-medium text-black">{item.title}</span>
+                                <span className="text-sm font-medium text-black dark:text-white">{item.title}</span>
                               </div>
                                 <div className="flex items-center gap-2">
                                   <button 
                                     onClick={() => setSelectedPostForView({ mediaUrl: item.mediaUrl, mediaType: item.type, title: item.title })}
-                                    className="p-1.5 hover:bg-zinc-200 rounded-full transition-colors"
+                                    className="p-1.5 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-full transition-colors"
                                     title="View"
                                   >
-                                    <Eye className="w-4 h-4 text-zinc-500" />
+                                    <Eye className="w-4 h-4 text-zinc-500 dark:text-zinc-400" />
                                   </button>
                                   <button 
                                     onClick={() => handleRemoveNotInterested(item.id)}
-                                    className="p-1.5 hover:bg-zinc-200 rounded-full transition-colors"
+                                    className="p-1.5 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-full transition-colors"
                                     title="Remove"
                                   >
                                     <X className="w-4 h-4 text-zinc-500" />
@@ -586,7 +595,7 @@ export default function SettingsPage() {
                             </div>
                           ))}
                           {notInterestedPosts.length === 0 && (
-                            <div className="text-sm text-zinc-400 p-4 bg-zinc-50 rounded-xl border border-zinc-100">No items marked as not interested.</div>
+                            <div className="text-sm text-zinc-400 p-4 bg-zinc-50 dark:bg-zinc-800/30 rounded-xl border border-zinc-100 dark:border-zinc-800">No items marked as not interested.</div>
                           )}
                         </div>
                       </div>
@@ -620,27 +629,27 @@ export default function SettingsPage() {
                 {activeTab === 'more' && (
                   <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
                     <div className="flex items-center gap-3 mb-6">
-                      <Menu className="w-5 h-5 text-black" />
-                      <h2 className="font-bold text-lg text-black">More Options</h2>
+                      <Menu className="w-5 h-5 text-black dark:text-white" />
+                      <h2 className="font-bold text-lg text-black dark:text-white">More Options</h2>
                     </div>
 
                     <div className="space-y-8 max-w-2xl">
                       {/* User Suggestions */}
                       <div>
-                        <h3 className="font-bold text-sm text-black mb-3 flex items-center gap-2">
+                        <h3 className="font-bold text-sm text-black dark:text-white mb-3 flex items-center gap-2">
                           <User className="w-4 h-4 text-zinc-500" />
                           Suggested for You
                         </h3>
-                        <p className="text-xs text-zinc-400 mb-3">Accounts you might want to follow.</p>
+                        <p className="text-xs text-zinc-400 dark:text-zinc-500 mb-3">Accounts you might want to follow.</p>
                         
                         {isLoadingSuggestions ? (
                           <div className="text-sm text-zinc-400">Loading suggestions...</div>
                         ) : (
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {suggestions.map((u) => (
-                              <div key={u.id} className="flex items-center justify-between p-3 bg-zinc-50 rounded-xl border border-zinc-100">
+                              <div key={u.id} className="flex items-center justify-between p-3 bg-zinc-50 dark:bg-zinc-800/30 rounded-xl border border-zinc-100 dark:border-zinc-800">
                                 <div className="flex items-center gap-3">
-                                  <div className="w-10 h-10 rounded-full bg-zinc-200 overflow-hidden">
+                                  <div className="w-10 h-10 rounded-full bg-zinc-200 dark:bg-zinc-700 overflow-hidden">
                                     {u.avatarUrl ? (
                                       <img src={u.avatarUrl} alt={u.username} className="w-full h-full object-cover" />
                                     ) : (
@@ -648,36 +657,36 @@ export default function SettingsPage() {
                                     )}
                                   </div>
                                   <div>
-                                    <p className="text-sm font-bold text-black">{u.username}</p>
+                                    <p className="text-sm font-bold text-black dark:text-white">{u.username}</p>
                                     <p className="text-xs text-zinc-400">{u.followersCount} followers</p>
                                   </div>
                                 </div>
                                 <button 
                                   onClick={() => handleFollowSuggestion(u.username)}
-                                  className="text-xs font-bold text-indigo-600 hover:text-indigo-700"
+                                  className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300"
                                 >
                                   Follow
                                 </button>
                               </div>
                             ))}
                             {suggestions.length === 0 && (
-                              <div className="text-sm text-zinc-400">No suggestions available.</div>
+                              <div className="text-sm text-zinc-400 dark:text-zinc-500">No suggestions available.</div>
                             )}
                           </div>
                         )}
                       </div>
 
                       {/* Feature Suggestions */}
-                      <div className="border-t border-zinc-100 pt-6">
-                        <h3 className="font-bold text-sm text-black mb-3 flex items-center gap-2">
+                      <div className="border-t border-zinc-100 dark:border-zinc-800 pt-6">
+                        <h3 className="font-bold text-sm text-black dark:text-white mb-3 flex items-center gap-2">
                           <PlusSquare className="w-4 h-4 text-zinc-500" />
                           Feature Suggestions
                         </h3>
-                        <p className="text-xs text-zinc-400 mb-3">Have an idea for a new feature? Let us know!</p>
+                        <p className="text-xs text-zinc-400 dark:text-zinc-500 mb-3">Have an idea for a new feature? Let us know!</p>
                         
                         <form onSubmit={handleSendSuggestion} className="space-y-4">
                           <textarea
-                            className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-black focus:border-black transition-all h-32"
+                            className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl px-4 py-3 text-sm text-black dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10 focus:border-black dark:focus:border-white transition-all h-32"
                             placeholder="Describe your suggestion here..."
                             value={userSuggestion}
                             onChange={(e) => setUserSuggestion(e.target.value)}
@@ -685,7 +694,7 @@ export default function SettingsPage() {
                           />
                           <button
                             type="submit"
-                            className="bg-black text-white px-6 py-2.5 rounded-xl font-bold text-sm hover:bg-zinc-800 transition-colors"
+                            className="bg-black dark:bg-indigo-600 text-white px-6 py-2.5 rounded-xl font-bold text-sm hover:bg-zinc-800 dark:hover:bg-indigo-700 transition-colors"
                           >
                             Submit Suggestion
                           </button>
@@ -693,8 +702,8 @@ export default function SettingsPage() {
                         
                         {suggestionStatus && (
                           <div className={cn(
-                            "mt-3 text-sm p-3 rounded-xl flex items-center gap-2",
-                            suggestionStatus.type === 'success' ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700"
+                            "mt-3 text-sm p-3 rounded-xl flex items-center gap-2 border",
+                            suggestionStatus.type === 'success' ? "bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border-emerald-100 dark:border-emerald-900/30" : "bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-400 border-red-100 dark:border-red-900/30"
                           )}>
                             {suggestionStatus.type === 'success' ? <Check className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
                             {suggestionStatus.message}
@@ -703,16 +712,16 @@ export default function SettingsPage() {
                       </div>
 
                       {/* Bug Reports & Complaints */}
-                      <div className="border-t border-zinc-100 pt-6">
-                        <h3 className="font-bold text-sm text-black mb-3 flex items-center gap-2">
+                      <div className="border-t border-zinc-100 dark:border-zinc-800 pt-6">
+                        <h3 className="font-bold text-sm text-black dark:text-white mb-3 flex items-center gap-2">
                           <AlertCircle className="w-4 h-4 text-zinc-500" />
                           Bug Reports & Complaints
                         </h3>
-                        <p className="text-xs text-zinc-400 mb-3">Found a bug or have a complaint? Let us know.</p>
+                        <p className="text-xs text-zinc-400 dark:text-zinc-500 mb-3">Found a bug or have a complaint? Let us know.</p>
                         
                         <form onSubmit={handleSendReport} className="space-y-4">
                           <textarea
-                            className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-black focus:border-black transition-all h-32"
+                            className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl px-4 py-3 text-sm text-black dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10 focus:border-black dark:focus:border-white transition-all h-32"
                             placeholder="Describe the issue or complaint here..."
                             value={bugReport}
                             onChange={(e) => setBugReport(e.target.value)}
@@ -720,7 +729,7 @@ export default function SettingsPage() {
                           />
                           <button
                             type="submit"
-                            className="bg-black text-white px-6 py-2.5 rounded-xl font-bold text-sm hover:bg-zinc-800 transition-colors"
+                            className="bg-black dark:bg-indigo-600 text-white px-6 py-2.5 rounded-xl font-bold text-sm hover:bg-zinc-800 dark:hover:bg-indigo-700 transition-colors"
                           >
                             Submit Report
                           </button>
@@ -728,8 +737,8 @@ export default function SettingsPage() {
                         
                         {reportStatus && (
                           <div className={cn(
-                            "mt-3 text-sm p-3 rounded-xl flex items-center gap-2",
-                            reportStatus.type === 'success' ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700"
+                            "mt-3 text-sm p-3 rounded-xl flex items-center gap-2 border",
+                            reportStatus.type === 'success' ? "bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border-emerald-100 dark:border-emerald-900/30" : "bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-400 border-red-100 dark:border-red-900/30"
                           )}>
                             {reportStatus.type === 'success' ? <Check className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
                             {reportStatus.message}
@@ -738,9 +747,9 @@ export default function SettingsPage() {
                       </div>
 
                       {/* Contact Us */}
-                      <div className="border-t border-zinc-100 pt-6">
-                        <h3 className="font-bold text-sm text-black mb-3">Contact Us</h3>
-                        <p className="text-xs text-zinc-400 mb-3">For any queries, reach out to us at support@chitchat.com</p>
+                      <div className="border-t border-zinc-100 dark:border-zinc-800 pt-6">
+                        <h3 className="font-bold text-sm text-black dark:text-white mb-3">Contact Us</h3>
+                        <p className="text-xs text-zinc-400 dark:text-zinc-500 mb-3">For any queries, reach out to us at support@chitchat.com</p>
                       </div>
                     </div>
                   </motion.div>

@@ -173,13 +173,13 @@ export default function ProfilePage() {
   );
 
   return (
-    <div className="min-h-screen bg-zinc-50/30">
+    <div className="min-h-screen bg-zinc-50/30 dark:bg-zinc-950 transition-colors duration-300">
       <Sidebar />
-      <main className="pl-20 xl:pl-64 min-h-screen">
+      <main className="pl-0 md:pl-20 xl:pl-64 pb-16 md:pb-0 min-h-screen">
         <div className="max-w-4xl mx-auto p-4 md:p-8">
 
           {/* Profile Header */}
-          <div className="bg-white rounded-3xl border border-zinc-100 shadow-sm p-6 md:p-10 flex flex-col md:flex-row items-center gap-8 mb-6">
+          <div className="bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-100 dark:border-zinc-800 shadow-sm p-6 md:p-10 flex flex-col md:flex-row items-center gap-8 mb-6">
             {/* Avatar */}
             <div className="relative group flex-shrink-0">
               <div className="w-28 h-28 md:w-36 md:h-36 rounded-full bg-gradient-to-br from-indigo-200 to-purple-200 flex items-center justify-center border-4 border-white shadow-lg overflow-hidden">
@@ -203,11 +203,11 @@ export default function ProfilePage() {
             {/* Info */}
             <div className="flex-1 text-center md:text-left space-y-4">
               <div className="flex flex-col md:flex-row items-center md:items-center gap-4">
-                <h2 className="text-2xl font-bold text-black">{profile?.username}</h2>
+                <h2 className="text-2xl font-bold text-black dark:text-white">{profile?.username}</h2>
                 {isOwnProfile ? (
                   <button
                     onClick={() => setShowEditModal(true)}
-                    className="px-5 py-1.5 bg-zinc-100 hover:bg-zinc-200 text-black font-bold text-sm rounded-xl transition-colors"
+                    className="px-5 py-1.5 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-black dark:text-white font-bold text-sm rounded-xl transition-colors"
                   >
                     Edit Profile
                   </button>
@@ -216,7 +216,7 @@ export default function ProfilePage() {
                     <button
                       onClick={handleFollow}
                       className={cn('px-6 py-1.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2',
-                        isFollowing ? 'bg-zinc-100 text-black hover:bg-zinc-200' : 'bg-black text-white hover:bg-zinc-800'
+                        isFollowing ? 'bg-zinc-100 dark:bg-zinc-800 text-black dark:text-white hover:bg-zinc-200 dark:hover:bg-zinc-700' : 'bg-black dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200'
                       )}
                     >
                       {isFollowing ? <><UserCheck className="w-4 h-4" /> Following</> : <><UserPlus className="w-4 h-4" /> Follow</>}
@@ -224,7 +224,7 @@ export default function ProfilePage() {
                     {isFollowing && (
                       <Link
                         href={`/messages?user=${username}`}
-                        className="px-6 py-1.5 bg-zinc-100 text-black hover:bg-zinc-200 rounded-xl font-bold text-sm transition-all flex items-center gap-2"
+                        className="px-6 py-1.5 bg-zinc-100 dark:bg-zinc-800 text-black dark:text-white hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-xl font-bold text-sm transition-all flex items-center gap-2"
                       >
                         <MessageCircle className="w-4 h-4" /> Message
                       </Link>
@@ -236,33 +236,33 @@ export default function ProfilePage() {
               {/* Stats */}
               <div className="flex justify-center md:justify-start gap-8">
                 <div className="text-center">
-                  <p className="font-black text-black text-lg">{posts.length}</p>
-                  <p className="text-zinc-500 text-xs">posts</p>
+                  <p className="font-black text-black dark:text-white text-lg">{posts.length}</p>
+                  <p className="text-zinc-500 dark:text-zinc-400 text-xs">posts</p>
                 </div>
                 <div className="text-center cursor-pointer" onClick={() => fetchFollowList('followers')}>
-                  <p className="font-black text-black text-lg">{profile?.followerCount || 0}</p>
-                  <p className="text-zinc-500 text-xs">followers</p>
+                  <p className="font-black text-black dark:text-white text-lg">{profile?.followerCount || 0}</p>
+                  <p className="text-zinc-500 dark:text-zinc-400 text-xs">followers</p>
                 </div>
                 <div className="text-center cursor-pointer" onClick={() => fetchFollowList('following')}>
-                  <p className="font-black text-black text-lg">{profile?.followingCount || 0}</p>
-                  <p className="text-zinc-500 text-xs">following</p>
+                  <p className="font-black text-black dark:text-white text-lg">{profile?.followingCount || 0}</p>
+                  <p className="text-zinc-500 dark:text-zinc-400 text-xs">following</p>
                 </div>
               </div>
 
               {/* Bio */}
               <div>
-                <p className="font-bold text-black text-sm">{profile?.username}</p>
-                <p className="text-zinc-500 text-sm mt-1 whitespace-pre-wrap">{profile?.bio || 'No bio yet.'}</p>
+                <p className="font-bold text-black dark:text-white text-sm">{profile?.username}</p>
+                <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-1 whitespace-pre-wrap">{profile?.bio || 'No bio yet.'}</p>
               </div>
             </div>
           </div>
 
           {/* Tabs */}
-          <div className="flex border-b border-zinc-200 mb-6">
+          <div className="flex border-b border-zinc-200 dark:border-zinc-800 mb-6">
             <button
               onClick={() => setActiveTab('posts')}
               className={cn('flex items-center gap-2 px-6 py-3 text-xs font-bold uppercase tracking-widest transition-colors border-b-2 -mb-[2px]',
-                activeTab === 'posts' ? 'border-black text-black' : 'border-transparent text-zinc-400 hover:text-black'
+                activeTab === 'posts' ? 'border-black dark:border-white text-black dark:text-white' : 'border-transparent text-zinc-400 dark:text-zinc-500 hover:text-black dark:hover:text-white'
               )}
             >
               <Grid className="w-3.5 h-3.5" /> Posts
@@ -271,7 +271,7 @@ export default function ProfilePage() {
               <button
                 onClick={() => setActiveTab('saved')}
                 className={cn('flex items-center gap-2 px-6 py-3 text-xs font-bold uppercase tracking-widest transition-colors border-b-2 -mb-[2px]',
-                  activeTab === 'saved' ? 'border-black text-black' : 'border-transparent text-zinc-400 hover:text-black'
+                  activeTab === 'saved' ? 'border-black dark:border-white text-black dark:text-white' : 'border-transparent text-zinc-400 dark:text-zinc-500 hover:text-black dark:hover:text-white'
                 )}
               >
                 <Bookmark className="w-3.5 h-3.5" /> Saved
@@ -282,9 +282,9 @@ export default function ProfilePage() {
           {/* Posts Grid */}
           {activeTab === 'posts' && (
             posts.length === 0 ? (
-              <div className="text-center py-24 bg-white rounded-3xl border border-zinc-100">
-                <Camera className="w-14 h-14 text-zinc-200 mx-auto mb-3" />
-                <p className="font-bold text-zinc-400">No Posts Yet</p>
+              <div className="text-center py-24 bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-100 dark:border-zinc-800">
+                <Camera className="w-14 h-14 text-zinc-200 dark:text-zinc-700 mx-auto mb-3" />
+                <p className="font-bold text-zinc-400 dark:text-zinc-500">No Posts Yet</p>
               </div>
             ) : (
               <div className="grid grid-cols-3 gap-1 md:gap-3">
@@ -318,10 +318,10 @@ export default function ProfilePage() {
                     {/* New Collection Button */}
                     <button
                       onClick={() => setShowNewCollectionModal(true)}
-                      className="aspect-square bg-white border-2 border-dashed border-zinc-200 rounded-2xl flex flex-col items-center justify-center gap-2 hover:border-black hover:bg-zinc-50 transition-all group"
+                      className="aspect-square bg-white dark:bg-zinc-900 border-2 border-dashed border-zinc-200 dark:border-zinc-800 rounded-2xl flex flex-col items-center justify-center gap-2 hover:border-black dark:hover:border-white hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-all group cursor-pointer"
                     >
-                      <Plus className="w-8 h-8 text-zinc-300 group-hover:text-black transition-colors" />
-                      <span className="text-xs font-bold text-zinc-400 group-hover:text-black transition-colors">New Collection</span>
+                      <Plus className="w-8 h-8 text-zinc-300 dark:text-zinc-700 group-hover:text-black dark:group-hover:text-white transition-colors" />
+                      <span className="text-xs font-bold text-zinc-400 dark:text-zinc-500 group-hover:text-black dark:group-hover:text-white transition-colors">New Collection</span>
                     </button>
 
                     {collections.map(col => (
@@ -356,10 +356,10 @@ export default function ProfilePage() {
                   </div>
 
                   {collections.length === 0 && (
-                    <div className="text-center py-16 bg-white rounded-3xl border border-zinc-100 mt-4">
-                      <Bookmark className="w-14 h-14 text-zinc-200 mx-auto mb-3" />
-                      <p className="font-bold text-zinc-400">No saved posts yet</p>
-                      <p className="text-zinc-300 text-sm mt-1">Bookmark posts to save them here</p>
+                    <div className="text-center py-16 bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-100 dark:border-zinc-800 mt-4">
+                      <Bookmark className="w-14 h-14 text-zinc-200 dark:text-zinc-700 mx-auto mb-3" />
+                      <p className="font-bold text-zinc-400 dark:text-zinc-500">No saved posts yet</p>
+                      <p className="text-zinc-300 dark:text-zinc-600 text-sm mt-1">Bookmark posts to save them here</p>
                     </div>
                   )}
                 </>
@@ -367,16 +367,16 @@ export default function ProfilePage() {
                 /* Collection posts view */
                 <div>
                   <div className="flex items-center gap-3 mb-5">
-                    <button onClick={() => setSelectedCollection(null)} className="p-2 hover:bg-zinc-100 rounded-xl transition-colors">
+                    <button onClick={() => setSelectedCollection(null)} className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl transition-colors text-black dark:text-white">
                       <X className="w-5 h-5" />
                     </button>
                     <div>
-                      <h3 className="font-bold text-black">{selectedCollection.name}</h3>
-                      <p className="text-xs text-zinc-400">{collectionPosts.length} posts</p>
+                      <h3 className="font-bold text-black dark:text-white">{selectedCollection.name}</h3>
+                      <p className="text-xs text-zinc-400 dark:text-zinc-500">{collectionPosts.length} posts</p>
                     </div>
                   </div>
                   {collectionPosts.length === 0 ? (
-                    <div className="text-center py-16 bg-white rounded-3xl border border-zinc-100">
+                    <div className="text-center py-16 bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-100 dark:border-zinc-800">
                       <p className="text-zinc-400">No posts in this collection yet</p>
                     </div>
                   ) : (
@@ -413,23 +413,23 @@ export default function ProfilePage() {
           >
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl"
+              className="bg-white dark:bg-zinc-900 border dark:border-zinc-800 rounded-3xl p-6 w-full max-w-sm shadow-2xl text-black dark:text-white"
               onClick={e => e.stopPropagation()}
             >
-              <h3 className="font-bold text-lg mb-4">New Collection</h3>
+              <h3 className="font-bold text-lg mb-4 text-black dark:text-white">New Collection</h3>
               <input
                 type="text"
                 placeholder="Collection name..."
-                className="w-full bg-zinc-50 border border-zinc-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black mb-4"
+                className="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10 focus:border-black dark:focus:border-white text-black dark:text-white mb-4"
                 value={newCollectionName}
                 onChange={e => setNewCollectionName(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && createCollection()}
                 autoFocus
               />
               <div className="flex gap-3">
-                <button onClick={() => setShowNewCollectionModal(false)} className="flex-1 py-3 bg-zinc-100 rounded-2xl font-bold text-sm hover:bg-zinc-200 transition-colors">Cancel</button>
+                <button onClick={() => setShowNewCollectionModal(false)} className="flex-1 py-3 bg-zinc-100 dark:bg-zinc-800 rounded-2xl font-bold text-sm hover:bg-zinc-200 dark:hover:bg-zinc-700 text-black dark:text-white transition-colors cursor-pointer">Cancel</button>
                 <button onClick={createCollection} disabled={isCreating || !newCollectionName.trim()}
-                  className="flex-1 py-3 bg-black text-white rounded-2xl font-bold text-sm hover:bg-zinc-800 transition-colors disabled:opacity-50">
+                  className="flex-1 py-3 bg-black dark:bg-white text-white dark:text-black rounded-2xl font-bold text-sm hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors disabled:opacity-50 cursor-pointer">
                   {isCreating ? 'Creating...' : 'Create'}
                 </button>
               </div>
@@ -448,10 +448,10 @@ export default function ProfilePage() {
           >
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl"
+              className="bg-white dark:bg-zinc-900 border dark:border-zinc-800 rounded-3xl p-6 w-full max-w-sm shadow-2xl text-black dark:text-white"
               onClick={e => e.stopPropagation()}
             >
-              <h3 className="font-bold text-lg mb-5">Edit Profile</h3>
+              <h3 className="font-bold text-lg mb-5 text-black dark:text-white">Edit Profile</h3>
 
               {/* Avatar Upload */}
               <div className="flex flex-col items-center mb-5">
@@ -486,11 +486,11 @@ export default function ProfilePage() {
 
               {/* Bio */}
               <div className="mb-4">
-                <label className="text-xs font-bold text-zinc-500 mb-1 block">BIO</label>
+                <label className="text-xs font-bold text-zinc-500 dark:text-zinc-400 mb-1 block">BIO</label>
                 <textarea
                   rows={4}
                   placeholder="Write your bio..."
-                  className="w-full bg-zinc-50 border border-zinc-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black resize-none"
+                  className="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10 focus:border-black dark:focus:border-white resize-none text-black dark:text-white"
                   value={editBio}
                   onChange={e => setEditBio(e.target.value)}
                 />
@@ -499,14 +499,14 @@ export default function ProfilePage() {
               <div className="flex gap-3">
                 <button
                   onClick={() => { setShowEditModal(false); setAvatarFile(null); setAvatarPreview(null); }}
-                  className="flex-1 py-3 bg-zinc-100 rounded-2xl font-bold text-sm hover:bg-zinc-200 transition-colors"
+                  className="flex-1 py-3 bg-zinc-100 dark:bg-zinc-800 rounded-2xl font-bold text-sm hover:bg-zinc-200 dark:hover:bg-zinc-700 text-black dark:text-white transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={saveEditProfile}
                   disabled={isSavingBio || isUploadingAvatar}
-                  className="flex-1 py-3 bg-black text-white rounded-2xl font-bold text-sm hover:bg-zinc-800 transition-colors disabled:opacity-50"
+                  className="flex-1 py-3 bg-black dark:bg-white text-white dark:text-black rounded-2xl font-bold text-sm hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors disabled:opacity-50 cursor-pointer"
                 >
                   {isSavingBio || isUploadingAvatar ? 'Saving...' : 'Save'}
                 </button>
@@ -525,12 +525,12 @@ export default function ProfilePage() {
           >
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl max-h-[80vh] flex flex-col"
+              className="bg-white dark:bg-zinc-900 border dark:border-zinc-800 text-black dark:text-white rounded-3xl p-6 w-full max-w-sm shadow-2xl max-h-[80vh] flex flex-col"
               onClick={e => e.stopPropagation()}
             >
               <div className="flex items-center justify-between mb-5">
                 <h3 className="font-bold text-lg capitalize">{showFollowModal}</h3>
-                <button onClick={() => setShowFollowModal(null)}><X className="w-5 h-5 text-zinc-400 hover:text-black" /></button>
+                <button onClick={() => setShowFollowModal(null)}><X className="w-5 h-5 text-zinc-400 hover:text-black dark:hover:text-white cursor-pointer" /></button>
               </div>
 
               {isLoadingFollowList ? (
@@ -548,8 +548,8 @@ export default function ProfilePage() {
                           {u.avatarUrl ? <img src={u.avatarUrl} alt="avatar" className="w-full h-full object-cover rounded-full" /> : u.username[0].toUpperCase()}
                         </div>
                         <div>
-                          <Link href={`/${u.username}`} className="font-bold text-black text-sm hover:underline" onClick={() => setShowFollowModal(null)}>{u.username}</Link>
-                          <p className="text-xs text-zinc-400 truncate max-w-[150px]">{u.bio || 'No bio'}</p>
+                          <Link href={`/${u.username}`} className="font-bold text-black dark:text-white text-sm hover:underline" onClick={() => setShowFollowModal(null)}>{u.username}</Link>
+                          <p className="text-xs text-zinc-400 dark:text-zinc-500 truncate max-w-[150px]">{u.bio || 'No bio'}</p>
                         </div>
                       </div>
                       {!isOwnProfile && (

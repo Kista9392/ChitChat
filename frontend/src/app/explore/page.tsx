@@ -73,12 +73,12 @@ export default function ExplorePage() {
   return (
     <div className="min-h-screen bg-white dark:bg-zinc-950">
       <Sidebar />
-      <main className="pl-20 xl:pl-64 min-h-screen bg-zinc-50/30 dark:bg-transparent flex flex-col items-center p-4 md:p-8">
+      <main className="pl-0 md:pl-20 xl:pl-64 pb-16 md:pb-0 min-h-screen bg-zinc-50/30 dark:bg-transparent flex flex-col items-center p-4 md:p-8">
         <div className="max-w-4xl w-full space-y-6">
           
           {/* Header */}
           <div className="flex items-center justify-between">
-            <h1 className="text-xl font-bold text-black">Explore</h1>
+            <h1 className="text-xl font-bold text-black dark:text-white">Explore</h1>
           </div>
 
           {/* Category Pills (Feature 1) */}
@@ -89,8 +89,8 @@ export default function ExplorePage() {
                 onClick={() => setActiveCategory(category)}
                 className={`px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap transition-all ${
                   activeCategory === category 
-                    ? 'bg-black text-white' 
-                    : 'bg-white border border-zinc-200 text-zinc-500 hover:border-black hover:text-black'
+                    ? 'bg-black text-white dark:bg-white dark:text-black' 
+                    : 'bg-white border border-zinc-200 text-zinc-500 hover:border-black hover:text-black dark:bg-zinc-900 dark:border-zinc-800 dark:text-zinc-400 dark:hover:border-white dark:hover:text-white'
                 }`}
               >
                 {category}
@@ -109,7 +109,7 @@ export default function ExplorePage() {
                   <Link 
                     href={`/${post.authorUsername}`} 
                     key={`${post.id}-${index}`}
-                    className={`bg-zinc-100 rounded-2xl overflow-hidden relative group cursor-pointer border border-zinc-200/50 shadow-sm ${
+                    className={`bg-zinc-100 dark:bg-zinc-900 rounded-2xl overflow-hidden relative group cursor-pointer border border-zinc-200/50 dark:border-zinc-800/50 shadow-sm ${
                       isTall ? 'row-span-2 h-full' : 'aspect-square'
                     }`}
                   >
@@ -133,17 +133,17 @@ export default function ExplorePage() {
               })}
             </div>
           ) : !isLoading ? (
-            <div className="text-center py-20 text-zinc-300 bg-white rounded-3xl border border-zinc-100">
+            <div className="text-center py-20 text-zinc-300 dark:text-zinc-700 bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-100 dark:border-zinc-800">
               <Camera className="w-16 h-16 mx-auto mb-4 opacity-30" />
-              <p className="text-lg font-bold">No Posts Found</p>
-              <p className="text-sm">Try another category</p>
+              <p className="text-lg font-bold text-zinc-800 dark:text-zinc-200">No Posts Found</p>
+              <p className="text-sm text-zinc-400 dark:text-zinc-500">Try another category</p>
             </div>
           ) : null}
 
           {/* Infinite Scroll Target (Feature 3) */}
           <div ref={observerTarget} className="h-10 flex items-center justify-center">
             {isLoading && (
-              <div className="w-6 h-6 border-2 border-zinc-300 border-t-black rounded-full animate-spin" />
+              <div className="w-6 h-6 border-2 border-zinc-300 border-t-black dark:border-t-white rounded-full animate-spin" />
             )}
           </div>
         </div>
