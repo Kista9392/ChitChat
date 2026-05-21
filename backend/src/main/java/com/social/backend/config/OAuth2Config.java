@@ -1,6 +1,5 @@
 package com.social.backend.config;
 
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
@@ -14,10 +13,17 @@ import org.springframework.security.oauth2.core.oidc.IdTokenClaimNames;
 public class OAuth2Config {
 
     @Bean
-    @ConditionalOnProperty(name = "google.oauth.enabled", havingValue = "true")
     public ClientRegistrationRepository clientRegistrationRepository() {
         String clientId = System.getenv("GOOGLE_CLIENT_ID");
         String clientSecret = System.getenv("GOOGLE_CLIENT_SECRET");
+
+        // If credentials not set, use dummy values — SecurityConfig will skip oauth2Login
+        // when clientRegistrationRepository returns a dummy that won't match
+        if (clientId == null || clientId.isBlank() ||
+            clientSecret == null || clientSecret.isBlank()) {
+            clientId = "not-configured";
+            clientSecret = "not-configured";
+        }
 
         ClientRegistration googleRegistration = ClientRegistration.withRegistrationId("google")
             .clientId(clientId)

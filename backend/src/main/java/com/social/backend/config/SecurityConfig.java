@@ -22,9 +22,6 @@ public class SecurityConfig {
     @Autowired(required = false)
     private OAuth2SuccessHandler oAuth2SuccessHandler;
 
-    @Autowired(required = false)
-    private org.springframework.security.oauth2.client.registration.ClientRegistrationRepository clientRegistrationRepository;
-
     public SecurityConfig(JwtAuthFilter jwtAuthFilter) {
         this.jwtAuthFilter = jwtAuthFilter;
     }
@@ -61,17 +58,16 @@ public class SecurityConfig {
             )
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
-        // Only enable OAuth2 login if Spring auto-configured a ClientRegistrationRepository
-        if (clientRegistrationRepository != null && oAuth2SuccessHandler != null) {
+        // Enable OAuth2 login - ClientRegistrationRepository always exists
+        // (uses real credentials if set, dummy if not)
+        String googleClientId = System.getenv("GOOGLE_CLIENT_ID");
+        boolean googleConfigured = googleClientId != null && !googleClientId.isBlank();
+        
+        if (googleConfigured && oAuth2SuccessHandler != null) {
             http.oauth2Login(oauth2 -> oauth2
                 .successHandler(oAuth2SuccessHandler)
-                .loginPage("/login")
-                .authorizationEndpoint(auth -> auth
-                    .baseUri("/oauth2/authorization")
-                )
-                .redirectionEndpoint(redir -> redir
-                    .baseUri("/login/oauth2/code/*")
-                )
+                .authorizationEndpoint(auth -> auth.baseUri("/oauth2/authorization"))
+                .redirectionEndpoint(redir -> redir.baseUri("/login/oauth2/code/*"))
             );
         }
 
