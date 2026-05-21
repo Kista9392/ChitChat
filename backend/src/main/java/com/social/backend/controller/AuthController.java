@@ -23,6 +23,12 @@ public class AuthController {
     @Value("${GOOGLE_CLIENT_ID:NOT_SET}")
     private String googleClientId;
 
+    @Value("${app.frontend-url:http://localhost:3000}")
+    private String resolvedFrontendUrl;
+
+    @Value("${app.api-url:http://localhost:7860}")
+    private String resolvedApiUrl;
+
     public AuthController(UserService userService) {
         this.userService = userService;
     }
@@ -92,7 +98,11 @@ public class AuthController {
             "length", String.valueOf(googleClientId == null ? 0 : googleClientId.length()),
             "rawEnvPreview", rawPreview,
             "rawEnvLength", String.valueOf(rawEnv == null ? 0 : rawEnv.length()),
-            "clientRegistrationRepositoryPresent", String.valueOf(clientRegistrationRepository != null)
+            "clientRegistrationRepositoryPresent", String.valueOf(clientRegistrationRepository != null),
+            "resolvedFrontendUrl", resolvedFrontendUrl,
+            "resolvedApiUrl", resolvedApiUrl,
+            "envFrontendUrl", String.valueOf(System.getenv("FRONTEND_URL")),
+            "envAppApiUrl", String.valueOf(System.getenv("APP_API_URL"))
         ));
     }
 }
