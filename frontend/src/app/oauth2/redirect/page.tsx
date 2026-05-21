@@ -12,13 +12,18 @@ function OAuth2RedirectInner() {
   const calledRef = useRef(false);
 
   useEffect(() => {
-    if (calledRef.current) return;
-    calledRef.current = true;
-    
     const accessToken = searchParams.get('accessToken');
     const refreshToken = searchParams.get('refreshToken');
     const username = searchParams.get('username');
     const errorParam = searchParams.get('error');
+
+    // Next.js App Router hydration check: wait until search params are populated on the client
+    if (typeof window !== 'undefined' && window.location.search && !accessToken && !refreshToken && !username && !errorParam) {
+      return;
+    }
+
+    if (calledRef.current) return;
+    calledRef.current = true;
 
     if (errorParam === 'not_registered') {
       setError('You have not registered yet using this email.');
