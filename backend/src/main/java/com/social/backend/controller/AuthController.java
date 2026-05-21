@@ -55,6 +55,14 @@ public class AuthController {
         return ResponseEntity.ok(user);
     }
 
+    // Redirect /login to frontend (Spring OAuth2 default redirect)
+    @GetMapping("/login-redirect")
+    public void loginRedirect(jakarta.servlet.http.HttpServletResponse response) throws java.io.IOException {
+        String frontendUrl = System.getenv("FRONTEND_URL");
+        if (frontendUrl == null || frontendUrl.isBlank()) frontendUrl = "http://localhost:3000";
+        response.sendRedirect(frontendUrl + "/login");
+    }
+
     @PostMapping("/forgot-password")
     public ResponseEntity<String> forgotPassword(@RequestBody ForgotPasswordRequest request) {
         String result = userService.forgotPassword(request.getEmail());

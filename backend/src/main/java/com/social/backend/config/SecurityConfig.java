@@ -63,7 +63,16 @@ public class SecurityConfig {
 
         // Only enable OAuth2 login if Spring auto-configured a ClientRegistrationRepository
         if (clientRegistrationRepository != null && oAuth2SuccessHandler != null) {
-            http.oauth2Login(oauth2 -> oauth2.successHandler(oAuth2SuccessHandler));
+            http.oauth2Login(oauth2 -> oauth2
+                .successHandler(oAuth2SuccessHandler)
+                .loginPage("/login")
+                .authorizationEndpoint(auth -> auth
+                    .baseUri("/oauth2/authorization")
+                )
+                .redirectionEndpoint(redir -> redir
+                    .baseUri("/login/oauth2/code/*")
+                )
+            );
         }
 
         return http.build();
