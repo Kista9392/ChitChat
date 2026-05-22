@@ -26,7 +26,7 @@ export default function ReelsPage() {
   const { user } = useAuth();
   const [reels, setReels] = useState<Reel[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isMuted, setIsMuted] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
   const [isPlaying, setIsPlaying] = useState(true);
   const [likedReels, setLikedReels] = useState<Set<string>>(new Set());
   const [savedReels, setSavedReels] = useState<Set<string>>(new Set());
@@ -44,6 +44,27 @@ export default function ReelsPage() {
   const videoRefs = useRef<{ [key: number]: HTMLVideoElement | null }>({});
 
   useEffect(() => { fetchReels(0); }, []);
+
+  // Initialize and sync isMuted state from localStorage
+  useEffect(() => {
+    const stored = localStorage.getItem('feedMuted');
+    if (stored !== null) {
+      setIsMuted(stored === 'true');
+    }
+  }, []);
+
+  // Synchronize mute toggle event across components
+  useEffect(() => {
+    const handleSync = () => {
+      const storedVal = localStorage.getItem('feedMuted');
+      const newMuted = storedVal !== 'false';
+      setIsMuted(newMuted);
+      const v = videoRefs.current[currentIndex];
+      if (v) v.muted = newMuted;
+    };
+    window.addEventListener('feedMuteToggle', handleSync);
+    return () => window.removeEventListener('feedMuteToggle', handleSync);
+  }, [currentIndex]);
 
   const fetchReels = async (pageNum: number, append = false) => {
     try {
@@ -64,6 +85,7 @@ export default function ReelsPage() {
     Object.entries(videoRefs.current).forEach(([idx, video]) => {
       if (!video) return;
       if (Number(idx) === currentIndex) { 
+        video.muted = isMuted; // Programmatically enforce the exact mute property on the active video
         video.play().catch(() => {}); 
         setIsPlaying(true); 
         const reelId = reels[currentIndex]?.id;
@@ -93,6 +115,8 @@ export default function ReelsPage() {
   const toggleMute = () => {
     const newMuted = !isMuted;
     setIsMuted(newMuted);
+    localStorage.setItem('feedMuted', String(newMuted));
+    window.dispatchEvent(new Event('feedMuteToggle'));
     const v = videoRefs.current[currentIndex];
     if (v) v.muted = newMuted;
   };

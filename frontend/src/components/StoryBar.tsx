@@ -4,7 +4,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import axiosInstance from '@/lib/axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/context/AuthContext';
-import { X, ChevronLeft, ChevronRight, Trash2, User } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Trash2, User, Volume2, VolumeX } from 'lucide-react';
 
 interface Story {
   id: string;
@@ -25,8 +25,37 @@ export default function StoryBar() {
   const [currentStoryIndex, setCurrentStoryIndex] = useState(0);
   const [progress, setProgress] = useState(0); // For the time lapse/timer
   const [isPaused, setIsPaused] = useState(false);
+  const [isStoryMuted, setIsStoryMuted] = useState(true);
 
   const videoElRef = useRef<HTMLVideoElement | null>(null);
+  
+  // Initialize and sync isStoryMuted state from localStorage and events
+  useEffect(() => {
+    const stored = localStorage.getItem('feedMuted');
+    setIsStoryMuted(stored !== 'false'); // default to true
+
+    const handleSync = () => {
+      const storedVal = localStorage.getItem('feedMuted');
+      setIsStoryMuted(storedVal !== 'false');
+    };
+    window.addEventListener('feedMuteToggle', handleSync);
+    return () => window.removeEventListener('feedMuteToggle', handleSync);
+  }, []);
+
+  // Programmatically update underlying story video muted DOM property
+  useEffect(() => {
+    if (videoElRef.current) {
+      videoElRef.current.muted = isStoryMuted;
+    }
+  }, [isStoryMuted, currentStoryIndex, activeStoryUser]);
+
+  const toggleStoryMute = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const stored = localStorage.getItem('feedMuted');
+    const newVal = stored === 'false' ? 'true' : 'false';
+    localStorage.setItem('feedMuted', newVal);
+    window.dispatchEvent(new Event('feedMuteToggle'));
+  };
   const elapsedMsRef = useRef<number>(0);
   const lastTimeRef = useRef<number | null>(null);
   const requestRef = useRef<number | null>(null);
@@ -402,8 +431,8 @@ export default function StoryBar() {
               </div>
 
               {/* Header */}
-              <div className="absolute top-4 left-0 right-0 px-4 flex items-center justify-between z-10">
-                <div className="flex items-center gap-3">
+              <div className="absolute top-4 left-0 right-0 px-4 flex items-center justify-between z-10 pointer-events-none">
+                <div className="flex items-center gap-3 pointer-events-auto">
                   <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-xs font-bold text-black overflow-hidden">
                     {currentStory.authorAvatarUrl ? (
                       <img src={currentStory.authorAvatarUrl} className="w-full h-full object-cover" />
@@ -414,14 +443,26 @@ export default function StoryBar() {
                   <span className="text-white font-bold text-sm drop-shadow-md">{activeStoryUser}</span>
                 </div>
                 
-                {activeStoryUser === user?.username && (
-                  <button 
-                    onClick={(e) => { e.stopPropagation(); handleDeleteStory(); }}
-                    className="text-white hover:text-red-500 transition-colors pointer-events-auto"
-                  >
-                    <Trash2 className="w-5 h-5" />
-                  </button>
-                )}
+                <div className="flex items-center gap-2 pointer-events-auto">
+                  {/* Speaker Mute/Unmute toggle for video stories */}
+                  {currentStory.mediaType === 'VIDEO' && (
+                    <button 
+                      onClick={toggleStoryMute}
+                      className="text-white hover:text-zinc-300 transition-colors pointer-events-auto p-1"
+                    >
+                      {isStoryMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+                    </button>
+                  )}
+
+                  {activeStoryUser === user?.username && (
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); handleDeleteStory(); }}
+                      className="text-white hover:text-red-500 transition-colors pointer-events-auto"
+                    >
+                      <Trash2 className="w-5 h-5" />
+                    </button>
+                  )}
+                </div>
               </div>
 
               {/* Media */}
@@ -432,6 +473,7 @@ export default function StoryBar() {
                     src={currentStory.mediaUrl} 
                     className="w-full h-full object-cover" 
                     autoPlay 
+                    muted={isStoryMuted}
                     controls={false}
                     onEnded={nextStory}
                     onTimeUpdate={(e) => {

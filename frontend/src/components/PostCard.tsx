@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal } from 'lucide-react';
+import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal, Volume2, VolumeX } from 'lucide-react';
 import axiosInstance from '@/lib/axios';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -38,8 +38,39 @@ export default function PostCard({ post, showDelete = false, onDeleted }: PostCa
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const commentInputRef = useRef<HTMLInputElement>(null);
 
+  const [isFeedMuted, setIsFeedMuted] = useState(true);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
   const { user } = useAuth();
   const isAuthor = user?.username === post.authorUsername;
+
+  // Initialize and sync isFeedMuted state from localStorage and events
+  useEffect(() => {
+    const stored = localStorage.getItem('feedMuted');
+    setIsFeedMuted(stored !== 'false'); // default to true
+
+    const handleSync = () => {
+      const storedVal = localStorage.getItem('feedMuted');
+      setIsFeedMuted(storedVal !== 'false');
+    };
+    window.addEventListener('feedMuteToggle', handleSync);
+    return () => window.removeEventListener('feedMuteToggle', handleSync);
+  }, []);
+
+  // Programmatically update underlying video muted DOM property
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.muted = isFeedMuted;
+    }
+  }, [isFeedMuted]);
+
+  const toggleFeedMute = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const stored = localStorage.getItem('feedMuted');
+    const newVal = stored === 'false' ? 'true' : 'false';
+    localStorage.setItem('feedMuted', newVal);
+    window.dispatchEvent(new Event('feedMuteToggle'));
+  };
 
   useEffect(() => {
     const checkSavedState = async () => {
@@ -236,13 +267,23 @@ export default function PostCard({ post, showDelete = false, onDeleted }: PostCa
         onDoubleClick={handleLike}
       >
         {post.mediaType === 'VIDEO' ? (
-          <video 
-            src={post.mediaUrl} 
-            className="w-full h-full object-cover" 
-            autoPlay 
-            muted 
-            loop 
-          />
+          <div className="relative w-full h-full">
+            <video 
+              ref={videoRef}
+              src={post.mediaUrl} 
+              className="w-full h-full object-cover" 
+              autoPlay 
+              muted={isFeedMuted} 
+              loop 
+              playsInline
+            />
+            <button 
+              onClick={toggleFeedMute}
+              className="absolute bottom-3 right-3 p-2 bg-black/60 hover:bg-black/80 rounded-full text-white backdrop-blur transition-all active:scale-95 z-10 shadow-lg cursor-pointer"
+            >
+              {isFeedMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+            </button>
+          </div>
         ) : (
           <img 
             src={post.mediaUrl || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=60'} 
