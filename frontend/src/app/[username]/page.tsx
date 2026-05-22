@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Sidebar from '@/components/Sidebar';
 import axiosInstance from '@/lib/axios';
-import { Grid, Bookmark, User as UserIcon, Camera, UserPlus, UserCheck, Plus, Trash2, FolderOpen, Heart, MessageCircle, X, Settings } from 'lucide-react';
+import { Grid, Bookmark, User as UserIcon, Camera, UserPlus, UserCheck, Plus, Trash2, FolderOpen, Heart, MessageCircle, X, Settings, Film } from 'lucide-react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/context/AuthContext';
@@ -17,7 +17,7 @@ export default function ProfilePage() {
   const [posts, setPosts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isFollowing, setIsFollowing] = useState(false);
-  const [activeTab, setActiveTab] = useState<'posts' | 'saved'>('posts');
+  const [activeTab, setActiveTab] = useState<'posts' | 'reels' | 'saved'>('posts');
 
   // Saved collections state
   const [collections, setCollections] = useState<any[]>([]);
@@ -26,6 +26,9 @@ export default function ProfilePage() {
   const [showNewCollectionModal, setShowNewCollectionModal] = useState(false);
   const [newCollectionName, setNewCollectionName] = useState('');
   const [isCreating, setIsCreating] = useState(false);
+
+  // Reels state (for own profile tab)
+  const [reels, setReels] = useState<any[]>([]);
 
   // Edit profile state
   const [showEditModal, setShowEditModal] = useState(false);
@@ -69,7 +72,9 @@ export default function ProfilePage() {
         ]);
         setProfile(profileRes.data);
         setEditBio(profileRes.data?.bio || '');
-        setPosts(postsRes.data);
+        const allPosts: any[] = postsRes.data;
+        setPosts(allPosts.filter((p: any) => p.mediaType !== 'VIDEO'));
+        setReels(allPosts.filter((p: any) => p.mediaType === 'VIDEO'));
         setIsFollowing(profileRes.data?.isFollowing || false);
       } catch (err) {
         console.error('Failed to fetch profile', err);
@@ -86,6 +91,28 @@ export default function ProfilePage() {
       fetchCollections();
     }
   }, [activeTab, isOwnProfile]);
+
+  const handleDeletePost = async (postId: string) => {
+    if (!confirm('Delete this post? This cannot be undone.')) return;
+    try {
+      await axiosInstance.delete(`/posts/${postId}`);
+      setPosts(prev => prev.filter(p => p.id !== postId));
+    } catch (err) {
+      console.error('Failed to delete post', err);
+      alert('Failed to delete post.');
+    }
+  };
+
+  const handleDeleteReel = async (reelId: string) => {
+    if (!confirm('Delete this reel? This cannot be undone.')) return;
+    try {
+      await axiosInstance.delete(`/posts/${reelId}`);
+      setReels(prev => prev.filter(r => r.id !== reelId));
+    } catch (err) {
+      console.error('Failed to delete reel', err);
+      alert('Failed to delete reel.');
+    }
+  };
 
   const fetchCollections = async () => {
     try {
@@ -245,7 +272,7 @@ export default function ProfilePage() {
               {/* Stats */}
               <div className="flex justify-center md:justify-start gap-4 sm:gap-8 w-full md:w-auto">
                 <div className="text-center">
-                  <p className="font-black text-black dark:text-white text-lg">{posts.length}</p>
+                  <p className="font-black text-black dark:text-white text-lg">{posts.length + reels.length}</p>
                   <p className="text-zinc-500 dark:text-zinc-400 text-xs">posts</p>
                 </div>
                 <div className="text-center cursor-pointer" onClick={() => fetchFollowList('followers')}>
@@ -275,6 +302,14 @@ export default function ProfilePage() {
               )}
             >
               <Grid className="w-3.5 h-3.5" /> Posts
+            </button>
+            <button
+              onClick={() => setActiveTab('reels')}
+              className={cn('flex items-center gap-2 px-6 py-3 text-xs font-bold uppercase tracking-widest transition-colors border-b-2 -mb-[2px]',
+                activeTab === 'reels' ? 'border-black dark:border-white text-black dark:text-white' : 'border-transparent text-zinc-400 dark:text-zinc-500 hover:text-black dark:hover:text-white'
+              )}
+            >
+              <Film className="w-3.5 h-3.5" /> Reels
             </button>
             {isOwnProfile && (
               <button
@@ -311,6 +346,59 @@ export default function ProfilePage() {
                       <div className="flex items-center gap-1"><Heart className="w-4 h-4 fill-white" />{post.likeCount}</div>
                       <div className="flex items-center gap-1"><MessageCircle className="w-4 h-4 fill-white" />{post.commentCount}</div>
                     </div>
+                    {isOwnProfile && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleDeletePost(post.id); }}
+                        className="absolute top-2 right-2 w-7 h-7 bg-black/60 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600 z-10"
+                        title="Delete post"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </motion.div>
+                ))}
+              </div>
+            )
+          )}
+
+          {/* Reels Grid */}
+          {activeTab === 'reels' && (
+            reels.length === 0 ? (
+              <div className="text-center py-24 bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-100 dark:border-zinc-800">
+                <Film className="w-14 h-14 text-zinc-200 dark:text-zinc-700 mx-auto mb-3" />
+                <p className="font-bold text-zinc-400 dark:text-zinc-500">No Reels Yet</p>
+                {isOwnProfile && (
+                  <Link href="/create" className="mt-4 inline-block px-5 py-2 bg-black dark:bg-white text-white dark:text-black text-sm font-bold rounded-full hover:opacity-80 transition-opacity">
+                    Create Reel
+                  </Link>
+                )}
+              </div>
+            ) : (
+              <div className="grid grid-cols-3 gap-1 md:gap-3">
+                {reels.map((reel) => (
+                  <motion.div
+                    key={reel.id}
+                    whileHover={{ scale: 0.98 }}
+                    className="aspect-square bg-zinc-900 rounded-xl overflow-hidden cursor-pointer border border-zinc-100 dark:border-zinc-800 relative group"
+                  >
+                    <video src={reel.mediaUrl} className="w-full h-full object-cover" muted />
+                    {/* Play icon overlay */}
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                      <Film className="w-5 h-5 text-white/80 drop-shadow" />
+                    </div>
+                    <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4 text-white font-bold text-sm">
+                      <div className="flex items-center gap-1"><Heart className="w-4 h-4 fill-white" />{reel.likeCount}</div>
+                      <div className="flex items-center gap-1"><MessageCircle className="w-4 h-4 fill-white" />{reel.commentCount}</div>
+                    </div>
+                    {isOwnProfile && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleDeleteReel(reel.id); }}
+                        className="absolute top-2 right-2 w-7 h-7 bg-black/60 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600 z-10"
+                        title="Delete reel"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
                   </motion.div>
                 ))}
               </div>

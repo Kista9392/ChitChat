@@ -126,8 +126,10 @@ public class PostService {
 
     // @Transactional ensures that the database connection stays completely open while we map the data
     @Transactional(readOnly = true)
-    public Page<PostResponse> getFeed(Pageable pageable) {
-        Page<Post> postsPage = postRepository.findAllByOrderByCreatedAtDesc(pageable);
+    public Page<PostResponse> getFeed(String userEmail, Pageable pageable) {
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        Page<Post> postsPage = postRepository.findFeedPosts(user, pageable);
         return postsPage.map(this::mapToResponse);
     }
 

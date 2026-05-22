@@ -53,6 +53,7 @@ public class SearchService {
                 .map(user -> new UserResponse(
                         user.getId(),
                         user.getUsername(),
+                        user.getEmail(),
                         user.getBio(),
                         user.getAvatarUrl(),
                         user.getFollowersCount(),
@@ -60,7 +61,8 @@ public class SearchService {
                         user.isShowActivityStatus(),
                         currentUser != null ? followRepository.findByFollowerAndFollowing(currentUser, user).isPresent() : false,
                         user.isPrivateAccount(),
-                        isUserOnline(user.getUsername())
+                        isUserOnline(user.getUsername()),
+                        user.getCreatedAt()
                 ))
                 .collect(Collectors.toList());
     }
@@ -74,6 +76,7 @@ public class SearchService {
                 .map(u -> new UserResponse(
                         u.getId(),
                         u.getUsername(),
+                        u.getEmail(),
                         u.getBio(),
                         u.getAvatarUrl(),
                         u.getFollowersCount(),
@@ -81,7 +84,8 @@ public class SearchService {
                         u.isShowActivityStatus(),
                         false,
                         u.isPrivateAccount(),
-                        isUserOnline(u.getUsername())
+                        isUserOnline(u.getUsername()),
+                        u.getCreatedAt()
                 ))
                 .collect(Collectors.toList());
     }

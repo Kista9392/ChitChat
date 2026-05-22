@@ -20,9 +20,11 @@ interface PostCardProps {
     commentCount: number;
     createdAt: string;
   };
+  showDelete?: boolean; // Only show delete option on Profile page
+  onDeleted?: (postId: string) => void; // Callback when post is deleted
 }
 
-export default function PostCard({ post }: PostCardProps) {
+export default function PostCard({ post, showDelete = false, onDeleted }: PostCardProps) {
   const [isLiked, setIsLiked] = useState(false);
   const [likes, setLikes] = useState(post.likeCount);
   const [showHeartAnim, setShowHeartAnim] = useState(false);
@@ -42,8 +44,9 @@ export default function PostCard({ post }: PostCardProps) {
     if (!confirm('Are you sure you want to delete this post? This action cannot be undone.')) return;
     try {
       await axiosInstance.delete(`/posts/${post.id}`);
-      setIsHidden(true);
       setShowMenu(false);
+      if (onDeleted) onDeleted(post.id);
+      else setIsHidden(true);
     } catch (err) {
       console.error('Failed to delete post', err);
       alert('Failed to delete post. Please try again.');
@@ -153,7 +156,7 @@ export default function PostCard({ post }: PostCardProps) {
           />
           {showMenu && (
             <div className="absolute right-0 mt-2 w-48 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl rounded-2xl border border-zinc-100 dark:border-zinc-800 shadow-xl z-20 py-2 overflow-hidden">
-              {isAuthor ? (
+              {isAuthor && showDelete ? (
                 <button 
                   onClick={handleDeletePost} 
                   className="w-full text-left px-4 py-2 text-sm text-red-500 font-bold hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
@@ -326,7 +329,7 @@ export default function PostCard({ post }: PostCardProps) {
                   disabled={isSubmittingComment || !newComment.trim()}
                   className="absolute right-2 p-2 text-indigo-600 dark:text-indigo-400 disabled:opacity-0 transition-opacity"
                 >
-                  <SendIcon className="w-4.5 h-4.5" />
+                  <Send className="w-4 h-4" />
                 </button>
               </form>
             </motion.div>

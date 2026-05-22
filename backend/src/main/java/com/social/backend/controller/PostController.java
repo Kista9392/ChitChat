@@ -42,10 +42,11 @@ public class PostController {
     @GetMapping
     public ResponseEntity<Page<PostResponse>> getFeed(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "10") int size,
+            Authentication authentication
     ) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<PostResponse> responsePage = postService.getFeed(pageable);
+        Page<PostResponse> responsePage = postService.getFeed(authentication.getName(), pageable);
         return ResponseEntity.ok(responsePage);
     }
 

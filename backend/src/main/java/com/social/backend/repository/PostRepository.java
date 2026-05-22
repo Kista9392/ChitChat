@@ -1,9 +1,12 @@
 package com.social.backend.repository;
 
 import com.social.backend.entity.Post;
+import com.social.backend.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.UUID;
@@ -14,6 +17,10 @@ public interface PostRepository extends JpaRepository<Post, UUID> {
     // Spring Data JPA magic: By naming the method this way, 
     // it automatically writes the SQL: SELECT * FROM posts ORDER BY created_at DESC
     Page<Post> findAllByOrderByCreatedAtDesc(Pageable pageable);
+
+    // Follow-based feed: show only own posts + posts from users the current user follows
+    @Query("SELECT p FROM Post p WHERE p.author = :user OR p.author IN (SELECT f.following FROM Follow f WHERE f.follower = :user) ORDER BY p.createdAt DESC")
+    Page<Post> findFeedPosts(@Param("user") User user, Pageable pageable);
 
     Page<Post> findByContentContainingIgnoreCase(String content, Pageable pageable);
 

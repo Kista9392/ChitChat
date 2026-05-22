@@ -14,6 +14,7 @@ interface User {
   emailNotificationsEnabled?: boolean;
   isPrivateAccount?: boolean;
   bio?: string;
+  createdAt?: string;
 }
 
 interface AuthContextType {

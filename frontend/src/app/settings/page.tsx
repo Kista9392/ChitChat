@@ -47,12 +47,30 @@ export default function SettingsPage() {
   const [reportStatus, setReportStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
   const [userSuggestion, setUserSuggestion] = useState('');
   const [suggestionStatus, setSuggestionStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
+  // Full profile data fetched from API (includes email, createdAt)
+  const [fullProfile, setFullProfile] = useState<{ email: string; createdAt: string } | null>(null);
 
   useEffect(() => {
     if (activeTab === 'more') {
       fetchSuggestions();
     }
   }, [activeTab]);
+
+  // Fetch full profile when user is loaded (for email + createdAt)
+  useEffect(() => {
+    if (user?.username) {
+      axiosInstance.get(`/users/${user.username}`)
+        .then(res => {
+          // The backend now returns email via a separate endpoint; use /auth/me if available
+          // For now, we call the user profile which includes createdAt
+          setFullProfile({
+            email: res.data.email || user?.email || '',
+            createdAt: res.data.createdAt || ''
+          });
+        })
+        .catch(err => console.error('Failed to fetch full profile', err));
+    }
+  }, [user?.username]);
 
   const fetchSuggestions = async () => {
     setIsLoadingSuggestions(true);
@@ -332,39 +350,19 @@ export default function SettingsPage() {
                         <input
                           type="email"
                           className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 text-sm text-zinc-500 dark:text-zinc-400 cursor-not-allowed"
-                          value={user?.email || ''}
+                          value={fullProfile?.email || user?.email || 'Loading...'}
                           disabled
                         />
                       </div>
 
                       <div>
-                        <label className="text-xs font-bold text-zinc-500 dark:text-zinc-400 mb-1 block uppercase">Bio</label>
-                        <textarea
-                          className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl px-4 py-3 text-sm text-black dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10 focus:border-black dark:focus:border-white transition-all"
-                          value={bio}
-                          onChange={(e) => setBio(e.target.value)}
-                          placeholder="Tell us about yourself..."
-                          rows={3}
+                        <label className="text-xs font-bold text-zinc-500 dark:text-zinc-400 mb-1 block uppercase">Member Since</label>
+                        <input
+                          type="text"
+                          className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 text-sm text-zinc-500 dark:text-zinc-400 cursor-not-allowed"
+                          value={fullProfile?.createdAt ? new Date(fullProfile.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Loading...'}
+                          disabled
                         />
-                      </div>
-                      
-                      <button
-                        onClick={handleUpdateBio}
-                        disabled={isUpdatingBio}
-                        className="px-6 py-2.5 bg-black dark:bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-zinc-800 dark:hover:bg-indigo-700 transition-colors disabled:opacity-50"
-                      >
-                        {isUpdatingBio ? 'Saving...' : 'Save Bio'}
-                      </button>
-
-                      <div className="border-t border-zinc-100 dark:border-zinc-800 mt-6 pt-6">
-                        <h3 className="text-sm font-bold text-red-500 mb-2">Danger Zone</h3>
-                        <button 
-                          onClick={handleDeleteAccount}
-                          className="px-5 py-2.5 bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 rounded-xl text-sm font-bold hover:bg-red-100 dark:hover:bg-red-950/30 transition-colors flex items-center gap-2 border border-red-100 dark:border-red-900/30"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                          Delete Account
-                        </button>
                       </div>
                     </div>
                   </motion.div>

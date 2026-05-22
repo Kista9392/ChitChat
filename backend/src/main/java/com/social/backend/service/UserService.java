@@ -152,6 +152,7 @@ public class UserService {
         return new UserResponse(
                 user.getId(),
                 user.getUsername(),
+                user.getEmail(),
                 user.getBio(),
                 user.getAvatarUrl(),
                 user.getFollowersCount(),
@@ -159,7 +160,8 @@ public class UserService {
                 user.isShowActivityStatus(),
                 isFollowing,
                 user.isPrivateAccount(),
-                isUserOnline(user.getUsername()));
+                isUserOnline(user.getUsername()),
+                user.getCreatedAt());
     }
 
     @org.springframework.transaction.annotation.Transactional(readOnly = true)
@@ -170,6 +172,7 @@ public class UserService {
         return new UserResponse(
                 user.getId(),
                 user.getUsername(),
+                user.getEmail(),
                 user.getBio(),
                 user.getAvatarUrl(),
                 user.getFollowersCount(),
@@ -177,7 +180,8 @@ public class UserService {
                 user.isShowActivityStatus(),
                 false,
                 user.isPrivateAccount(),
-                isUserOnline(user.getUsername()));
+                isUserOnline(user.getUsername()),
+                user.getCreatedAt());
     }
 
     @org.springframework.transaction.annotation.Transactional
@@ -212,9 +216,9 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
         user.setBio(bio);
         userRepository.save(user);
-        return new UserResponse(user.getId(), user.getUsername(), user.getBio(), user.getAvatarUrl(),
+        return new UserResponse(user.getId(), user.getUsername(), user.getEmail(), user.getBio(), user.getAvatarUrl(),
                 user.getFollowersCount(), user.getFollowingCount(), user.isShowActivityStatus(), false,
-                user.isPrivateAccount(), true);
+                user.isPrivateAccount(), true, user.getCreatedAt());
     }
 
     @org.springframework.transaction.annotation.Transactional
@@ -242,9 +246,9 @@ public class UserService {
         String avatarUrl = filename.startsWith("http") ? filename : (apiUrl + "/uploads/" + filename);
         user.setAvatarUrl(avatarUrl);
         userRepository.save(user);
-        return new UserResponse(user.getId(), user.getUsername(), user.getBio(), user.getAvatarUrl(),
+        return new UserResponse(user.getId(), user.getUsername(), user.getEmail(), user.getBio(), user.getAvatarUrl(),
                 user.getFollowersCount(), user.getFollowingCount(), user.isShowActivityStatus(), false,
-                user.isPrivateAccount(), true);
+                user.isPrivateAccount(), true, user.getCreatedAt());
     }
 
     @org.springframework.transaction.annotation.Transactional
@@ -330,6 +334,7 @@ public class UserService {
                 .map(u -> new UserResponse(
                         u.getId(),
                         u.getUsername(),
+                        u.getEmail(),
                         u.getBio(),
                         u.getAvatarUrl(),
                         u.getFollowersCount(),
@@ -337,7 +342,8 @@ public class UserService {
                         u.isShowActivityStatus(),
                         false,
                         u.isPrivateAccount(),
-                        isUserOnline(u.getUsername())))
+                        isUserOnline(u.getUsername()),
+                        u.getCreatedAt()))
                 .toList();
     }
 
@@ -365,6 +371,7 @@ public class UserService {
                 .map(u -> new UserResponse(
                         u.getId(),
                         u.getUsername(),
+                        u.getEmail(),
                         u.getBio(),
                         u.getAvatarUrl(),
                         u.getFollowersCount(),
@@ -372,7 +379,8 @@ public class UserService {
                         u.isShowActivityStatus(),
                         false,
                         u.isPrivateAccount(),
-                        isUserOnline(u.getUsername())))
+                        isUserOnline(u.getUsername()),
+                        u.getCreatedAt()))
                 .toList();
     }
 
@@ -400,6 +408,7 @@ public class UserService {
                 .map(u -> new UserResponse(
                         u.getId(),
                         u.getUsername(),
+                        u.getEmail(),
                         u.getBio(),
                         u.getAvatarUrl(),
                         u.getFollowersCount(),
@@ -407,7 +416,8 @@ public class UserService {
                         u.isShowActivityStatus(),
                         false,
                         u.isPrivateAccount(),
-                        isUserOnline(u.getUsername())))
+                        isUserOnline(u.getUsername()),
+                        u.getCreatedAt()))
                 .toList();
     }
 }
