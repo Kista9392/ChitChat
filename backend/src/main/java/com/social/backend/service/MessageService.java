@@ -22,16 +22,18 @@ public class MessageService {
     private final FollowRepository followRepository;
     private final NotificationService notificationService;
     private final FileStorageService fileStorageService;
+    private final org.springframework.data.redis.core.StringRedisTemplate redisTemplate;
 
     @org.springframework.beans.factory.annotation.Value("${app.api-url:http://localhost:8080}")
     private String apiUrl;
 
-    public MessageService(MessageRepository messageRepository, UserRepository userRepository, FollowRepository followRepository, NotificationService notificationService, FileStorageService fileStorageService) {
+    public MessageService(MessageRepository messageRepository, UserRepository userRepository, FollowRepository followRepository, NotificationService notificationService, FileStorageService fileStorageService, org.springframework.data.redis.core.StringRedisTemplate redisTemplate) {
         this.messageRepository = messageRepository;
         this.userRepository = userRepository;
         this.followRepository = followRepository;
         this.notificationService = notificationService;
         this.fileStorageService = fileStorageService;
+        this.redisTemplate = redisTemplate;
     }
 
     @Transactional
@@ -84,8 +86,9 @@ public class MessageService {
                 .orElseThrow(() -> new RuntimeException("Receiver not found"));
 
         boolean isFollowing = followRepository.findByFollowerAndFollowing(sender, receiver).isPresent();
-        if (!isFollowing) {
-            throw new RuntimeException("You can only message people you follow!");
+        boolean isFollowedBy = followRepository.findByFollowerAndFollowing(receiver, sender).isPresent();
+        if (!isFollowing && !isFollowedBy) {
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.BAD_REQUEST, "You can only message people who follow you or you follow them!");
         }
 
         String filename = fileStorageService.save(file);
@@ -117,8 +120,9 @@ public class MessageService {
                 .orElseThrow(() -> new RuntimeException("Receiver not found"));
 
         boolean isFollowing = followRepository.findByFollowerAndFollowing(sender, receiver).isPresent();
-        if (!isFollowing) {
-            throw new RuntimeException("You can only message people you follow!");
+        boolean isFollowedBy = followRepository.findByFollowerAndFollowing(receiver, sender).isPresent();
+        if (!isFollowing && !isFollowedBy) {
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.BAD_REQUEST, "You can only message people who follow you or you follow them!");
         }
 
         String filename = fileStorageService.save(file);
@@ -175,5 +179,37 @@ public class MessageService {
             m.setReadAt(java.time.LocalDateTime.now());
         }
         messageRepository.saveAll(unreadMessages);
+    }
+
+    @Transactional(readOnly = true)
+    public java.util.List<com.social.backend.dto.UserResponse> getActiveChatUsers(String email) {
+        User currentUser = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        java.util.List<User> activeUsers = messageRepository.findActiveChatUsers(currentUser);
+
+        return activeUsers.stream()
+                .map(u -> new com.social.backend.dto.UserResponse(
+                        u.getId(),
+                        u.getUsername(),
+                        u.getEmail(),
+                        u.getBio(),
+                        u.getAvatarUrl(),
+                        u.getFollowersCount(),
+                        u.getFollowingCount(),
+                        u.isShowActivityStatus(),
+                        followRepository.findByFollowerAndFollowing(currentUser, u).isPresent(),
+                        u.isPrivateAccount(),
+                        Boolean.TRUE.equals(redisTemplate.hasKey("online:" + u.getUsername())),
+                        u.getCreatedAt()
+                ))
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public long getUnreadCount(String email) {
+        User receiver = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return messageRepository.countByReceiverAndReadAtIsNull(receiver);
     }
 }

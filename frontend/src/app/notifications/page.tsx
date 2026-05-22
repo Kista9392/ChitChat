@@ -10,9 +10,11 @@ import SockJS from 'sockjs-client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export default function NotificationsPage() {
   const { user } = useAuth();
+  const router = useRouter();
   const [notifications, setNotifications] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const stompClient = useRef<Client | null>(null);
@@ -76,14 +78,42 @@ export default function NotificationsPage() {
     }
   };
 
-  const formatTime = (dateStr: string) => {
-    const date = new Date(dateStr);
+  const formatTime = (dateInput: any) => {
+    if (!dateInput) return 'some time ago';
+    let date: Date;
+    if (Array.isArray(dateInput)) {
+      const [year, month, day, hour = 0, minute = 0, second = 0] = dateInput;
+      date = new Date(year, month - 1, day, hour, minute, second);
+    } else {
+      date = new Date(dateInput);
+    }
+    if (isNaN(date.getTime())) return 'some time ago';
     const now = new Date();
     const diff = Math.floor((now.getTime() - date.getTime()) / 1000);
+    if (diff < 0) return 'just now';
     if (diff < 60) return 'just now';
     if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
     if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
     return `${Math.floor(diff / 86400)}d ago`;
+  };
+
+  const handleNotificationClick = async (n: any) => {
+    if (!n.read) {
+      try {
+        await axiosInstance.post(`/notifications/${n.id}/read`);
+        setNotifications(prev => prev.map(notif => notif.id === n.id ? { ...notif, read: true } : notif));
+      } catch (err) {
+        console.error('Failed to mark notification as read', err);
+      }
+    }
+
+    if (n.type === 'MESSAGE') {
+      router.push(`/messages?user=${n.senderUsername}`);
+    } else if (n.type === 'FOLLOW') {
+      router.push(`/${n.senderUsername}`);
+    } else {
+      router.push(`/`);
+    }
   };
 
   return (
@@ -124,8 +154,9 @@ export default function NotificationsPage() {
                     initial={{ opacity: 0, y: -8 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.2, delay: i * 0.03 }}
+                    onClick={() => handleNotificationClick(n)}
                     className={cn(
-                      'flex items-center gap-4 p-4 rounded-2xl border transition-colors',
+                      'flex items-center gap-4 p-4 rounded-2xl border cursor-pointer hover:scale-[1.01] active:scale-[0.99] transition-all duration-200',
                       n.read
                         ? 'bg-white dark:bg-zinc-900 border-zinc-100 dark:border-zinc-800 hover:border-zinc-200 dark:hover:border-zinc-700'
                         : 'bg-indigo-50/30 dark:bg-indigo-950/20 border-indigo-100 dark:border-indigo-900/50 hover:border-indigo-200 dark:hover:border-indigo-800'
@@ -143,8 +174,8 @@ export default function NotificationsPage() {
 
                     <div className="flex-1 min-w-0">
                       <p className="text-sm text-black dark:text-white leading-snug">
-                        <Link href={`/${n.senderUsername}`} className="font-bold hover:underline text-black dark:text-white">{n.senderUsername}</Link>
-                        {' '}{n.content?.replace(n.senderUsername, '').trim()}
+                        <span className="font-bold text-black dark:text-white">{n.senderUsername}</span>
+                        {' '}{(n.content || '').replace(n.senderUsername || '', '').trim()}
                       </p>
                       <p className="text-[11px] text-zinc-400 dark:text-zinc-500 mt-0.5">{formatTime(n.createdAt)}</p>
                     </div>

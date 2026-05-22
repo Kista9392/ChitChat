@@ -70,14 +70,25 @@ function MessagesPageInner() {
     selectedUserRef.current = selectedUser;
   }, [selectedUser]);
 
-  // Fetch contacts (users you follow)
+  // Fetch contacts (users you follow + active conversations)
   useEffect(() => {
     const fetchContacts = async () => {
       if (!user?.username) return;
       try {
-        const res = await axiosInstance.get(`/users/${user.username}/following`);
-        setContacts(res.data);
-        setFilteredContacts(res.data);
+        const [followingRes, activeRes] = await Promise.all([
+          axiosInstance.get(`/users/${user.username}/following`),
+          axiosInstance.get('/messages/active')
+        ]);
+
+        const merged = [...followingRes.data];
+        activeRes.data.forEach((activeUser: any) => {
+          if (!merged.find(u => u.username === activeUser.username)) {
+            merged.push(activeUser);
+          }
+        });
+
+        setContacts(merged);
+        setFilteredContacts(merged);
       } catch (err) {
         console.error('Failed to fetch contacts', err);
       }
@@ -90,8 +101,19 @@ function MessagesPageInner() {
     if (!user?.username) return;
     const pollContacts = async () => {
       try {
-        const res = await axiosInstance.get(`/users/${user.username}/following`);
-        setContacts(res.data);
+        const [followingRes, activeRes] = await Promise.all([
+          axiosInstance.get(`/users/${user.username}/following`),
+          axiosInstance.get('/messages/active')
+        ]);
+
+        const merged = [...followingRes.data];
+        activeRes.data.forEach((activeUser: any) => {
+          if (!merged.find(u => u.username === activeUser.username)) {
+            merged.push(activeUser);
+          }
+        });
+
+        setContacts(merged);
       } catch (err) {
         console.error('Failed to poll online status', err);
       }
@@ -280,8 +302,16 @@ function MessagesPageInner() {
     }
   };
 
-  const formatTime = (dateStr: string) => {
-    const date = new Date(dateStr);
+  const formatTime = (dateInput: any) => {
+    if (!dateInput) return '';
+    let date: Date;
+    if (Array.isArray(dateInput)) {
+      const [year, month, day, hour = 0, minute = 0, second = 0] = dateInput;
+      date = new Date(year, month - 1, day, hour, minute, second);
+    } else {
+      date = new Date(dateInput);
+    }
+    if (isNaN(date.getTime())) return '';
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 

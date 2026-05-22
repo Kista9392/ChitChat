@@ -59,6 +59,10 @@ public class UserService {
         this.commentRepository = commentRepository;
     }
 
+    public String getUsernameByEmail(String email) {
+        return userRepository.findByEmail(email).map(User::getUsername).orElse(null);
+    }
+
     public User registerUser(String username, String email, String rawPassword, String phoneNumber) {
         if (userRepository.findByEmail(email).isPresent()) {
             throw new com.social.backend.exception.UserAlreadyExistsException("Email is already taken!");
@@ -318,32 +322,60 @@ public class UserService {
     }
 
     @org.springframework.transaction.annotation.Transactional(readOnly = true)
-    public List<UserResponse> getSuggestions(String email) {
+    public List<com.social.backend.dto.RecommendationResponse> getSuggestions(String email) {
         User currentUser = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         List<User> allUsers = userRepository.findAll();
-        List<User> following = followRepository.findByFollower(currentUser).stream()
+        List<User> currentUserFollowing = followRepository.findByFollower(currentUser).stream()
                 .map(com.social.backend.entity.Follow::getFollowing)
                 .toList();
 
         return allUsers.stream()
                 .filter(u -> !u.equals(currentUser))
-                .filter(u -> !following.contains(u))
+                .filter(u -> !currentUserFollowing.contains(u))
+                .map(u -> {
+                    List<User> uFollowers = followRepository.findByFollowing(u).stream()
+                            .map(com.social.backend.entity.Follow::getFollower)
+                            .toList();
+
+                    List<User> mutuals = uFollowers.stream()
+                            .filter(currentUserFollowing::contains)
+                            .toList();
+
+                    String reason = "Suggested for you";
+                    if (!mutuals.isEmpty()) {
+                        if (mutuals.size() == 1) {
+                            reason = "Followed by " + mutuals.get(0).getUsername();
+                        } else {
+                            reason = "Followed by " + mutuals.get(0).getUsername() + " + " + (mutuals.size() - 1) + " others";
+                        }
+                    } else if (u.getFollowersCount() >= 5) {
+                        reason = "Popular";
+                    }
+
+                    return new com.social.backend.dto.RecommendationResponse(
+                            u.getId(),
+                            u.getUsername(),
+                            u.getAvatarUrl(),
+                            reason,
+                            false
+                    );
+                })
+                .sorted((r1, r2) -> {
+                    boolean r1Mutual = r1.reason().startsWith("Followed by");
+                    boolean r2Mutual = r2.reason().startsWith("Followed by");
+                    if (r1Mutual && !r2Mutual) return -1;
+                    if (!r1Mutual && r2Mutual) return 1;
+
+                    boolean r1Popular = r1.reason().equals("Popular");
+                    boolean r2Popular = r2.reason().equals("Popular");
+                    if (r1Popular && !r2Popular) return -1;
+                    if (!r1Popular && r2Popular) return 1;
+
+                    return 0;
+                })
                 .limit(5)
-                .map(u -> new UserResponse(
-                        u.getId(),
-                        u.getUsername(),
-                        u.getEmail(),
-                        u.getBio(),
-                        u.getAvatarUrl(),
-                        u.getFollowersCount(),
-                        u.getFollowingCount(),
-                        u.isShowActivityStatus(),
-                        false,
-                        u.isPrivateAccount(),
-                        isUserOnline(u.getUsername()),
-                        u.getCreatedAt()))
                 .toList();
     }
 

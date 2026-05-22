@@ -1,4 +1,7 @@
 spring:
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
   servlet:
     multipart:
       max-file-size: 250MB

@@ -18,8 +18,11 @@ public interface PostRepository extends JpaRepository<Post, UUID> {
     // it automatically writes the SQL: SELECT * FROM posts ORDER BY created_at DESC
     Page<Post> findAllByOrderByCreatedAtDesc(Pageable pageable);
 
-    // Follow-based feed: show only own posts + posts from users the current user follows
-    @Query("SELECT p FROM Post p WHERE p.author = :user OR p.author IN (SELECT f.following FROM Follow f WHERE f.follower = :user) ORDER BY p.createdAt DESC")
+    // Follow-based feed: show own posts + posts from users the current user follows + mutual connections' posts
+    @Query("SELECT p FROM Post p WHERE p.author = :user " +
+           "OR p.author IN (SELECT f.following FROM Follow f WHERE f.follower = :user) " +
+           "OR p.author IN (SELECT f2.following FROM Follow f2 WHERE f2.follower IN (SELECT f1.following FROM Follow f1 WHERE f1.follower = :user)) " +
+           "ORDER BY p.createdAt DESC")
     Page<Post> findFeedPosts(@Param("user") User user, Pageable pageable);
 
     Page<Post> findByContentContainingIgnoreCase(String content, Pageable pageable);

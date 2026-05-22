@@ -23,4 +23,9 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
     Page<Message> findConversation(@Param("userA") User userA, @Param("userB") User userB, Pageable pageable);
 
     java.util.List<Message> findBySenderAndReceiverAndReadAtIsNull(User sender, User receiver);
+
+    long countByReceiverAndReadAtIsNull(User receiver);
+
+    @Query("SELECT DISTINCT CASE WHEN m.sender = :user THEN m.receiver ELSE m.sender END FROM Message m WHERE m.sender = :user OR m.receiver = :user")
+    java.util.List<User> findActiveChatUsers(@Param("user") User user);
 }

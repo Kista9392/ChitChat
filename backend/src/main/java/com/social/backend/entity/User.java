@@ -48,10 +48,10 @@ public class User {
     @Enumerated(EnumType.STRING)
     private Role role = Role.USER;
 
-    @Formula("(select count(*) from follows f where f.following_id = id)")
+    @Formula("(select count(*) from follows f where f.following_id = {alias}.id)")
     private int followersCount;
 
-    @Formula("(select count(*) from follows f where f.follower_id = id)")
+    @Formula("(select count(*) from follows f where f.follower_id = {alias}.id)")
     private int followingCount;
 
     @CreationTimestamp

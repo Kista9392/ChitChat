@@ -5,9 +5,9 @@ import java.util.UUID;
 
 public record NotificationResponse(
         UUID id,
-        String actorUsername,
+        String senderUsername,
         String type,
-        String message,
-        boolean isRead,
+        String content,
+        boolean read,
         LocalDateTime createdAt
 ) {}

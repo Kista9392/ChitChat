@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Sidebar from '@/components/Sidebar';
+import PostCard from '@/components/PostCard';
 import axiosInstance from '@/lib/axios';
 import { Grid, Bookmark, User as UserIcon, Camera, UserPlus, UserCheck, Plus, Trash2, FolderOpen, Heart, MessageCircle, X, Settings, Film } from 'lucide-react';
 import Link from 'next/link';
@@ -29,6 +30,7 @@ export default function ProfilePage() {
 
   // Reels state (for own profile tab)
   const [reels, setReels] = useState<any[]>([]);
+  const [selectedPost, setSelectedPost] = useState<any | null>(null);
 
   // Edit profile state
   const [showEditModal, setShowEditModal] = useState(false);
@@ -156,10 +158,10 @@ export default function ProfilePage() {
       const response = await axiosInstance.post(`/users/${username}/follow`);
       if (response.data.includes('Unfollowed')) {
         setIsFollowing(false);
-        setProfile((prev: any) => ({ ...prev, followerCount: prev.followerCount - 1 }));
+        setProfile((prev: any) => ({ ...prev, followersCount: prev.followersCount - 1 }));
       } else {
         setIsFollowing(true);
-        setProfile((prev: any) => ({ ...prev, followerCount: prev.followerCount + 1 }));
+        setProfile((prev: any) => ({ ...prev, followersCount: prev.followersCount + 1 }));
       }
     } catch (err) { console.error('Follow failed', err); }
   };
@@ -276,7 +278,7 @@ export default function ProfilePage() {
                   <p className="text-zinc-500 dark:text-zinc-400 text-xs">posts</p>
                 </div>
                 <div className="text-center cursor-pointer" onClick={() => fetchFollowList('followers')}>
-                  <p className="font-black text-black dark:text-white text-lg">{profile?.followerCount || 0}</p>
+                  <p className="font-black text-black dark:text-white text-lg">{profile?.followersCount || 0}</p>
                   <p className="text-zinc-500 dark:text-zinc-400 text-xs">followers</p>
                 </div>
                 <div className="text-center cursor-pointer" onClick={() => fetchFollowList('following')}>
@@ -336,6 +338,7 @@ export default function ProfilePage() {
                   <motion.div
                     key={post.id}
                     whileHover={{ scale: 0.98 }}
+                    onClick={() => setSelectedPost(post)}
                     className="aspect-square bg-zinc-100 rounded-xl overflow-hidden cursor-pointer border border-zinc-100 relative group"
                   >
                     {post.mediaType === 'VIDEO'
@@ -379,6 +382,7 @@ export default function ProfilePage() {
                   <motion.div
                     key={reel.id}
                     whileHover={{ scale: 0.98 }}
+                    onClick={() => setSelectedPost(reel)}
                     className="aspect-square bg-zinc-900 rounded-xl overflow-hidden cursor-pointer border border-zinc-100 dark:border-zinc-800 relative group"
                   >
                     <video src={reel.mediaUrl} className="w-full h-full object-cover" muted />
@@ -480,6 +484,7 @@ export default function ProfilePage() {
                     <div className="grid grid-cols-3 gap-1 md:gap-3">
                       {collectionPosts.map(post => (
                         <motion.div key={post.id} whileHover={{ scale: 0.98 }}
+                          onClick={() => setSelectedPost(post)}
                           className="aspect-square bg-zinc-100 rounded-xl overflow-hidden border border-zinc-100 relative group cursor-pointer">
                           {post.mediaType === 'VIDEO'
                             ? <video src={post.mediaUrl} className="w-full h-full object-cover" />
@@ -488,6 +493,23 @@ export default function ProfilePage() {
                           <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4 text-white font-bold text-sm">
                             <div className="flex items-center gap-1"><Heart className="w-4 h-4 fill-white" />{post.likeCount}</div>
                             <div className="flex items-center gap-1"><MessageCircle className="w-4 h-4 fill-white" />{post.commentCount}</div>
+                            {isOwnProfile && (
+                              <button
+                                onClick={async (e) => {
+                                  e.stopPropagation();
+                                  try {
+                                    await axiosInstance.post(`/collections/save/${post.id}?collectionId=${selectedCollection.id}`);
+                                    setCollectionPosts(prev => prev.filter(p => p.id !== post.id));
+                                  } catch (err) {
+                                    console.error('Failed to unsave post', err);
+                                  }
+                                }}
+                                className="absolute top-2 right-2 w-7 h-7 bg-black/60 text-white rounded-full flex items-center justify-center hover:bg-rose-600 transition-colors z-10"
+                                title="Unsave"
+                              >
+                                <Bookmark className="w-3.5 h-3.5 fill-white text-white" />
+                              </button>
+                            )}
                           </div>
                         </motion.div>
                       ))}
@@ -670,6 +692,48 @@ export default function ProfilePage() {
                   ))}
                 </div>
               )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Selected Post Modal Viewer */}
+      <AnimatePresence>
+        {selectedPost && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4"
+            onClick={() => setSelectedPost(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 20 }}
+              transition={{ type: "spring", duration: 0.4 }}
+              className="w-full max-w-lg bg-white dark:bg-zinc-900 border dark:border-zinc-800 rounded-3xl p-4 shadow-2xl overflow-y-auto max-h-[90vh] no-scrollbar"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex justify-between items-center mb-3 px-1">
+                <span className="font-bold text-xs uppercase tracking-wider text-zinc-400">Post Detail</span>
+                <button
+                  onClick={() => setSelectedPost(null)}
+                  className="p-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg text-zinc-400 hover:text-black dark:hover:text-white transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <PostCard
+                post={selectedPost}
+                showDelete={isOwnProfile}
+                onDeleted={(deletedId) => {
+                  setSelectedPost(null);
+                  setPosts(prev => prev.filter(p => p.id !== deletedId));
+                  setReels(prev => prev.filter(p => p.id !== deletedId));
+                  setCollectionPosts(prev => prev.filter(p => p.id !== deletedId));
+                }}
+              />
             </motion.div>
           </motion.div>
         )}

@@ -35,4 +35,10 @@ public class NotificationController {
         notificationService.markAllAsRead(authentication.getName());
         return ResponseEntity.ok().build();
     }
+
+    @PostMapping("/{id}/read")
+    public ResponseEntity<Void> markAsRead(@PathVariable java.util.UUID id, Authentication authentication) {
+        notificationService.markAsRead(id, authentication.getName());
+        return ResponseEntity.ok().build();
+    }
 }

@@ -30,7 +30,7 @@ public class Comment {
     @JoinColumn(name = "parent_id")
     private Comment parent;
 
-    @Formula("(select count(*) from comment_likes cl where cl.comment_id = id)")
+    @Formula("(select count(*) from comment_likes cl where cl.comment_id = {alias}.id)")
     private int likeCount;
 
     @CreationTimestamp

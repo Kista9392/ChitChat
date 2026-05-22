@@ -33,10 +33,10 @@ public class Post {
     // 🏆 SENIOR ENGINEER TRICK: @Formula
     // Instead of doing complex math in Java, we tell Hibernate to dynamically run this exact 
     // SQL subquery inside the database every single time it fetches a Post. This is insanely fast!
-    @Formula("(select count(*) from post_likes pl where pl.post_id = id)")
+    @Formula("(select count(*) from post_likes pl where pl.post_id = {alias}.id)")
     private int likeCount;
 
-    @Formula("(select count(*) from comments c where c.post_id = id)")
+    @Formula("(select count(*) from comments c where c.post_id = {alias}.id)")
     private int commentCount;
 
     @Column(name = "view_count", nullable = false, columnDefinition = "integer default 0")

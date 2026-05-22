@@ -80,6 +80,11 @@ public class MessageController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/active")
+    public ResponseEntity<java.util.List<com.social.backend.dto.UserResponse>> getActiveChatUsers(Authentication authentication) {
+        return ResponseEntity.ok(messageService.getActiveChatUsers(authentication.getName()));
+    }
+
     // Notice we fetch 50 messages per page for chats, instead of 10!
     @GetMapping("/{otherUsername}")
     public ResponseEntity<Page<MessageResponse>> getConversation(
@@ -97,5 +102,10 @@ public class MessageController {
     public ResponseEntity<?> markAsRead(@PathVariable String senderUsername, Authentication authentication) {
         messageService.markMessagesAsRead(authentication.getName(), senderUsername);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/unread/count")
+    public ResponseEntity<Long> getUnreadCount(Authentication authentication) {
+        return ResponseEntity.ok(messageService.getUnreadCount(authentication.getName()));
     }
 }

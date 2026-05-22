@@ -84,4 +84,16 @@ public class NotificationService {
         unread.forEach(n -> n.setRead(true));
         notificationRepository.saveAll(unread);
     }
+
+    @Transactional
+    public void markAsRead(java.util.UUID notificationId, String userEmail) {
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        Notification notification = notificationRepository.findById(notificationId)
+                .orElseThrow(() -> new RuntimeException("Notification not found"));
+        if (notification.getRecipient().getId().equals(user.getId())) {
+            notification.setRead(true);
+            notificationRepository.save(notification);
+        }
+    }
 }

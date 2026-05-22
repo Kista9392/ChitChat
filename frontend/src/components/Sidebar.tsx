@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { 
@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/context/AuthContext';
+import axiosInstance from '@/lib/axios';
 
 const navItems = [
   { icon: Home, label: 'Home', href: '/', color: 'text-indigo-500' },
@@ -23,9 +24,26 @@ const navItems = [
 export default function Sidebar() {
   const pathname = usePathname();
   const { user, logout } = useAuth();
+  const [unreadCount, setUnreadCount] = useState<number>(0);
 
+  useEffect(() => {
+    if (!user) return;
 
+    const fetchUnreadCount = async () => {
+      try {
+        const res = await axiosInstance.get('/messages/unread/count');
+        setUnreadCount(Number(res.data) || 0);
+      } catch (err) {
+        console.error('Failed to fetch unread messages count', err);
+      }
+    };
 
+    fetchUnreadCount();
+
+    // Poll every 5 seconds to keep unread messages count completely in sync
+    const interval = setInterval(fetchUnreadCount, 5000);
+    return () => clearInterval(interval);
+  }, [user]);
 
   return (
     <>
@@ -53,12 +71,26 @@ export default function Sidebar() {
                   isActive ? "bg-indigo-50/70 dark:bg-indigo-900/30 font-bold text-indigo-600 dark:text-indigo-400" : "text-zinc-500 dark:text-zinc-400 hover:text-indigo-600 dark:hover:text-indigo-400"
                 )}
               >
-                <item.icon className={cn(
-                  "w-6 h-6 transition-all duration-300 shrink-0",
-                  isActive ? "scale-110" : "opacity-70 group-hover:opacity-100 group-hover:scale-110",
-                  item.color
-                )} />
-                <span className="hidden xl:block text-base tracking-tight">{item.label}</span>
+                <div className="relative shrink-0">
+                  <item.icon className={cn(
+                    "w-6 h-6 transition-all duration-300",
+                    isActive ? "scale-110" : "opacity-70 group-hover:opacity-100 group-hover:scale-110",
+                    item.color
+                  )} />
+                  {item.label === 'Messages' && unreadCount > 0 && (
+                    <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 bg-rose-500 text-[10px] font-bold text-white rounded-full flex items-center justify-center border-2 border-white dark:border-zinc-900 animate-bounce">
+                      {unreadCount}
+                    </span>
+                  )}
+                </div>
+                <span className="hidden xl:flex items-center gap-2 text-base tracking-tight">
+                  {item.label}
+                  {item.label === 'Messages' && unreadCount > 0 && (
+                    <span className="px-2 py-0.5 text-xs font-bold bg-rose-500/10 text-rose-500 rounded-full border border-rose-500/20">
+                      {unreadCount}
+                    </span>
+                  )}
+                </span>
               </Link>
             );
           })}
@@ -119,13 +151,20 @@ export default function Sidebar() {
               title={item.label}
               className="relative p-2.5 rounded-full transition-all duration-300 hover:bg-black/5 dark:hover:bg-white/5 active:scale-95"
             >
-              <item.icon className={cn(
-                "w-6 h-6 transition-all duration-300",
-                isActive ? "scale-115 stroke-[2.5px]" : "opacity-60",
-                item.color
-              )} />
+              <div className="relative">
+                <item.icon className={cn(
+                  "w-6 h-6 transition-all duration-300",
+                  isActive ? "scale-115 stroke-[2.5px]" : "opacity-60",
+                  item.color
+                )} />
+                {item.label === 'Messages' && unreadCount > 0 && (
+                  <span className="absolute -top-2 -right-2 min-w-[16px] h-[16px] px-1 bg-rose-500 text-[9px] font-bold text-white rounded-full flex items-center justify-center border-2 border-white dark:border-zinc-950 animate-bounce">
+                    {unreadCount}
+                  </span>
+                )}
+              </div>
               {isActive && (
-                <span className="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-current rounded-full animate-pulse opacity-85" style={{ color: 'inherit' }} />
+                <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-current rounded-full animate-pulse opacity-85" style={{ color: 'inherit' }} />
               )}
             </Link>
           );

@@ -95,17 +95,19 @@ public class UserController {
     }
 
     @GetMapping("/suggestions")
-    public ResponseEntity<java.util.List<UserResponse>> getSuggestions(Authentication authentication) {
+    public ResponseEntity<java.util.List<com.social.backend.dto.RecommendationResponse>> getSuggestions(Authentication authentication) {
         return ResponseEntity.ok(userService.getSuggestions(authentication.getName()));
     }
 
     @GetMapping("/{username}/followers")
     public ResponseEntity<java.util.List<UserResponse>> getFollowers(@PathVariable String username, org.springframework.security.core.Authentication authentication) {
-        return ResponseEntity.ok(userService.getFollowers(username, authentication.getName()));
+        String targetUsername = "me".equals(username) && authentication != null ? userService.getUsernameByEmail(authentication.getName()) : username;
+        return ResponseEntity.ok(userService.getFollowers(targetUsername, authentication.getName()));
     }
 
     @GetMapping("/{username}/following")
     public ResponseEntity<java.util.List<UserResponse>> getFollowing(@PathVariable String username, org.springframework.security.core.Authentication authentication) {
-        return ResponseEntity.ok(userService.getFollowing(username, authentication.getName()));
+        String targetUsername = "me".equals(username) && authentication != null ? userService.getUsernameByEmail(authentication.getName()) : username;
+        return ResponseEntity.ok(userService.getFollowing(targetUsername, authentication.getName()));
     }
 }
