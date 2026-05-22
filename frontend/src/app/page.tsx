@@ -7,6 +7,8 @@ import Sidebar from '@/components/Sidebar';
 import StoryBar from '@/components/StoryBar';
 import PostCard from '@/components/PostCard';
 import axiosInstance from '@/lib/axios';
+import { PlusSquare, Heart } from 'lucide-react';
+import Link from 'next/link';
 
 export default function HomePage() {
   const { user, isLoading } = useAuth();
@@ -52,10 +54,22 @@ export default function HomePage() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-transparent">
+    <div className="min-h-screen bg-transparent select-none">
       <Sidebar />
-      <main className="pl-0 md:pl-20 xl:pl-64 pb-16 md:pb-0 min-h-screen bg-gradient-to-br from-rose-50/50 via-zinc-50 to-indigo-50/50 dark:bg-none">
-        <div className="max-w-4xl mx-auto p-4 md:p-8">
+      
+      {/* Mobile Sticky Header */}
+      <div className="md:hidden fixed top-0 left-0 right-0 pt-[env(safe-area-inset-top,0px)] h-[calc(3.5rem+env(safe-area-inset-top,0px))] glass-dock border-b border-zinc-100/50 dark:border-zinc-800/50 flex items-center justify-between px-4 z-40 shadow-sm">
+        <Link href="/create" className="p-2 text-zinc-700 dark:text-zinc-300 hover:text-indigo-600 transition-colors duration-200" title="Create Post">
+          <PlusSquare className="w-6 h-6" />
+        </Link>
+        <span className="font-black text-xl tracking-tighter italic bg-gradient-to-r from-rose-500 to-indigo-600 text-transparent bg-clip-text">ChitChat</span>
+        <Link href="/notifications" className="p-2 text-zinc-700 dark:text-zinc-300 hover:text-indigo-600 transition-colors duration-200" title="Notifications">
+          <Heart className="w-6 h-6" />
+        </Link>
+      </div>
+
+      <main className="pl-0 md:pl-20 xl:pl-64 pt-[calc(4rem+env(safe-area-inset-top,0px))] md:pt-0 pb-[calc(7.5rem+env(safe-area-inset-bottom,0px))] md:pb-8 min-h-screen bg-transparent transition-all duration-300">
+        <div className="max-w-4xl mx-auto px-4 py-6 md:p-8">
           <div className="flex flex-col gap-6">
             
             <StoryBar />
@@ -63,15 +77,15 @@ export default function HomePage() {
             <div className="max-w-lg mx-auto w-full space-y-6">
               {isFetchingPosts ? (
                 [1, 2].map((i) => (
-                  <div key={i} className="aspect-square w-full bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200 dark:border-zinc-800 animate-pulse" />
+                  <div key={i} className="aspect-square w-full bg-white/40 dark:bg-zinc-900/40 backdrop-blur-md rounded-3xl border border-white/20 dark:border-zinc-800/40 animate-pulse" />
                 ))
               ) : posts.length > 0 ? (
                 posts.map((post) => (
                   <PostCard key={post.id} post={post} />
                 ))
               ) : (
-                <div className="text-center py-20 bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
-                  <p className="text-zinc-500 font-medium">No posts yet. Start following people!</p>
+                <div className="text-center py-20 glass-container rounded-3xl shadow-sm">
+                  <p className="text-zinc-500 dark:text-zinc-400 font-medium">No posts yet. Start following people!</p>
                 </div>
               )}
             </div>

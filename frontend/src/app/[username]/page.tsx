@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Sidebar from '@/components/Sidebar';
 import axiosInstance from '@/lib/axios';
-import { Grid, Bookmark, User as UserIcon, Camera, UserPlus, UserCheck, Plus, Trash2, FolderOpen, Heart, MessageCircle, X } from 'lucide-react';
+import { Grid, Bookmark, User as UserIcon, Camera, UserPlus, UserCheck, Plus, Trash2, FolderOpen, Heart, MessageCircle, X, Settings } from 'lucide-react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/context/AuthContext';
@@ -175,11 +175,20 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-zinc-50/30 dark:bg-zinc-950 transition-colors duration-300">
       <Sidebar />
-      <main className="pl-0 md:pl-20 xl:pl-64 pb-16 md:pb-0 min-h-screen">
+      <main className="pl-0 md:pl-20 xl:pl-64 pb-28 md:pb-8 min-h-screen">
         <div className="max-w-4xl mx-auto p-4 md:p-8">
 
           {/* Profile Header */}
-          <div className="bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-100 dark:border-zinc-800 shadow-sm p-6 md:p-10 flex flex-col md:flex-row items-center gap-8 mb-6">
+          <div className="relative bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-100 dark:border-zinc-800 shadow-sm p-6 md:p-10 flex flex-col md:flex-row items-center gap-8 mb-6">
+            {isOwnProfile && (
+              <Link
+                href="/settings"
+                className="absolute top-6 right-6 p-2 rounded-xl text-zinc-500 hover:text-black dark:text-zinc-400 dark:hover:text-white hover:bg-zinc-100/50 dark:hover:bg-zinc-800/50 transition-all duration-200"
+                title="Settings"
+              >
+                <Settings className="w-6 h-6" />
+              </Link>
+            )}
             {/* Avatar */}
             <div className="relative group flex-shrink-0">
               <div className="w-28 h-28 md:w-36 md:h-36 rounded-full bg-gradient-to-br from-indigo-200 to-purple-200 flex items-center justify-center border-4 border-white shadow-lg overflow-hidden">
@@ -207,7 +216,7 @@ export default function ProfilePage() {
                 {isOwnProfile ? (
                   <button
                     onClick={() => setShowEditModal(true)}
-                    className="px-5 py-1.5 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-black dark:text-white font-bold text-sm rounded-xl transition-colors"
+                    className="px-4 sm:px-5 py-1.5 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-black dark:text-white font-bold text-sm rounded-xl transition-colors"
                   >
                     Edit Profile
                   </button>
@@ -215,7 +224,7 @@ export default function ProfilePage() {
                   <div className="flex gap-2">
                     <button
                       onClick={handleFollow}
-                      className={cn('px-6 py-1.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2',
+                      className={cn('px-4 sm:px-6 py-1.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2',
                         isFollowing ? 'bg-zinc-100 dark:bg-zinc-800 text-black dark:text-white hover:bg-zinc-200 dark:hover:bg-zinc-700' : 'bg-black dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200'
                       )}
                     >
@@ -224,7 +233,7 @@ export default function ProfilePage() {
                     {isFollowing && (
                       <Link
                         href={`/messages?user=${username}`}
-                        className="px-6 py-1.5 bg-zinc-100 dark:bg-zinc-800 text-black dark:text-white hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-xl font-bold text-sm transition-all flex items-center gap-2"
+                        className="px-4 sm:px-6 py-1.5 bg-zinc-100 dark:bg-zinc-800 text-black dark:text-white hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-xl font-bold text-sm transition-all flex items-center gap-2"
                       >
                         <MessageCircle className="w-4 h-4" /> Message
                       </Link>
@@ -234,7 +243,7 @@ export default function ProfilePage() {
               </div>
 
               {/* Stats */}
-              <div className="flex justify-center md:justify-start gap-8">
+              <div className="flex justify-center md:justify-start gap-4 sm:gap-8 w-full md:w-auto">
                 <div className="text-center">
                   <p className="font-black text-black dark:text-white text-lg">{posts.length}</p>
                   <p className="text-zinc-500 dark:text-zinc-400 text-xs">posts</p>

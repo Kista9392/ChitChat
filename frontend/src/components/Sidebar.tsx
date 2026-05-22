@@ -108,22 +108,25 @@ export default function Sidebar() {
         </div>
       </div>
 
-      {/* Mobile Bottom Bar */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 h-16 border-t border-zinc-100 dark:border-zinc-800 bg-white/90 dark:bg-zinc-950/90 backdrop-blur-xl flex items-center justify-around px-2 z-50">
-        {navItems.filter(item => ['Home', 'Search', 'Create', 'Messages', 'Notifications'].includes(item.label)).map((item) => {
+      {/* Mobile Floating Glassmorphic Dock */}
+      <div className="md:hidden fixed bottom-[calc(1.25rem+env(safe-area-inset-bottom))] left-2 min-[360px]:left-4 right-2 min-[360px]:right-4 h-16 glass-dock rounded-full flex items-center justify-around px-2 min-[360px]:px-3 z-50 shadow-2xl transition-all duration-300">
+        {navItems.filter(item => ['Home', 'Search', 'Reels', 'Messages'].includes(item.label)).map((item) => {
           const isActive = pathname === item.href;
           return (
             <Link
               key={item.href}
               href={item.href}
               title={item.label}
-              className="p-3"
+              className="relative p-2.5 rounded-full transition-all duration-300 hover:bg-black/5 dark:hover:bg-white/5 active:scale-95"
             >
               <item.icon className={cn(
                 "w-6 h-6 transition-all duration-300",
-                isActive ? "scale-110" : "opacity-70",
+                isActive ? "scale-115 stroke-[2.5px]" : "opacity-60",
                 item.color
               )} />
+              {isActive && (
+                <span className="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-current rounded-full animate-pulse opacity-85" style={{ color: 'inherit' }} />
+              )}
             </Link>
           );
         })}
@@ -132,20 +135,23 @@ export default function Sidebar() {
         <Link
           href={`/${user?.username || 'profile'}`}
           title="Profile"
-          className="p-3"
+          className="relative p-2.5 rounded-full transition-all duration-300 hover:bg-black/5 dark:hover:bg-white/5 active:scale-95"
         >
           <div className={cn(
-            "w-6 h-6 rounded-full bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-600 p-[2px]",
-            pathname === `/${user?.username}` ? "scale-110" : "opacity-70"
+            "w-6 h-6 rounded-full bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-600 p-[1.5px] transition-all duration-300",
+            pathname === `/${user?.username}` ? "scale-115 ring-2 ring-indigo-500/30" : "opacity-80"
           )}>
-            <div className="w-full h-full rounded-full bg-white dark:bg-zinc-800 flex items-center justify-center overflow-hidden">
+            <div className="w-full h-full rounded-full bg-white dark:bg-zinc-900 flex items-center justify-center overflow-hidden">
               {user?.avatarUrl ? (
                 <img src={user.avatarUrl} alt={user.username} className="w-full h-full object-cover" />
               ) : (
-                <User className="w-4 h-4 text-black dark:text-white" />
+                <User className="w-3.5 h-3.5 text-black dark:text-white" />
               )}
             </div>
           </div>
+          {pathname === `/${user?.username}` && (
+            <span className="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-indigo-500 rounded-full animate-pulse" />
+          )}
         </Link>
       </div>
     </>

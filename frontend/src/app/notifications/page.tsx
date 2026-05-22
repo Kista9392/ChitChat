@@ -89,7 +89,7 @@ export default function NotificationsPage() {
   return (
     <div className="min-h-screen bg-white dark:bg-zinc-950 transition-colors duration-300">
       <Sidebar />
-      <main className="pl-0 md:pl-20 xl:pl-64 pb-16 md:pb-0 min-h-screen bg-zinc-50/30 dark:bg-zinc-950 transition-colors duration-300">
+      <main className="pl-0 md:pl-20 xl:pl-64 pb-28 md:pb-8 min-h-screen bg-zinc-50/30 dark:bg-zinc-950 transition-colors duration-300">
         <div className="max-w-2xl mx-auto p-6 md:p-8">
 
           {/* Header */}

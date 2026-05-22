@@ -26,19 +26,22 @@ public class FileStorageService {
     @Value("${cloudinary.api-secret:}")
     private String apiSecret;
 
+    @Value("${app.upload.dir:uploads}")
+    private String uploadDir;
+
     private Cloudinary cloudinary;
     private Path localUploadRoot;
 
     @PostConstruct
     public void init() {
         // ALWAYS try to create local uploads directory as a fallback
-        localUploadRoot = Paths.get("uploads");
+        localUploadRoot = Paths.get(uploadDir);
         try {
             if (!Files.exists(localUploadRoot)) {
                 Files.createDirectories(localUploadRoot);
             }
         } catch (IOException e) {
-            System.err.println("Warning: Could not create local uploads directory. Configure Cloudinary for production.");
+            System.err.println("Warning: Could not create local uploads directory at " + uploadDir + ". Configure Cloudinary for production.");
             localUploadRoot = null;
         }
 

@@ -286,12 +286,12 @@ function MessagesPageInner() {
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-zinc-950">
+    <div className="min-h-[100dvh] bg-transparent">
       <Sidebar />
-      <main className="pl-0 md:pl-20 xl:pl-64 pb-16 md:pb-0 h-screen flex overflow-hidden bg-zinc-50/50 dark:bg-transparent">
+      <main className="pl-0 md:pl-20 xl:pl-64 pb-[calc(6rem+env(safe-area-inset-bottom,0px))] md:pb-0 h-[100dvh] flex overflow-hidden bg-transparent">
 
         {/* LEFT: Contacts */}
-        <div className={cn("w-full md:w-72 xl:w-80 border-r border-zinc-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex flex-col flex-shrink-0", selectedUser ? "hidden md:flex" : "flex")}>
+        <div className={cn("w-full md:w-72 xl:w-80 border-r border-white/10 dark:border-zinc-800/40 bg-white/30 dark:bg-zinc-950/30 backdrop-blur-xl flex flex-col flex-shrink-0", selectedUser ? "hidden md:flex" : "flex")}>
           {/* Header */}
           <div className="p-5 border-b border-zinc-100 dark:border-zinc-800">
             <div className="flex items-center justify-between mb-4">
@@ -392,7 +392,7 @@ function MessagesPageInner() {
           {selectedUser ? (
             <>
               {/* Chat Header */}
-              <div className="px-6 py-4 border-b border-zinc-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex items-center gap-3 flex-shrink-0">
+              <div className="px-6 py-4 border-b border-white/10 dark:border-zinc-800/40 bg-white/40 dark:bg-zinc-950/40 backdrop-blur-xl flex items-center gap-3 flex-shrink-0">
                 <button onClick={() => setSelectedUser(null)} className="md:hidden p-1 mr-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors text-zinc-500 hover:text-black dark:hover:text-white flex-shrink-0">
                   <ChevronLeft className="w-6 h-6" />
                 </button>
@@ -485,7 +485,7 @@ function MessagesPageInner() {
 
 
               {/* Input Bar */}
-              <form onSubmit={sendMessage} className="px-6 py-4 border-t border-zinc-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex items-center gap-3 flex-shrink-0">
+              <form onSubmit={sendMessage} className="px-6 py-4 border-t border-white/10 dark:border-zinc-800/40 bg-white/40 dark:bg-zinc-950/40 backdrop-blur-xl flex items-center gap-3 flex-shrink-0 pb-10 md:pb-4">
                 <label className="cursor-pointer text-zinc-400 hover:text-black dark:hover:text-white transition-colors flex-shrink-0">
                   <Camera className="w-6 h-6" />
                   <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />

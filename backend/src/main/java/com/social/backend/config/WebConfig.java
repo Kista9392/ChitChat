@@ -9,6 +9,9 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
+    @Value("${app.upload.dir:uploads}")
+    private String uploadDir;
+
     @Value("${app.frontend-url:http://localhost:3000}")
     private String frontendUrl;
 
@@ -30,8 +33,13 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        String absolutePath = new java.io.File(uploadDir).getAbsolutePath();
+        if (!absolutePath.endsWith(java.io.File.separator) && !absolutePath.endsWith("/")) {
+            absolutePath = absolutePath + java.io.File.separator;
+        }
+        String resourceLocation = "file:" + absolutePath;
         registry.addResourceHandler("/uploads/**")
-                .addResourceLocations("file:uploads/");
+                .addResourceLocations(resourceLocation);
     }
 }
 

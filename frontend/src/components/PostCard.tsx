@@ -109,13 +109,13 @@ export default function PostCard({ post }: PostCardProps) {
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white/70 dark:bg-zinc-900/70 backdrop-blur-md rounded-3xl border border-white/60 dark:border-zinc-800 shadow-xl shadow-indigo-100/30 dark:shadow-none overflow-hidden mb-6"
+      className="glass-container rounded-3xl overflow-hidden mb-6 transition-all duration-300"
     >
       {/* Header */}
       <div className="flex items-center justify-between p-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-yellow-400 to-purple-600 p-[2px]">
-            <div className="w-full h-full rounded-full bg-white flex items-center justify-center font-bold text-xs text-black overflow-hidden">
+          <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-yellow-400 via-rose-500 to-purple-600 p-[2px]">
+            <div className="w-full h-full rounded-full bg-white dark:bg-zinc-900 flex items-center justify-center font-bold text-xs text-zinc-900 dark:text-zinc-100 overflow-hidden">
               {post.authorAvatarUrl ? (
                 <img src={post.authorAvatarUrl} alt={post.authorUsername} className="w-full h-full object-cover" />
               ) : (
@@ -124,34 +124,34 @@ export default function PostCard({ post }: PostCardProps) {
             </div>
           </div>
           <div>
-            <p className="font-bold text-sm text-black">{post.authorUsername}</p>
-            <p className="text-[10px] text-zinc-400 uppercase font-bold tracking-tighter">
+            <p className="font-bold text-sm text-zinc-900 dark:text-zinc-100">{post.authorUsername}</p>
+            <p className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase font-bold tracking-tighter">
               {new Date(post.createdAt).toLocaleDateString()}
             </p>
           </div>
         </div>
         <div className="relative">
           <MoreHorizontal 
-            className="w-5 h-5 text-zinc-400 cursor-pointer hover:text-black transition-colors" 
+            className="w-5 h-5 text-zinc-400 cursor-pointer hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors" 
             onClick={() => setShowMenu(!showMenu)}
           />
           {showMenu && (
-            <div className="absolute right-0 mt-2 w-48 bg-white rounded-2xl border border-zinc-100 shadow-xl z-20 py-2 overflow-hidden">
+            <div className="absolute right-0 mt-2 w-48 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl rounded-2xl border border-zinc-100 dark:border-zinc-800 shadow-xl z-20 py-2 overflow-hidden">
               <button 
                 onClick={() => { setShowMenu(false); alert('Post reported.'); }} 
-                className="w-full text-left px-4 py-2 text-sm text-red-500 font-bold hover:bg-zinc-50 transition-colors"
+                className="w-full text-left px-4 py-2 text-sm text-red-500 font-bold hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
               >
                 Report
               </button>
               <button 
                 onClick={() => { setShowMenu(false); alert('Added to interested.'); }} 
-                className="w-full text-left px-4 py-2 text-sm text-black font-medium hover:bg-zinc-50 transition-colors"
+                className="w-full text-left px-4 py-2 text-sm text-zinc-900 dark:text-zinc-100 font-medium hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
               >
                 Interested
               </button>
               <button 
                 onClick={() => { setShowMenu(false); alert('Marked as not interested.'); }} 
-                className="w-full text-left px-4 py-2 text-sm text-black font-medium hover:bg-zinc-50 transition-colors"
+                className="w-full text-left px-4 py-2 text-sm text-zinc-900 dark:text-zinc-100 font-medium hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
               >
                 Not Interested
               </button>
@@ -160,7 +160,7 @@ export default function PostCard({ post }: PostCardProps) {
                   setShowMenu(false);
                   setIsHidden(true);
                 }} 
-                className="w-full text-left px-4 py-2 text-sm text-zinc-500 font-medium hover:bg-zinc-50 transition-colors"
+                className="w-full text-left px-4 py-2 text-sm text-zinc-400 dark:text-zinc-500 font-medium hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
               >
                 Don't recommend again
               </button>
@@ -171,7 +171,7 @@ export default function PostCard({ post }: PostCardProps) {
 
       {/* Media Content */}
       <div 
-        className="relative aspect-square bg-zinc-50 flex items-center justify-center overflow-hidden cursor-pointer"
+        className="relative aspect-square bg-zinc-50 dark:bg-zinc-950 flex items-center justify-center overflow-hidden cursor-pointer"
         onDoubleClick={handleLike}
       >
         {post.mediaType === 'VIDEO' ? (
@@ -208,23 +208,31 @@ export default function PostCard({ post }: PostCardProps) {
       <div className="p-4">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-4">
-            <Heart 
-              onClick={handleLike}
-              className={cn("w-7 h-7 cursor-pointer transition-all active:scale-125", isLiked ? "text-red-500 fill-red-500" : "text-black")} 
-            />
-            <MessageCircle onClick={fetchComments} className={cn("w-7 h-7 text-black cursor-pointer", showComments && "text-indigo-600")} />
-            <Send className="w-7 h-7 text-black cursor-pointer" />
+            <motion.div whileTap={{ scale: 1.3 }}>
+              <Heart 
+                onClick={handleLike}
+                className={cn("w-7 h-7 cursor-pointer transition-all duration-250", isLiked ? "text-red-500 fill-red-500" : "text-zinc-800 dark:text-zinc-200")} 
+              />
+            </motion.div>
+            <motion.div whileTap={{ scale: 1.2 }}>
+              <MessageCircle onClick={fetchComments} className={cn("w-7 h-7 text-zinc-800 dark:text-zinc-200 cursor-pointer", showComments && "text-indigo-600 dark:text-indigo-400")} />
+            </motion.div>
+            <motion.div whileTap={{ scale: 1.2 }}>
+              <Send className="w-7 h-7 text-zinc-800 dark:text-zinc-200 cursor-pointer" />
+            </motion.div>
           </div>
-          <Bookmark className="w-7 h-7 text-black cursor-pointer" />
+          <motion.div whileTap={{ scale: 1.2 }}>
+            <Bookmark className="w-7 h-7 text-zinc-800 dark:text-zinc-200 cursor-pointer" />
+          </motion.div>
         </div>
 
         <div className="space-y-1">
-          <p className="font-bold text-sm text-black">{likes.toLocaleString()} likes</p>
-          <p className="text-sm text-zinc-800">
-            <span className="font-bold mr-2">{post.authorUsername}</span>
+          <p className="font-bold text-sm text-zinc-900 dark:text-zinc-100">{likes.toLocaleString()} likes</p>
+          <div className="text-sm text-zinc-800 dark:text-zinc-200">
+            <span className="font-bold mr-2 text-zinc-900 dark:text-zinc-100">{post.authorUsername}</span>
             <RichText text={post.content} />
-          </p>
-          <p onClick={fetchComments} className="text-zinc-400 text-xs font-medium cursor-pointer hover:text-black transition-colors">
+          </div>
+          <p onClick={fetchComments} className="text-zinc-400 dark:text-zinc-500 text-xs font-semibold cursor-pointer hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors mt-1 select-none">
             {showComments ? 'Hide comments' : `View all ${post.commentCount} comments`}
           </p>
         </div>
@@ -236,14 +244,14 @@ export default function PostCard({ post }: PostCardProps) {
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              className="mt-4 pt-4 border-t border-zinc-100 space-y-4 overflow-hidden"
+              className="mt-4 pt-4 border-t border-zinc-100 dark:border-zinc-800/80 space-y-4 overflow-hidden"
             >
               <div className="max-h-60 overflow-y-auto space-y-3 no-scrollbar">
                 {comments.map((c, i) => (
                   <div key={c.id || i} className="flex gap-2 text-sm items-start justify-between">
                     <div className="flex gap-2 items-start">
-                      <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-yellow-400 to-purple-600 p-[1.5px] shrink-0 mt-0.5">
-                        <div className="w-full h-full rounded-full bg-white flex items-center justify-center text-[8px] font-bold text-black overflow-hidden">
+                      <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-yellow-400 via-rose-500 to-purple-600 p-[1.5px] shrink-0 mt-0.5">
+                        <div className="w-full h-full rounded-full bg-white dark:bg-zinc-800 flex items-center justify-center text-[8px] font-bold text-zinc-900 dark:text-zinc-100 overflow-hidden">
                           {c.authorAvatarUrl ? (
                             <img src={c.authorAvatarUrl} alt={c.authorUsername} className="w-full h-full object-cover" />
                           ) : (
@@ -252,9 +260,9 @@ export default function PostCard({ post }: PostCardProps) {
                         </div>
                       </div>
                       <div>
-                        <span className="font-bold text-black mr-2">{c.authorUsername}</span>
-                        <span className="text-zinc-600">{c.content}</span>
-                        <div className="flex items-center gap-3 mt-1 text-xs text-zinc-400">
+                        <span className="font-bold text-zinc-900 dark:text-zinc-100 mr-2">{c.authorUsername}</span>
+                        <span className="text-zinc-600 dark:text-zinc-300">{c.content}</span>
+                        <div className="flex items-center gap-3 mt-1 text-xs text-zinc-400 dark:text-zinc-500 font-semibold">
                           <span>{c.likeCount || 0} likes</span>
                           <button 
                             onClick={() => {
@@ -262,7 +270,7 @@ export default function PostCard({ post }: PostCardProps) {
                               setReplyingTo(c.id);
                               commentInputRef.current?.focus();
                             }}
-                            className="font-bold hover:text-zinc-600"
+                            className="font-bold hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors"
                           >
                             Reply
                           </button>
@@ -271,27 +279,27 @@ export default function PostCard({ post }: PostCardProps) {
                     </div>
                     <Heart 
                       onClick={() => handleLikeComment(c.id)}
-                      className={cn("w-4 h-4 cursor-pointer mt-1", c.isLiked ? "text-red-500 fill-red-500" : "text-zinc-400")} 
+                      className={cn("w-4 h-4 cursor-pointer mt-1 transition-colors", c.isLiked ? "text-red-500 fill-red-500" : "text-zinc-400 dark:text-zinc-500")} 
                     />
                   </div>
                 ))}
-                {comments.length === 0 && <p className="text-zinc-400 text-xs italic">No comments yet.</p>}
+                {comments.length === 0 && <p className="text-zinc-400 dark:text-zinc-500 text-xs italic">No comments yet.</p>}
               </div>
 
-              <form onSubmit={handleAddComment} className="relative flex items-center">
+              <form onSubmit={handleAddComment} className="relative flex items-center mt-2">
                 <input 
                   ref={commentInputRef}
                   type="text" 
                   placeholder={replyingTo ? "Add a reply..." : "Add a comment..."}
-                  className="w-full text-sm bg-zinc-50 border border-zinc-100 rounded-full px-4 py-2 focus:outline-none focus:ring-1 focus:ring-black"
+                  className="w-full text-sm bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-100 dark:border-zinc-800 rounded-full px-4 py-2 focus:outline-none focus:ring-1 focus:ring-indigo-500 text-zinc-900 dark:text-zinc-100"
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
                 />
                 <button 
                   disabled={isSubmittingComment || !newComment.trim()}
-                  className="absolute right-2 p-1 text-indigo-600 disabled:opacity-0 transition-opacity"
+                  className="absolute right-2 p-2 text-indigo-600 dark:text-indigo-400 disabled:opacity-0 transition-opacity"
                 >
-                  <SendIcon className="w-4 h-4" />
+                  <SendIcon className="w-4.5 h-4.5" />
                 </button>
               </form>
             </motion.div>

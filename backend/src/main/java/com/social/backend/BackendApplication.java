@@ -27,6 +27,39 @@ public class BackendApplication {
 			}
 		});
 
+		// Determine upload directory: check if current dir is writable, else use temp dir
+		java.io.File uploadsDir = new java.io.File("uploads");
+		boolean localWritable = false;
+		try {
+			if (!uploadsDir.exists()) {
+				localWritable = uploadsDir.mkdirs();
+			} else {
+				localWritable = uploadsDir.canWrite();
+			}
+			if (localWritable) {
+				// Try creating a dummy file to be absolutely sure
+				java.io.File dummy = new java.io.File(uploadsDir, ".write-test");
+				if (dummy.createNewFile()) {
+					dummy.delete();
+				} else {
+					localWritable = false;
+				}
+			}
+		} catch (Exception e) {
+			localWritable = false;
+		}
+
+		if (localWritable) {
+			System.setProperty("app.upload.dir", "uploads");
+		} else {
+			String tempDir = System.getProperty("java.io.tmpdir");
+			String fallbackPath = tempDir + java.io.File.separator + "chitchat-uploads";
+			java.io.File fallbackDir = new java.io.File(fallbackPath);
+			fallbackDir.mkdirs();
+			System.setProperty("app.upload.dir", fallbackDir.getAbsolutePath());
+			System.out.println("System property app.upload.dir set to fallback: " + fallbackDir.getAbsolutePath());
+		}
+
 		SpringApplication.run(BackendApplication.class, args);
 	}
 
