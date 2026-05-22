@@ -148,3 +148,10 @@ input:focus, textarea:focus, select:focus {
     font-size: 14px !important;
   }
 }
+
+/* GPU Optimization: Disable heavy blurred backdrop animations on mobile devices */
+@media (max-width: 768px) {
+  body::before {
+    animation: none !important;
+  }
+}

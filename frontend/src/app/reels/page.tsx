@@ -6,7 +6,7 @@ import Sidebar from '@/components/Sidebar';
 import { Heart, MessageCircle, Send, Bookmark, Volume2, VolumeX, Play, ChevronUp, ChevronDown, Music2, X, Share2, Link as LinkIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
-import { cn } from '@/lib/utils';
+import { cn, getOptimizedVideoUrl, getOptimizedImageUrl } from '@/lib/utils';
 import RichText from '@/components/RichText';
 
 interface Reel {
@@ -236,8 +236,8 @@ export default function ReelsPage() {
                 style={{ willChange: 'transform, opacity', transform: 'translateZ(0)' }}
                 className="absolute inset-0">
 
-                <video ref={el => { videoRefs.current[currentIndex] = el; }} src={currentReel.mediaUrl}
-                  className="w-full h-full object-cover" loop autoPlay muted={isMuted} playsInline onClick={togglePlay} />
+                <video ref={el => { videoRefs.current[currentIndex] = el; }} src={getOptimizedVideoUrl(currentReel.mediaUrl)}
+                  className="w-full h-full object-cover" loop autoPlay muted={isMuted} playsInline onClick={togglePlay} preload="auto" />
 
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30 pointer-events-none" />
 
@@ -309,6 +309,17 @@ export default function ReelsPage() {
 
               </motion.div>
             </AnimatePresence>
+
+            {/* Preload next Reel in the background to ensure instant lag-free swiping */}
+            {reels[currentIndex + 1] && (
+              <video
+                key={`preload-${currentIndex + 1}`}
+                src={getOptimizedVideoUrl(reels[currentIndex + 1].mediaUrl)}
+                preload="auto"
+                muted
+                className="hidden"
+              />
+            )}
           </div>
         </div>
 
@@ -341,7 +352,7 @@ export default function ReelsPage() {
                           <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-yellow-400 to-purple-600 p-[1.5px] shrink-0">
                             <div className="w-full h-full rounded-full bg-white dark:bg-zinc-800 flex items-center justify-center text-[9px] font-bold overflow-hidden text-black dark:text-white">
                               {c.authorAvatarUrl ? (
-                                <img src={c.authorAvatarUrl} alt={c.authorUsername} className="w-full h-full object-cover" />
+                                <img src={getOptimizedImageUrl(c.authorAvatarUrl)} alt={c.authorUsername} className="w-full h-full object-cover" />
                               ) : (
                                 c.authorUsername?.[0]?.toUpperCase()
                               )}
