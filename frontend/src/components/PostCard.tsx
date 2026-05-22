@@ -26,6 +26,7 @@ interface PostCardProps {
 
 export default function PostCard({ post, showDelete = false, onDeleted }: PostCardProps) {
   const [isLiked, setIsLiked] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
   const [likes, setLikes] = useState(post.likeCount);
   const [showHeartAnim, setShowHeartAnim] = useState(false);
   const [showComments, setShowComments] = useState(false);
@@ -39,6 +40,36 @@ export default function PostCard({ post, showDelete = false, onDeleted }: PostCa
 
   const { user } = useAuth();
   const isAuthor = user?.username === post.authorUsername;
+
+  useEffect(() => {
+    const checkSavedState = async () => {
+      try {
+        const collectionsRes = await axiosInstance.get('/collections');
+        const defaultCol = collectionsRes.data.find((c: any) => c.name === 'All Posts');
+        if (defaultCol) {
+          const postsRes = await axiosInstance.get(`/collections/${defaultCol.id}/posts`);
+          const isPostSaved = postsRes.data.some((p: any) => p.id === post.id);
+          setIsSaved(isPostSaved);
+        }
+      } catch (err) {
+        console.error('Failed to check saved state', err);
+      }
+    };
+    checkSavedState();
+  }, [post.id]);
+
+  const handleSave = async () => {
+    try {
+      const response = await axiosInstance.post(`/collections/save/${post.id}`);
+      if (response.data === 'saved') {
+        setIsSaved(true);
+      } else if (response.data === 'removed') {
+        setIsSaved(false);
+      }
+    } catch (err) {
+      console.error('Failed to save post', err);
+    }
+  };
 
   const handleDeletePost = async () => {
     if (!confirm('Are you sure you want to delete this post? This action cannot be undone.')) return;
@@ -252,7 +283,15 @@ export default function PostCard({ post, showDelete = false, onDeleted }: PostCa
             </motion.div>
           </div>
           <motion.div whileTap={{ scale: 1.2 }}>
-            <Bookmark className="w-7 h-7 text-zinc-800 dark:text-zinc-200 cursor-pointer" />
+            <Bookmark 
+              onClick={handleSave} 
+              className={cn(
+                "w-7 h-7 cursor-pointer transition-colors", 
+                isSaved 
+                  ? "text-indigo-600 fill-indigo-600 dark:text-indigo-400 dark:fill-indigo-400" 
+                  : "text-zinc-800 dark:text-zinc-200"
+              )} 
+            />
           </motion.div>
         </div>
 

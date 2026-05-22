@@ -24,6 +24,15 @@ export default function StoryBar() {
   const [activeStoryUser, setActiveStoryUser] = useState<string | null>(null);
   const [currentStoryIndex, setCurrentStoryIndex] = useState(0);
   const [progress, setProgress] = useState(0); // For the time lapse/timer
+  const [isPaused, setIsPaused] = useState(false);
+
+  const videoElRef = useRef<HTMLVideoElement | null>(null);
+  const elapsedMsRef = useRef<number>(0);
+  const lastTimeRef = useRef<number | null>(null);
+  const requestRef = useRef<number | null>(null);
+  const holdStartRef = useRef<number>(0);
+  const cardRef = useRef<HTMLDivElement | null>(null);
+  const STORY_IMAGE_DURATION = 5000; // 5 seconds
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -75,28 +84,34 @@ export default function StoryBar() {
   const handleViewStory = (username: string) => {
     setActiveStoryUser(username);
     setCurrentStoryIndex(0);
+    elapsedMsRef.current = 0;
     setProgress(0);
+    setIsPaused(false);
   };
 
   const closeStoryViewer = () => {
     setActiveStoryUser(null);
+    elapsedMsRef.current = 0;
     setProgress(0);
+    setIsPaused(false);
   };
 
   const nextStory = () => {
     if (!activeStoryUser) return;
     const userStories = groupedStories[activeStoryUser];
     
+    elapsedMsRef.current = 0;
+    setProgress(0);
+    setIsPaused(false);
+
     if (currentStoryIndex < userStories.length - 1) {
       setCurrentStoryIndex(prev => prev + 1);
-      setProgress(0);
     } else {
       // Go to NEXT USER's story instead of closing!
       const currentUserIdx = allStoryUsers.indexOf(activeStoryUser);
       if (currentUserIdx < allStoryUsers.length - 1) {
         setActiveStoryUser(allStoryUsers[currentUserIdx + 1]);
         setCurrentStoryIndex(0);
-        setProgress(0);
       } else {
         closeStoryViewer();
       }
@@ -104,9 +119,12 @@ export default function StoryBar() {
   };
 
   const prevStory = () => {
+    elapsedMsRef.current = 0;
+    setProgress(0);
+    setIsPaused(false);
+
     if (currentStoryIndex > 0) {
       setCurrentStoryIndex(prev => prev - 1);
-      setProgress(0);
     } else {
       // Go to PREVIOUS USER's story
       const currentUserIdx = allStoryUsers.indexOf(activeStoryUser!);
@@ -115,36 +133,96 @@ export default function StoryBar() {
         setActiveStoryUser(prevUser);
         const prevUserStories = groupedStories[prevUser];
         setCurrentStoryIndex(prevUserStories.length - 1);
-        setProgress(0);
       }
     }
   };
 
-  // Autoplay Timer (Time Lapse)
+  const handlePressStart = (e: React.MouseEvent | React.TouchEvent) => {
+    holdStartRef.current = Date.now();
+    setIsPaused(true);
+  };
+
+  const handlePressEnd = (e: React.MouseEvent | React.TouchEvent) => {
+    const pressDuration = Date.now() - holdStartRef.current;
+    setIsPaused(false);
+
+    if (pressDuration < 250) {
+      // It's a tap/click! Determine position
+      let clientX = 0;
+      if ('touches' in e) {
+        if (e.changedTouches && e.changedTouches.length > 0) {
+          clientX = e.changedTouches[0].clientX;
+        } else {
+          return;
+        }
+      } else {
+        clientX = e.clientX;
+      }
+
+      if (cardRef.current) {
+        const rect = cardRef.current.getBoundingClientRect();
+        const clickX = clientX - rect.left;
+        const relativeX = clickX / rect.width;
+
+        if (relativeX < 0.3) {
+          prevStory();
+        } else {
+          nextStory();
+        }
+      }
+    }
+  };
+
+  // Autoplay Timer (Time Lapse with requestAnimationFrame)
   useEffect(() => {
     if (!activeStoryUser || !stories.length) return;
     const activeStories = groupedStories[activeStoryUser];
     const currentStory = activeStories[currentStoryIndex];
-
     if (!currentStory) return;
 
-    // For videos, let the video element's onEnded handle the skip
-    if (currentStory.mediaType === 'VIDEO') return;
-
-    // For images, use a 5-second timer
-    const timer = setInterval(() => {
-      setProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(timer);
-          nextStory();
-          return 100;
+    if (currentStory.mediaType === 'VIDEO') {
+      if (videoElRef.current) {
+        if (isPaused) {
+          videoElRef.current.pause();
+        } else {
+          videoElRef.current.play().catch(() => {});
         }
-        return prev + 1; // Increment by 1 every 50ms = 5 seconds total
-      });
-    }, 50);
+      }
+      return;
+    }
 
-    return () => clearInterval(timer);
-  }, [activeStoryUser, currentStoryIndex, stories]);
+    if (isPaused) {
+      lastTimeRef.current = null;
+      return;
+    }
+
+    const animate = (timestamp: number) => {
+      if (!lastTimeRef.current) {
+        lastTimeRef.current = timestamp;
+      }
+      const delta = timestamp - lastTimeRef.current;
+      lastTimeRef.current = timestamp;
+
+      elapsedMsRef.current += delta;
+      const currentProgress = Math.min((elapsedMsRef.current / STORY_IMAGE_DURATION) * 100, 100);
+      setProgress(currentProgress);
+
+      if (elapsedMsRef.current >= STORY_IMAGE_DURATION) {
+        nextStory();
+      } else {
+        requestRef.current = requestAnimationFrame(animate);
+      }
+    };
+
+    requestRef.current = requestAnimationFrame(animate);
+
+    return () => {
+      if (requestRef.current) {
+        cancelAnimationFrame(requestRef.current);
+      }
+      lastTimeRef.current = null;
+    };
+  }, [activeStoryUser, currentStoryIndex, isPaused, stories]);
 
   const handleDeleteStory = async () => {
     const activeStories = activeStoryUser ? groupedStories[activeStoryUser] : [];
@@ -274,38 +352,47 @@ export default function StoryBar() {
             className="fixed inset-0 bg-black/90 z-[100] flex flex-col items-center justify-center"
           >
             {/* Close Button */}
+            {/* Close Button */}
             <button 
-              onClick={closeStoryViewer}
-              className="absolute top-4 right-4 text-white hover:text-zinc-300 transition-colors"
+              onClick={(e) => { e.stopPropagation(); closeStoryViewer(); }}
+              className="absolute top-4 right-4 text-white hover:text-zinc-300 transition-colors z-[110]"
             >
               <X className="w-8 h-8" />
             </button>
 
             {/* Navigation */}
-            <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-between px-4 md:px-20">
+            <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-between px-4 md:px-20 z-10 pointer-events-none">
               <button 
-                onClick={prevStory}
-                className="p-2 bg-white/10 rounded-full text-white hover:bg-white/20 transition-colors"
+                onClick={(e) => { e.stopPropagation(); prevStory(); }}
+                className="p-2 bg-white/10 rounded-full text-white hover:bg-white/20 transition-colors pointer-events-auto"
               >
                 <ChevronLeft className="w-6 h-6" />
               </button>
               <button 
-                onClick={nextStory}
-                className="p-2 bg-white/10 rounded-full text-white hover:bg-white/20 transition-colors"
+                onClick={(e) => { e.stopPropagation(); nextStory(); }}
+                className="p-2 bg-white/10 rounded-full text-white hover:bg-white/20 transition-colors pointer-events-auto"
               >
                 <ChevronRight className="w-6 h-6" />
               </button>
             </div>
 
             {/* Content Card */}
-            <div className="w-full max-w-md aspect-[9/16] bg-zinc-900 rounded-3xl overflow-hidden relative shadow-2xl">
+            <div 
+              ref={cardRef}
+              className="w-full max-w-md aspect-[9/16] bg-zinc-900 rounded-3xl overflow-hidden relative shadow-2xl select-none"
+              onMouseDown={handlePressStart}
+              onMouseUp={handlePressEnd}
+              onMouseLeave={() => setIsPaused(false)}
+              onTouchStart={handlePressStart}
+              onTouchEnd={handlePressEnd}
+            >
               
               {/* Progress Bars (Restored and Functional!) */}
               <div className="absolute top-0 inset-x-0 flex gap-1 p-2 z-10">
                 {groupedStories[activeStoryUser].map((_, i) => (
                   <div key={i} className="flex-1 h-1 bg-white/30 rounded-full overflow-hidden">
                     <div 
-                      className="h-full bg-white transition-all duration-300"
+                      className="h-full bg-white transition-none"
                       style={{ 
                         width: i === currentStoryIndex ? `${progress}%` : i < currentStoryIndex ? '100%' : '0%' 
                       }}
@@ -329,8 +416,8 @@ export default function StoryBar() {
                 
                 {activeStoryUser === user?.username && (
                   <button 
-                    onClick={handleDeleteStory}
-                    className="text-white hover:text-red-500 transition-colors"
+                    onClick={(e) => { e.stopPropagation(); handleDeleteStory(); }}
+                    className="text-white hover:text-red-500 transition-colors pointer-events-auto"
                   >
                     <Trash2 className="w-5 h-5" />
                   </button>
@@ -341,12 +428,14 @@ export default function StoryBar() {
               <div className="w-full h-full flex items-center justify-center">
                 {currentStory.mediaType === 'VIDEO' ? (
                   <video 
+                    ref={videoElRef}
                     src={currentStory.mediaUrl} 
                     className="w-full h-full object-cover" 
                     autoPlay 
                     controls={false}
                     onEnded={nextStory}
                     onTimeUpdate={(e) => {
+                      if (isPaused) return;
                       const video = e.currentTarget;
                       const percent = (video.currentTime / video.duration) * 100;
                       setProgress(percent);
@@ -357,7 +446,6 @@ export default function StoryBar() {
                     src={currentStory.mediaUrl} 
                     className="w-full h-full object-cover"
                     alt="Story"
-                    onClick={nextStory} // Tap to go to next story
                   />
                 )}
               </div>

@@ -44,12 +44,7 @@ public class MessageService {
         User receiver = userRepository.findByUsername(receiverUsername)
                 .orElseThrow(() -> new RuntimeException("Receiver not found"));
 
-        // Relaxed rule: Allow if either follows the other!
-        boolean isFollowing = followRepository.findByFollowerAndFollowing(sender, receiver).isPresent();
-        boolean isFollowedBy = followRepository.findByFollowerAndFollowing(receiver, sender).isPresent();
-        if (!isFollowing && !isFollowedBy) {
-            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.BAD_REQUEST, "You can only message people who follow you or you follow them!");
-        }
+
 
         MessageType messageType = MessageType.TEXT;
         if (messageTypeStr != null) {
@@ -85,11 +80,7 @@ public class MessageService {
         User receiver = userRepository.findByUsername(receiverUsername)
                 .orElseThrow(() -> new RuntimeException("Receiver not found"));
 
-        boolean isFollowing = followRepository.findByFollowerAndFollowing(sender, receiver).isPresent();
-        boolean isFollowedBy = followRepository.findByFollowerAndFollowing(receiver, sender).isPresent();
-        if (!isFollowing && !isFollowedBy) {
-            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.BAD_REQUEST, "You can only message people who follow you or you follow them!");
-        }
+
 
         String filename = fileStorageService.save(file);
         String mediaUrl = filename.startsWith("http") ? filename : (apiUrl + "/uploads/" + filename);
@@ -119,11 +110,7 @@ public class MessageService {
         User receiver = userRepository.findByUsername(receiverUsername)
                 .orElseThrow(() -> new RuntimeException("Receiver not found"));
 
-        boolean isFollowing = followRepository.findByFollowerAndFollowing(sender, receiver).isPresent();
-        boolean isFollowedBy = followRepository.findByFollowerAndFollowing(receiver, sender).isPresent();
-        if (!isFollowing && !isFollowedBy) {
-            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.BAD_REQUEST, "You can only message people who follow you or you follow them!");
-        }
+
 
         String filename = fileStorageService.save(file);
         String mediaUrl = filename.startsWith("http") ? filename : (apiUrl + "/uploads/" + filename);

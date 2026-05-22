@@ -2,7 +2,7 @@ import axios from 'axios';
 import { safeStorage } from './storage';
 
 const axiosInstance = axios.create({
-  baseURL: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/api/v1`,
+  baseURL: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:7860'}/api/v1`,
 });
 
 // We add a "middleman" that injects our Security Token into every request automatically
@@ -64,7 +64,7 @@ axiosInstance.interceptors.response.use(
 
       try {
         // Use plain axios to avoid interceptor loop!
-        const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/api/v1/auth/refresh`, { refreshToken });
+        const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:7860'}/api/v1/auth/refresh`, { refreshToken });
         const { accessToken } = response.data;
         
         safeStorage.setItem('accessToken', accessToken);

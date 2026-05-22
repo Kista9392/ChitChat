@@ -19,7 +19,7 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
     @Query("SELECT m FROM Message m WHERE " +
            "(m.sender = :userA AND m.receiver = :userB) OR " +
            "(m.sender = :userB AND m.receiver = :userA) " +
-           "ORDER BY m.createdAt ASC")
+           "ORDER BY m.createdAt DESC")
     Page<Message> findConversation(@Param("userA") User userA, @Param("userB") User userB, Pageable pageable);
 
     java.util.List<Message> findBySenderAndReceiverAndReadAtIsNull(User sender, User receiver);

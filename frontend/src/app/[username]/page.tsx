@@ -671,22 +671,14 @@ export default function ProfilePage() {
                           <p className="text-xs text-zinc-400 dark:text-zinc-500 truncate max-w-[150px]">{u.bio || 'No bio'}</p>
                         </div>
                       </div>
-                      {!isOwnProfile && (
-                        <button 
-                          className="text-xs font-bold text-blue-500 hover:text-blue-600"
-                          onClick={async (e) => {
-                            try {
-                              await axiosInstance.post(`/users/${u.username}/follow`);
-                              const btn = e.currentTarget;
-                              btn.innerText = 'Following';
-                              btn.className = 'text-xs font-bold text-zinc-400 cursor-not-allowed';
-                            } catch (err) {
-                              console.error('Failed to follow', err);
-                            }
-                          }}
+                      {currentUser?.username !== u.username && (
+                        <Link 
+                          href={`/messages?user=${u.username}`}
+                          onClick={() => setShowFollowModal(null)}
+                          className="text-xs font-black text-white bg-indigo-600 hover:bg-indigo-700 transition-all px-4 py-1.5 rounded-full shadow-md shadow-indigo-100 hover:scale-105 active:scale-95 cursor-pointer"
                         >
-                          Follow
-                        </button>
+                          Message
+                        </Link>
                       )}
                     </div>
                   ))}

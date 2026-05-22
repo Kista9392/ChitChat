@@ -193,6 +193,46 @@ export default function ReelsPage() {
     }
   };
 
+  const handleSaveReel = async (reelId: string) => {
+    try {
+      const response = await axiosInstance.post(`/collections/save/${reelId}`);
+      if (response.data === 'saved') {
+        setSavedReels(prev => {
+          const s = new Set(prev);
+          s.add(reelId);
+          return s;
+        });
+      } else if (response.data === 'removed') {
+        setSavedReels(prev => {
+          const s = new Set(prev);
+          s.delete(reelId);
+          return s;
+        });
+      }
+    } catch (err) {
+      console.error('Failed to toggle save for reel', err);
+    }
+  };
+
+  useEffect(() => {
+    const syncSavedReels = async () => {
+      try {
+        const collectionsRes = await axiosInstance.get('/collections');
+        const defaultCol = collectionsRes.data.find((c: any) => c.name === 'All Posts');
+        if (defaultCol) {
+          const postsRes = await axiosInstance.get(`/collections/${defaultCol.id}/posts`);
+          const savedIds = new Set<string>(postsRes.data.map((p: any) => p.id));
+          setSavedReels(savedIds);
+        }
+      } catch (err) {
+        console.error('Failed to sync saved reels', err);
+      }
+    };
+    if (user) {
+      syncSavedReels();
+    }
+  }, [user]);
+
   const handleDeleteReel = async (reelId: string) => {
     if (!confirm('Are you sure you want to delete this reel? This action cannot be undone.')) return;
     try {
@@ -321,12 +361,12 @@ export default function ReelsPage() {
                     <MessageCircle className={cn('w-7 h-7 drop-shadow', showComments ? 'text-yellow-400' : 'text-white')} />
                     <span className="text-white text-[10px] font-bold">{currentReel?.commentCount || 0}</span>
                   </button>
-                  <button onClick={handleShare} className="flex flex-col items-center gap-1">
+                  <button onClick={() => { fetchFollowers(); setShowShareModal(true); }} className="flex flex-col items-center gap-1">
                     <Share2 className="w-6 h-6 text-white drop-shadow" />
                     <span className="text-white text-[10px] font-bold">Share</span>
                   </button>
                   <motion.button whileTap={{ scale: 1.4 }}
-                    onClick={() => currentReel && setSavedReels(prev => { const s = new Set(prev); s.has(currentReel.id) ? s.delete(currentReel.id) : s.add(currentReel.id); return s; })}
+                    onClick={() => currentReel && handleSaveReel(currentReel.id)}
                     className="flex flex-col items-center gap-1">
                     <Bookmark className={cn('w-6 h-6 drop-shadow', (currentReel ? savedReels.has(currentReel.id) : false) ? 'fill-white text-white' : 'text-white')} />
                     <span className="text-white text-[10px] font-bold">Save</span>

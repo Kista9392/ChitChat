@@ -33,6 +33,7 @@ interface Contact {
 function MessagesPageInner() {
   const { user } = useAuth();
   const [contacts, setContacts] = useState<Contact[]>([]);
+  const [followers, setFollowers] = useState<Contact[]>([]);
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [filteredContacts, setFilteredContacts] = useState<Contact[]>([]);
   const [contactSearch, setContactSearch] = useState('');
@@ -59,6 +60,12 @@ function MessagesPageInner() {
         }
         return prev;
       });
+      setFollowers(prev => {
+        if (!prev.find(c => c.username === userParam)) {
+          return [{ username: userParam }, ...prev];
+        }
+        return prev;
+      });
     }
   }, [userParam]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -70,18 +77,23 @@ function MessagesPageInner() {
     selectedUserRef.current = selectedUser;
   }, [selectedUser]);
 
-  // Fetch contacts (users you follow + active conversations)
+  // Fetch contacts (followers + active conversations)
   useEffect(() => {
     const fetchContacts = async () => {
       if (!user?.username) return;
       try {
-        const [followingRes, activeRes] = await Promise.all([
-          axiosInstance.get(`/users/${user.username}/following`),
+        const [followersRes, activeRes] = await Promise.all([
+          axiosInstance.get(`/users/${user.username}/followers`),
           axiosInstance.get('/messages/active')
         ]);
 
-        const merged = [...followingRes.data];
-        activeRes.data.forEach((activeUser: any) => {
+        const followersData = followersRes.data || [];
+        const activeData = activeRes.data || [];
+
+        setFollowers(followersData);
+
+        const merged = [...followersData];
+        activeData.forEach((activeUser: any) => {
           if (!merged.find(u => u.username === activeUser.username)) {
             merged.push(activeUser);
           }
@@ -101,13 +113,18 @@ function MessagesPageInner() {
     if (!user?.username) return;
     const pollContacts = async () => {
       try {
-        const [followingRes, activeRes] = await Promise.all([
-          axiosInstance.get(`/users/${user.username}/following`),
+        const [followersRes, activeRes] = await Promise.all([
+          axiosInstance.get(`/users/${user.username}/followers`),
           axiosInstance.get('/messages/active')
         ]);
 
-        const merged = [...followingRes.data];
-        activeRes.data.forEach((activeUser: any) => {
+        const followersData = followersRes.data || [];
+        const activeData = activeRes.data || [];
+
+        setFollowers(followersData);
+
+        const merged = [...followersData];
+        activeData.forEach((activeUser: any) => {
           if (!merged.find(u => u.username === activeUser.username)) {
             merged.push(activeUser);
           }
@@ -122,23 +139,31 @@ function MessagesPageInner() {
     return () => clearInterval(interval);
   }, [user?.username]);
 
-  // Filter contacts by search (Local filter of people you follow!)
+  // Local followers search (debounced at 300ms)
   useEffect(() => {
     if (!contactSearch.trim()) {
       setFilteredContacts(contacts);
-    } else {
-      setFilteredContacts(contacts.filter(c =>
-        c.username.toLowerCase().includes(contactSearch.toLowerCase())
-      ));
+      return;
     }
-  }, [contactSearch, contacts]);
+
+    const delayDebounce = setTimeout(() => {
+      const query = contactSearch.toLowerCase();
+      // Search ONLY within followers!
+      const followersMatches = followers.filter(c =>
+        c.username.toLowerCase().includes(query)
+      );
+      setFilteredContacts(followersMatches);
+    }, 300);
+
+    return () => clearTimeout(delayDebounce);
+  }, [contactSearch, contacts, followers]);
 
   // Connect WebSocket once on mount
   useEffect(() => {
     if (!user?.username) return;
 
     const client = new Client({
-      webSocketFactory: () => new SockJS(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/ws`),
+      webSocketFactory: () => new SockJS(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:7860'}/ws`),
       reconnectDelay: 3000,
       onConnect: () => {
         setIsConnected(true);

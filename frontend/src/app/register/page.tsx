@@ -53,7 +53,7 @@ function RegisterPageInner() {
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/oauth2/authorization/google`;
+    window.location.href = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:7860'}/oauth2/authorization/google`;
   };
 
   return (

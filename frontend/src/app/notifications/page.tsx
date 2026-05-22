@@ -36,7 +36,7 @@ export default function NotificationsPage() {
 
     // Connect WebSocket for real-time notifications
     const client = new Client({
-      webSocketFactory: () => new SockJS(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/ws`),
+      webSocketFactory: () => new SockJS(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:7860'}/ws`),
       reconnectDelay: 3000,
       onConnect: () => {
         client.subscribe(`/topic/notifications/${user.username}`, (frame) => {
