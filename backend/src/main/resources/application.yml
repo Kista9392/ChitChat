@@ -1,4 +1,8 @@
 spring:
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 55MB
   application:
     name: backend
 
@@ -72,10 +76,6 @@ server:
   port: ${PORT:7860}
   error:
     include-message: always
-  servlet:
-    multipart:
-      max-file-size: 50MB
-      max-request-size: 55MB
 
 app:
   api-url: ${APP_API_URL:http://localhost:7860}

@@ -185,7 +185,7 @@ export default function ReelsPage() {
   if (isLoading) return (
     <div className="min-h-screen bg-gradient-to-br from-violet-50 via-white to-rose-50">
       <Sidebar />
-      <div className="pl-20 xl:pl-64 flex items-center justify-center min-h-screen">
+      <div className="pl-0 md:pl-20 xl:pl-64 flex items-center justify-center min-h-screen">
         <div className="w-8 h-8 border-2 border-violet-400 border-t-transparent rounded-full animate-spin" />
       </div>
     </div>
@@ -194,7 +194,7 @@ export default function ReelsPage() {
   if (reels.length === 0) return (
     <div className="min-h-screen bg-gradient-to-br from-violet-50 via-white to-rose-50">
       <Sidebar />
-      <div className="pl-20 xl:pl-64 flex flex-col items-center justify-center min-h-screen gap-4">
+      <div className="pl-0 md:pl-20 xl:pl-64 flex flex-col items-center justify-center min-h-screen gap-4">
       <Play className="w-16 h-16 text-zinc-300" />
       <p className="text-xl font-bold text-black">No Reels Yet</p>
       <p className="text-zinc-400 text-sm">Post a video to be the first!</p>
