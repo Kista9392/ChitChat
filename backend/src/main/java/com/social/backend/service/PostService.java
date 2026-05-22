@@ -9,6 +9,9 @@ import com.social.backend.repository.HashtagRepository;
 import com.social.backend.repository.PostLikeRepository;
 import com.social.backend.repository.PostRepository;
 import com.social.backend.repository.UserRepository;
+import com.social.backend.repository.CommentRepository;
+import com.social.backend.repository.CommentLikeRepository;
+import com.social.backend.repository.SavedPostRepository;
 import com.social.backend.entity.Hashtag;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -30,19 +33,24 @@ public class PostService {
     private final PostLikeRepository postLikeRepository;
     private final NotificationService notificationService;
     private final HashtagRepository hashtagRepository;
-
     private final FileStorageService fileStorageService;
+    private final CommentRepository commentRepository;
+    private final CommentLikeRepository commentLikeRepository;
+    private final SavedPostRepository savedPostRepository;
 
     @org.springframework.beans.factory.annotation.Value("${app.api-url:http://localhost:8080}")
     private String apiUrl;
 
-    public PostService(PostRepository postRepository, UserRepository userRepository, PostLikeRepository postLikeRepository, NotificationService notificationService, HashtagRepository hashtagRepository, FileStorageService fileStorageService) {
+    public PostService(PostRepository postRepository, UserRepository userRepository, PostLikeRepository postLikeRepository, NotificationService notificationService, HashtagRepository hashtagRepository, FileStorageService fileStorageService, CommentRepository commentRepository, CommentLikeRepository commentLikeRepository, SavedPostRepository savedPostRepository) {
         this.postRepository = postRepository;
         this.userRepository = userRepository;
         this.postLikeRepository = postLikeRepository;
         this.notificationService = notificationService;
         this.hashtagRepository = hashtagRepository;
         this.fileStorageService = fileStorageService;
+        this.commentRepository = commentRepository;
+        this.commentLikeRepository = commentLikeRepository;
+        this.savedPostRepository = savedPostRepository;
     }
 
     @Transactional
@@ -187,5 +195,33 @@ public class PostService {
                 .orElseThrow(() -> new RuntimeException("Post not found"));
         post.setViewCount(post.getViewCount() + 1);
         postRepository.save(post);
+    }
+
+    @Transactional
+    public void deletePost(String userEmail, UUID postId) {
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new RuntimeException("Post not found"));
+
+        if (!post.getAuthor().getId().equals(user.getId())) {
+            throw new RuntimeException("Unauthorized to delete this post");
+        }
+
+        // 1. Delete Saved Post bookmarks
+        savedPostRepository.deleteByPost(post);
+
+        // 2. Delete Comment Likes
+        commentLikeRepository.deleteByCommentPost(post);
+
+        // 3. Delete Comments
+        commentRepository.deleteByPost(post);
+
+        // 4. Delete Post Likes
+        postLikeRepository.deleteByPost(post);
+
+        // 5. Delete Post itself
+        postRepository.delete(post);
     }
 }

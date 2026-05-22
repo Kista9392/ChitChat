@@ -6,6 +6,7 @@ import axiosInstance from '@/lib/axios';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import RichText from '@/components/RichText';
+import { useAuth } from '@/context/AuthContext';
 
 interface PostCardProps {
   post: {
@@ -33,6 +34,21 @@ export default function PostCard({ post }: PostCardProps) {
   const [isHidden, setIsHidden] = useState(false);
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const commentInputRef = useRef<HTMLInputElement>(null);
+
+  const { user } = useAuth();
+  const isAuthor = user?.username === post.authorUsername;
+
+  const handleDeletePost = async () => {
+    if (!confirm('Are you sure you want to delete this post? This action cannot be undone.')) return;
+    try {
+      await axiosInstance.delete(`/posts/${post.id}`);
+      setIsHidden(true);
+      setShowMenu(false);
+    } catch (err) {
+      console.error('Failed to delete post', err);
+      alert('Failed to delete post. Please try again.');
+    }
+  };
 
   const handleLike = async () => {
     try {
@@ -137,33 +153,44 @@ export default function PostCard({ post }: PostCardProps) {
           />
           {showMenu && (
             <div className="absolute right-0 mt-2 w-48 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl rounded-2xl border border-zinc-100 dark:border-zinc-800 shadow-xl z-20 py-2 overflow-hidden">
-              <button 
-                onClick={() => { setShowMenu(false); alert('Post reported.'); }} 
-                className="w-full text-left px-4 py-2 text-sm text-red-500 font-bold hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
-              >
-                Report
-              </button>
-              <button 
-                onClick={() => { setShowMenu(false); alert('Added to interested.'); }} 
-                className="w-full text-left px-4 py-2 text-sm text-zinc-900 dark:text-zinc-100 font-medium hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
-              >
-                Interested
-              </button>
-              <button 
-                onClick={() => { setShowMenu(false); alert('Marked as not interested.'); }} 
-                className="w-full text-left px-4 py-2 text-sm text-zinc-900 dark:text-zinc-100 font-medium hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
-              >
-                Not Interested
-              </button>
-              <button 
-                onClick={() => {
-                  setShowMenu(false);
-                  setIsHidden(true);
-                }} 
-                className="w-full text-left px-4 py-2 text-sm text-zinc-400 dark:text-zinc-500 font-medium hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
-              >
-                Don't recommend again
-              </button>
+              {isAuthor ? (
+                <button 
+                  onClick={handleDeletePost} 
+                  className="w-full text-left px-4 py-2 text-sm text-red-500 font-bold hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
+                >
+                  Delete Post
+                </button>
+              ) : (
+                <>
+                  <button 
+                    onClick={() => { setShowMenu(false); alert('Post reported.'); }} 
+                    className="w-full text-left px-4 py-2 text-sm text-red-500 font-bold hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
+                  >
+                    Report
+                  </button>
+                  <button 
+                    onClick={() => { setShowMenu(false); alert('Added to interested.'); }} 
+                    className="w-full text-left px-4 py-2 text-sm text-zinc-900 dark:text-zinc-100 font-medium hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
+                  >
+                    Interested
+                  </button>
+                  <button 
+                    onClick={() => { setShowMenu(false); alert('Marked as not interested.'); }} 
+                    className="w-full text-left px-4 py-2 text-sm text-zinc-900 dark:text-zinc-100 font-medium hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
+                  >
+                    Not Interested
+                  </button>
+                  <button 
+                    onClick={() => {
+                      setShowMenu(false);
+                      setIsHidden(true);
+                    }} 
+                    className="w-full text-left px-4 py-2 text-sm text-zinc-400 dark:text-zinc-500 font-medium hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
+                  >
+                    Don't recommend again
+                  </button>
+                </>
+              )}
             </div>
           )}
         </div>

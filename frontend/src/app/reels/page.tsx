@@ -3,9 +3,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axiosInstance from '@/lib/axios';
 import Sidebar from '@/components/Sidebar';
-import { Heart, MessageCircle, Send, Bookmark, Volume2, VolumeX, Play, ChevronUp, ChevronDown, Music2, X, Share2, Link as LinkIcon } from 'lucide-react';
+import { Heart, MessageCircle, Send, Bookmark, Volume2, VolumeX, Play, ChevronUp, ChevronDown, Music2, X, Share2, Link as LinkIcon, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
+import { useAuth } from '@/context/AuthContext';
 import { cn, getOptimizedVideoUrl, getOptimizedImageUrl } from '@/lib/utils';
 import RichText from '@/components/RichText';
 
@@ -22,6 +23,7 @@ interface Reel {
 }
 
 export default function ReelsPage() {
+  const { user } = useAuth();
   const [reels, setReels] = useState<Reel[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isMuted, setIsMuted] = useState(false);
@@ -182,6 +184,23 @@ export default function ReelsPage() {
     }
   };
 
+  const handleDeleteReel = async (reelId: string) => {
+    if (!confirm('Are you sure you want to delete this reel? This action cannot be undone.')) return;
+    try {
+      await axiosInstance.delete(`/posts/${reelId}`);
+      setReels(prev => {
+        const updated = prev.filter(r => r.id !== reelId);
+        if (currentIndex >= updated.length && updated.length > 0) {
+          setCurrentIndex(updated.length - 1);
+        }
+        return updated;
+      });
+    } catch (err) {
+      console.error('Failed to delete reel', err);
+      alert('Failed to delete reel. Please try again.');
+    }
+  };
+
   if (isLoading) return (
     <div className="min-h-screen bg-gradient-to-br from-violet-50 via-white to-rose-50">
       <Sidebar />
@@ -204,6 +223,7 @@ export default function ReelsPage() {
   );
 
   const currentReel = reels[currentIndex];
+  const isAuthor = user?.username === currentReel?.authorUsername;
 
   return (
     <div className="min-h-[100dvh] bg-transparent w-full max-w-full overflow-x-hidden relative">
@@ -302,6 +322,16 @@ export default function ReelsPage() {
                     <Bookmark className={cn('w-6 h-6 drop-shadow', savedReels.has(currentReel.id) ? 'fill-white text-white' : 'text-white')} />
                     <span className="text-white text-[10px] font-bold">Save</span>
                   </motion.button>
+                  {isAuthor && (
+                    <motion.button 
+                      whileTap={{ scale: 1.4 }} 
+                      onClick={() => handleDeleteReel(currentReel.id)} 
+                      className="flex flex-col items-center gap-1 text-rose-500 hover:text-rose-600 transition-colors"
+                    >
+                      <Trash2 className="w-6 h-6 drop-shadow filter drop-shadow-[0_2px_8px_rgba(244,63,94,0.4)]" />
+                      <span className="text-white text-[10px] font-bold">Delete</span>
+                    </motion.button>
+                  )}
                   <button onClick={toggleMute}>
                     {isMuted ? <VolumeX className="w-6 h-6 text-white" /> : <Volume2 className="w-6 h-6 text-white" />}
                   </button>

@@ -92,4 +92,10 @@ public class PostController {
         postService.incrementViewCount(postId);
         return ResponseEntity.ok().build();
     }
+
+    @DeleteMapping("/{postId}")
+    public ResponseEntity<?> deletePost(@PathVariable UUID postId, Authentication authentication) {
+        postService.deletePost(authentication.getName(), postId);
+        return ResponseEntity.ok().body("Post deleted successfully");
+    }
 }

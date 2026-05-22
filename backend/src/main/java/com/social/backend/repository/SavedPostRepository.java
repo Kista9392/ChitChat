@@ -13,4 +13,5 @@ public interface SavedPostRepository extends JpaRepository<SavedPost, UUID> {
     List<SavedPost> findByCollectionOrderBySavedAtDesc(SavedCollection collection);
     Optional<SavedPost> findByCollectionAndPost(SavedCollection collection, Post post);
     void deleteByCollectionAndPost(SavedCollection collection, Post post);
+    void deleteByPost(Post post);
 }
