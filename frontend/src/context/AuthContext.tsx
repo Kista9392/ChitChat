@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import axiosInstance from '@/lib/axios';
+import { safeStorage } from '@/lib/storage';
 
 interface User {
   username: string;
@@ -33,9 +34,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
 
   useEffect(() => {
-    const token = localStorage.getItem('accessToken');
-    const username = localStorage.getItem('username');
-    const avatarUrl = localStorage.getItem('avatarUrl');
+    const token = safeStorage.getItem('accessToken');
+    const username = safeStorage.getItem('username');
+    const avatarUrl = safeStorage.getItem('avatarUrl');
     
     if (token && username) {
       if (!avatarUrl) {
@@ -44,7 +45,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           .then(res => {
             const fetchedAvatar = res.data.avatarUrl;
             if (fetchedAvatar) {
-              localStorage.setItem('avatarUrl', fetchedAvatar);
+              safeStorage.setItem('avatarUrl', fetchedAvatar);
               setUser({ username, avatarUrl: fetchedAvatar });
             }
           })
@@ -60,7 +61,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   useEffect(() => {
-    const isDark = localStorage.getItem('darkMode') === 'true';
+    const isDark = safeStorage.getItem('darkMode') === 'true';
     setDarkMode(isDark);
     if (isDark) {
       document.documentElement.classList.add('dark');
@@ -84,7 +85,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const toggleDarkMode = () => {
     const newDark = !darkMode;
     setDarkMode(newDark);
-    localStorage.setItem('darkMode', newDark.toString());
+    safeStorage.setItem('darkMode', newDark.toString());
     if (newDark) {
       document.documentElement.classList.add('dark');
     } else {
@@ -93,16 +94,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const login = (accessToken: string, refreshToken: string, username: string, avatarUrl?: string) => {
-    localStorage.setItem('accessToken', accessToken);
-    localStorage.setItem('refreshToken', refreshToken);
-    localStorage.setItem('username', username);
-    if (avatarUrl) localStorage.setItem('avatarUrl', avatarUrl);
+    safeStorage.setItem('accessToken', accessToken);
+    safeStorage.setItem('refreshToken', refreshToken);
+    safeStorage.setItem('username', username);
+    if (avatarUrl) safeStorage.setItem('avatarUrl', avatarUrl);
     setUser({ username, avatarUrl });
     router.push('/');
   };
 
   const logout = () => {
-    localStorage.clear();
+    safeStorage.clear();
     setUser(null);
     router.push('/login');
   };

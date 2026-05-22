@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { safeStorage } from './storage';
 
 const axiosInstance = axios.create({
   baseURL: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/api/v1`,
@@ -7,7 +8,7 @@ const axiosInstance = axios.create({
 // We add a "middleman" that injects our Security Token into every request automatically
 axiosInstance.interceptors.request.use((config) => {
   if (typeof window !== 'undefined') {
-    const token = localStorage.getItem('accessToken');
+    const token = safeStorage.getItem('accessToken');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -53,7 +54,7 @@ axiosInstance.interceptors.response.use(
       originalRequest._retry = true;
       isRefreshing = true;
 
-      const refreshToken = localStorage.getItem('refreshToken');
+      const refreshToken = safeStorage.getItem('refreshToken');
       if (!refreshToken) {
         if (typeof window !== 'undefined') {
           window.location.href = '/login';
@@ -66,7 +67,7 @@ axiosInstance.interceptors.response.use(
         const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/api/v1/auth/refresh`, { refreshToken });
         const { accessToken } = response.data;
         
-        localStorage.setItem('accessToken', accessToken);
+        safeStorage.setItem('accessToken', accessToken);
         originalRequest.headers['Authorization'] = 'Bearer ' + accessToken;
         
         processQueue(null, accessToken);
@@ -74,7 +75,7 @@ axiosInstance.interceptors.response.use(
       } catch (err) {
         processQueue(err, null);
         if (typeof window !== 'undefined') {
-          localStorage.clear();
+          safeStorage.clear();
           window.location.href = '/login';
         }
         return Promise.reject(err);

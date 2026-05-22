@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal, Send as SendIcon } from 'lucide-react';
+import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal } from 'lucide-react';
 import axiosInstance from '@/lib/axios';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';

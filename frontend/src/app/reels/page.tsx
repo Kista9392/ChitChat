@@ -112,8 +112,10 @@ export default function ReelsPage() {
   };
 
   const handleLikeComment = async (commentId: string) => {
+    const activeReel = reels[currentIndex];
+    if (!activeReel) return;
     try {
-      const response = await axiosInstance.post(`/posts/${reels[currentIndex].id}/comments/${commentId}/like`);
+      const response = await axiosInstance.post(`/posts/${activeReel.id}/comments/${commentId}/like`);
       const result = response.data;
       const liked = result === "Comment liked";
       
@@ -126,9 +128,11 @@ export default function ReelsPage() {
   };
 
   const handleToggleComments = async () => {
+    const activeReel = reels[currentIndex];
+    if (!activeReel) return;
     if (!showComments) {
       try {
-        const res = await axiosInstance.get(`/posts/${reels[currentIndex].id}/comments`);
+        const res = await axiosInstance.get(`/posts/${activeReel.id}/comments`);
         setComments(res.data.content || []);
       } catch { console.error('Failed to fetch comments'); }
     }
@@ -137,10 +141,11 @@ export default function ReelsPage() {
 
   const handleAddComment = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newComment.trim() || isSubmittingComment) return;
+    const activeReel = reels[currentIndex];
+    if (!activeReel || !newComment.trim() || isSubmittingComment) return;
     setIsSubmittingComment(true);
     try {
-      const res = await axiosInstance.post(`/posts/${reels[currentIndex].id}/comments`, { content: newComment });
+      const res = await axiosInstance.post(`/posts/${activeReel.id}/comments`, { content: newComment });
       setComments(prev => [res.data, ...prev]);
       setNewComment('');
       setReels(r => r.map((reel, i) => i === currentIndex ? { ...reel, commentCount: reel.commentCount + 1 } : reel));
@@ -149,8 +154,10 @@ export default function ReelsPage() {
   };
 
   const handleShare = async () => {
+    const activeReel = reels[currentIndex];
+    if (!activeReel) return;
     try {
-      await axiosInstance.post(`/stories/from-post/${reels[currentIndex].id}`);
+      await axiosInstance.post(`/stories/from-post/${activeReel.id}`);
       setToastMessage('Shared to Story!');
       setShowShareToast(true);
       setTimeout(() => setShowShareToast(false), 2500);
@@ -169,11 +176,13 @@ export default function ReelsPage() {
   };
 
   const handleShareToFriend = async (friendUsername: string) => {
+    const activeReel = reels[currentIndex];
+    if (!activeReel) return;
     try {
       await axiosInstance.post(`/messages/${friendUsername}`, {
-        content: reels[currentIndex].id,
+        content: activeReel.id,
         messageType: 'REEL',
-        mediaUrl: reels[currentIndex].mediaUrl
+        mediaUrl: activeReel.mediaUrl
       });
       setToastMessage(`Sent to ${friendUsername}!`);
       setShowShareModal(false);
@@ -223,7 +232,7 @@ export default function ReelsPage() {
   );
 
   const currentReel = reels[currentIndex];
-  const isAuthor = user?.username === currentReel?.authorUsername;
+  const isAuthor = !!(user?.username && currentReel && user.username === currentReel.authorUsername);
 
   return (
     <div className="min-h-[100dvh] bg-transparent w-full max-w-full overflow-x-hidden relative">
@@ -256,7 +265,7 @@ export default function ReelsPage() {
                 style={{ willChange: 'transform, opacity', transform: 'translateZ(0)' }}
                 className="absolute inset-0">
 
-                <video ref={el => { videoRefs.current[currentIndex] = el; }} src={getOptimizedVideoUrl(currentReel.mediaUrl)}
+                <video ref={el => { videoRefs.current[currentIndex] = el; }} src={currentReel?.mediaUrl ? getOptimizedVideoUrl(currentReel.mediaUrl) : ''}
                   className="w-full h-full object-cover" loop autoPlay muted={isMuted} playsInline onClick={togglePlay} preload="auto" />
 
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30 pointer-events-none" />
@@ -280,21 +289,21 @@ export default function ReelsPage() {
 
                 {/* Bottom info */}
                 <div className="absolute bottom-0 left-0 right-14 p-4 z-10">
-                  <Link href={`/${currentReel.authorUsername}`} className="flex items-center gap-3 mb-2">
+                  <Link href={`/${currentReel?.authorUsername || ''}`} className="flex items-center gap-3 mb-2">
                     <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-yellow-400 to-purple-600 p-[2px]">
                       <div className="w-full h-full rounded-full bg-black flex items-center justify-center font-bold text-white text-sm">
-                        {currentReel.authorUsername[0].toUpperCase()}
+                        {currentReel?.authorUsername?.[0]?.toUpperCase() || ''}
                       </div>
                     </div>
-                    <p className="text-white font-bold text-sm">@{currentReel.authorUsername}</p>
+                    <p className="text-white font-bold text-sm">@{currentReel?.authorUsername || ''}</p>
                     <button className="ml-1 px-3 py-0.5 border border-white rounded-full text-white text-xs font-bold hover:bg-white hover:text-black transition-colors">Follow</button>
                   </Link>
                   <p className="text-white text-sm mb-2 line-clamp-2">
-                    <RichText text={currentReel.content} />
+                    <RichText text={currentReel?.content || ''} />
                   </p>
                   <div className="flex items-center gap-2 text-white/70 text-xs">
                     <Music2 className="w-3 h-3" />
-                    <span className="italic">Original Audio · @{currentReel.authorUsername}</span>
+                    <span className="italic">Original Audio · @{currentReel?.authorUsername || ''}</span>
                   </div>
                 </div>
 
@@ -302,27 +311,27 @@ export default function ReelsPage() {
                 <div className="absolute right-3 bottom-20 flex flex-col items-center gap-5 z-10">
                   <div className="flex flex-col items-center gap-1">
                     <Play className="w-5 h-5 text-white drop-shadow fill-white" />
-                    <span className="text-white text-[10px] font-bold">{currentReel.viewCount}</span>
+                    <span className="text-white text-[10px] font-bold">{currentReel?.viewCount || 0}</span>
                   </div>
-                  <motion.button whileTap={{ scale: 1.4 }} onClick={() => handleLike(currentReel.id)} disabled={isLiking} className="flex flex-col items-center gap-1">
-                    <Heart className={cn('w-7 h-7 drop-shadow transition-colors', likedReels.has(currentReel.id) ? 'fill-red-500 text-red-500' : 'text-white')} />
-                    <span className="text-white text-[10px] font-bold">{currentReel.likeCount}</span>
+                  <motion.button whileTap={{ scale: 1.4 }} onClick={() => currentReel && handleLike(currentReel.id)} disabled={isLiking} className="flex flex-col items-center gap-1">
+                    <Heart className={cn('w-7 h-7 drop-shadow transition-colors', (currentReel ? likedReels.has(currentReel.id) : false) ? 'fill-red-500 text-red-500' : 'text-white')} />
+                    <span className="text-white text-[10px] font-bold">{currentReel?.likeCount || 0}</span>
                   </motion.button>
                   <button onClick={handleToggleComments} className="flex flex-col items-center gap-1">
                     <MessageCircle className={cn('w-7 h-7 drop-shadow', showComments ? 'text-yellow-400' : 'text-white')} />
-                    <span className="text-white text-[10px] font-bold">{currentReel.commentCount}</span>
+                    <span className="text-white text-[10px] font-bold">{currentReel?.commentCount || 0}</span>
                   </button>
                   <button onClick={handleShare} className="flex flex-col items-center gap-1">
                     <Share2 className="w-6 h-6 text-white drop-shadow" />
                     <span className="text-white text-[10px] font-bold">Share</span>
                   </button>
                   <motion.button whileTap={{ scale: 1.4 }}
-                    onClick={() => setSavedReels(prev => { const s = new Set(prev); s.has(currentReel.id) ? s.delete(currentReel.id) : s.add(currentReel.id); return s; })}
+                    onClick={() => currentReel && setSavedReels(prev => { const s = new Set(prev); s.has(currentReel.id) ? s.delete(currentReel.id) : s.add(currentReel.id); return s; })}
                     className="flex flex-col items-center gap-1">
-                    <Bookmark className={cn('w-6 h-6 drop-shadow', savedReels.has(currentReel.id) ? 'fill-white text-white' : 'text-white')} />
+                    <Bookmark className={cn('w-6 h-6 drop-shadow', (currentReel ? savedReels.has(currentReel.id) : false) ? 'fill-white text-white' : 'text-white')} />
                     <span className="text-white text-[10px] font-bold">Save</span>
                   </motion.button>
-                  {isAuthor && (
+                  {isAuthor && currentReel && (
                     <motion.button 
                       whileTap={{ scale: 1.4 }} 
                       onClick={() => handleDeleteReel(currentReel.id)} 
