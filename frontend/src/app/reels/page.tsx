@@ -211,7 +211,7 @@ export default function ReelsPage() {
   };
 
   if (isLoading) return (
-    <div className="min-h-screen bg-gradient-to-br from-violet-50 via-white to-rose-50">
+    <div className="min-h-screen bg-gradient-to-br from-violet-50 via-white to-rose-50 dark:from-zinc-950 dark:via-zinc-900 dark:to-zinc-950">
       <Sidebar />
       <div className="pl-0 md:pl-20 xl:pl-64 flex items-center justify-center min-h-screen">
         <div className="w-8 h-8 border-2 border-violet-400 border-t-transparent rounded-full animate-spin" />
@@ -220,13 +220,13 @@ export default function ReelsPage() {
   );
 
   if (reels.length === 0) return (
-    <div className="min-h-screen bg-gradient-to-br from-violet-50 via-white to-rose-50">
+    <div className="min-h-screen bg-gradient-to-br from-violet-50 via-white to-rose-50 dark:from-zinc-950 dark:via-zinc-900 dark:to-zinc-950">
       <Sidebar />
       <div className="pl-0 md:pl-20 xl:pl-64 flex flex-col items-center justify-center min-h-screen gap-4">
-      <Play className="w-16 h-16 text-zinc-300" />
-      <p className="text-xl font-bold text-black">No Reels Yet</p>
-      <p className="text-zinc-400 text-sm">Post a video to be the first!</p>
-      <Link href="/create" className="mt-2 px-6 py-2 bg-black text-white font-bold rounded-full text-sm">Create Reel</Link>
+      <Play className="w-16 h-16 text-zinc-300 dark:text-zinc-700" />
+      <p className="text-xl font-bold text-black dark:text-white">No Reels Yet</p>
+      <p className="text-zinc-400 dark:text-zinc-500 text-sm">Post a video to be the first!</p>
+      <Link href="/create" className="mt-2 px-6 py-2 bg-black dark:bg-white text-white dark:text-black font-bold rounded-full text-sm">Create Reel</Link>
       </div>
     </div>
   );
@@ -235,7 +235,7 @@ export default function ReelsPage() {
   const isAuthor = !!(user?.username && currentReel && user.username === currentReel.authorUsername);
 
   return (
-    <div className="min-h-[100dvh] bg-transparent w-full max-w-full overflow-x-hidden relative">
+    <div className="min-h-[100dvh] bg-gradient-to-br from-violet-50 via-white to-rose-50 dark:from-zinc-950 dark:via-zinc-900 dark:to-zinc-950 w-full max-w-full overflow-x-hidden relative">
       <Sidebar />
       <div className="pl-0 md:pl-20 xl:pl-64 pb-[calc(6.5rem+env(safe-area-inset-bottom,0px))] md:pb-0 min-h-[100dvh] w-full max-w-full overflow-x-hidden flex flex-col md:flex-row gap-0 md:gap-6 p-0 md:p-8 items-center justify-center md:items-start md:justify-start">
 
@@ -245,11 +245,11 @@ export default function ReelsPage() {
           {/* Nav arrows stacked on left */}
           <div className="hidden md:flex flex-col gap-3">
             <button onClick={goPrev} disabled={currentIndex === 0}
-              className="p-3 bg-white border border-zinc-200 rounded-full text-zinc-400 hover:text-black hover:border-black disabled:opacity-20 transition-all shadow-sm">
+              className="p-3 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-full text-zinc-400 hover:text-black dark:hover:text-white hover:border-black dark:hover:border-white disabled:opacity-20 transition-all shadow-sm">
               <ChevronUp className="w-5 h-5" />
             </button>
             <button onClick={goNext} disabled={currentIndex === reels.length - 1}
-              className="p-3 bg-white border border-zinc-200 rounded-full text-zinc-400 hover:text-black hover:border-black disabled:opacity-20 transition-all shadow-sm">
+              className="p-3 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-full text-zinc-400 hover:text-black dark:hover:text-white hover:border-black dark:hover:border-white disabled:opacity-20 transition-all shadow-sm">
               <ChevronDown className="w-5 h-5" />
             </button>
           </div>
