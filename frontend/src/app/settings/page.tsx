@@ -275,13 +275,13 @@ export default function SettingsPage() {
           <div className="flex flex-col md:flex-row gap-6">
             {/* Left Column: Navigation */}
             <div className="w-full md:w-64 flex-shrink-0">
-              <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-100 dark:border-zinc-800 p-2 md:space-y-1 shadow-sm flex md:flex-col overflow-x-auto md:overflow-x-visible gap-2 md:gap-1 scrollbar-none">
+              <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-100 dark:border-zinc-800 p-2 space-y-1 shadow-sm flex flex-col gap-1 w-full">
                 {tabs.map((tab) => (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id as TabType)}
                     className={cn(
-                      "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all whitespace-nowrap",
+                      "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all whitespace-nowrap w-full",
                       activeTab === tab.id
                         ? "bg-black dark:bg-indigo-600 text-white shadow-md"
                         : "text-zinc-500 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 hover:text-black dark:hover:text-white"
@@ -292,7 +292,7 @@ export default function SettingsPage() {
                   </button>
                 ))}
                 
-                <div className="hidden md:block border-t border-zinc-100 dark:border-zinc-800 my-2 pt-2">
+                <div className="border-t border-zinc-100 dark:border-zinc-800 my-2 pt-2">
                   <button
                     onClick={logout}
                     className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
@@ -301,15 +301,6 @@ export default function SettingsPage() {
                     Log Out
                   </button>
                 </div>
-              </div>
-              <div className="flex md:hidden mt-2 px-1">
-                <button
-                  onClick={logout}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-red-500 bg-red-500/10 hover:bg-red-500/20 dark:bg-red-950/20 dark:hover:bg-red-950/30 transition-colors border border-red-500/20"
-                >
-                  <LogOut className="w-4 h-4" />
-                  Log Out
-                </button>
               </div>
             </div>
 

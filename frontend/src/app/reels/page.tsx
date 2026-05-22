@@ -206,12 +206,12 @@ export default function ReelsPage() {
   const currentReel = reels[currentIndex];
 
   return (
-    <div className="min-h-[100dvh] bg-transparent">
+    <div className="min-h-[100dvh] bg-transparent w-full max-w-full overflow-x-hidden relative">
       <Sidebar />
-      <div className="pl-0 md:pl-20 xl:pl-64 pb-[calc(6.5rem+env(safe-area-inset-bottom,0px))] md:pb-0 min-h-[100dvh] flex flex-col md:flex-row gap-6 p-0 md:p-8 items-center justify-center md:items-start md:justify-start">
+      <div className="pl-0 md:pl-20 xl:pl-64 pb-[calc(6.5rem+env(safe-area-inset-bottom,0px))] md:pb-0 min-h-[100dvh] w-full max-w-full overflow-x-hidden flex flex-col md:flex-row gap-6 p-0 md:p-8 items-center justify-center md:items-start md:justify-start">
 
         {/* LEFT: arrows + card */}
-        <div className="flex gap-4 items-center pt-0 md:pt-6 w-full md:w-auto justify-center">
+        <div className="flex gap-4 items-center pt-0 md:pt-6 w-full md:w-auto justify-center max-w-full overflow-x-hidden">
 
           {/* Nav arrows stacked on left */}
           <div className="hidden md:flex flex-col gap-3">
@@ -229,8 +229,12 @@ export default function ReelsPage() {
           <div className="relative w-full h-[calc(100dvh-80px-env(safe-area-inset-bottom,0px)-env(safe-area-inset-top,0px))] md:w-[340px] md:h-[620px] md:rounded-3xl overflow-hidden shadow-2xl shadow-black/20 flex-shrink-0 max-w-none md:max-w-[340px]">
             <AnimatePresence mode="wait">
               <motion.div key={currentIndex}
-                initial={{ y: '100%', opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: '-100%', opacity: 0 }}
-                transition={{ duration: 0.3, ease: 'easeInOut' }} className="absolute inset-0">
+                initial={{ y: '100%', opacity: 0 }} 
+                animate={{ y: 0, opacity: 1 }} 
+                exit={{ y: '-100%', opacity: 0 }}
+                transition={{ duration: 0.2, ease: 'linear' }}
+                style={{ willChange: 'transform, opacity', transform: 'translateZ(0)' }}
+                className="absolute inset-0">
 
                 <video ref={el => { videoRefs.current[currentIndex] = el; }} src={currentReel.mediaUrl}
                   className="w-full h-full object-cover" loop autoPlay muted={isMuted} playsInline onClick={togglePlay} />
