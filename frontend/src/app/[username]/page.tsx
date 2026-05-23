@@ -48,7 +48,10 @@ export default function ProfilePage() {
   const [isLoadingFollowList, setIsLoadingFollowList] = useState(false);
   const [followError, setFollowError] = useState<string | null>(null);
 
-  const isOwnProfile = currentUser?.username === username;
+  const isOwnProfile = 
+    currentUser?.username && username 
+      ? currentUser.username.toLowerCase() === (username as string).toLowerCase()
+      : false;
   const isLocked = profile?.isPrivateAccount && !isOwnProfile && !isFollowing;
 
 
