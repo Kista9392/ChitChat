@@ -68,4 +68,35 @@ public class EmailService {
             System.err.println("FAILED TO SEND LOGIN EMAIL: " + e.getMessage());
         }
     }
+
+    @Async
+    public void sendDeveloperEmail(String developerEmail, String senderUsername, String subject, String body) {
+        System.out.println("========================================");
+        System.out.println("DEBUG: Sending report/suggestion from " + senderUsername + " to developer " + developerEmail);
+        System.out.println("Subject: " + subject);
+        System.out.println("Body: " + body);
+        System.out.println("========================================");
+
+        if (!isMailConfigured()) {
+            return;
+        }
+
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setTo(developerEmail);
+            helper.setSubject(subject);
+            String htmlContent = "<h2>ChitChat Secure Report</h2>"
+                    + "<p><strong>From:</strong> @" + senderUsername + "</p>"
+                    + "<p><strong>Type:</strong> " + subject + "</p>"
+                    + "<div style='background-color: #f3f4f6; padding: 15px; border-radius: 8px; margin-top: 10px; font-family: sans-serif; color: #1f2937;'>"
+                    + body.replace("\n", "<br/>")
+                    + "</div>";
+            helper.setText(htmlContent, true);
+            mailSender.send(message);
+        } catch (MessagingException e) {
+            System.err.println("FAILED TO SEND DEVELOPER EMAIL: " + e.getMessage());
+        }
+    }
 }
+
