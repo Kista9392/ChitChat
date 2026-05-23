@@ -173,7 +173,10 @@ public class MessageService {
         User currentUser = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        java.util.List<User> activeUsers = messageRepository.findActiveChatUsers(currentUser);
+        java.util.Set<User> activeUsersSet = new java.util.HashSet<>();
+        activeUsersSet.addAll(messageRepository.findReceivers(currentUser));
+        activeUsersSet.addAll(messageRepository.findSenders(currentUser));
+        java.util.List<User> activeUsers = new java.util.ArrayList<>(activeUsersSet);
 
         return activeUsers.stream()
                 .map(u -> new com.social.backend.dto.UserResponse(

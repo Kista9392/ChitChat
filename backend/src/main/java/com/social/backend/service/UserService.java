@@ -332,7 +332,7 @@ public class UserService {
                 .toList();
 
         return allUsers.stream()
-                .filter(u -> !u.equals(currentUser))
+                .filter(u -> !u.getId().equals(currentUser.getId()))
                 .filter(u -> !currentUserFollowing.contains(u))
                 .map(u -> {
                     List<User> uFollowers = followRepository.findByFollowing(u).stream()
@@ -387,7 +387,7 @@ public class UserService {
         User currentUser = userRepository.findByEmail(currentUserEmail)
                 .orElseThrow(() -> new RuntimeException("Current user not found"));
 
-        if (!targetUser.equals(currentUser)) {
+        if (!targetUser.getId().equals(currentUser.getId())) {
             boolean isFollowing = followRepository.findByFollowerAndFollowing(currentUser, targetUser).isPresent();
             if (!isFollowing) {
                 throw new org.springframework.web.server.ResponseStatusException(
@@ -424,7 +424,7 @@ public class UserService {
         User currentUser = userRepository.findByEmail(currentUserEmail)
                 .orElseThrow(() -> new RuntimeException("Current user not found"));
 
-        if (!targetUser.equals(currentUser)) {
+        if (!targetUser.getId().equals(currentUser.getId())) {
             boolean isFollowing = followRepository.findByFollowerAndFollowing(currentUser, targetUser).isPresent();
             if (!isFollowing) {
                 throw new org.springframework.web.server.ResponseStatusException(

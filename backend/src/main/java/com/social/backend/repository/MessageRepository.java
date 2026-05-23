@@ -26,6 +26,9 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
 
     long countByReceiverAndReadAtIsNull(User receiver);
 
-    @Query("SELECT DISTINCT CASE WHEN m.sender = :user THEN m.receiver ELSE m.sender END FROM Message m WHERE m.sender = :user OR m.receiver = :user")
-    java.util.List<User> findActiveChatUsers(@Param("user") User user);
+    @Query("SELECT DISTINCT m.receiver FROM Message m WHERE m.sender = :user")
+    java.util.List<User> findReceivers(@Param("user") User user);
+
+    @Query("SELECT DISTINCT m.sender FROM Message m WHERE m.receiver = :user")
+    java.util.List<User> findSenders(@Param("user") User user);
 }
