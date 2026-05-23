@@ -13,7 +13,7 @@ import java.util.UUID;
 
 public interface StoryRepository extends JpaRepository<Story, UUID> {
     
-    @Query("SELECT s FROM Story s WHERE (s.user = :user OR s.user IN (SELECT f.following FROM Follow f WHERE f.follower = :user)) AND s.createdAt > :cutoff ORDER BY s.createdAt DESC")
+    @Query("SELECT s FROM Story s JOIN FETCH s.user u WHERE (u = :user OR u IN (SELECT f.following FROM Follow f WHERE f.follower = :user)) AND s.createdAt > :cutoff ORDER BY s.createdAt DESC")
     List<Story> findActiveStories(@Param("user") User user, @Param("cutoff") LocalDateTime cutoff);
 
     @Modifying

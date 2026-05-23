@@ -107,11 +107,14 @@ export default function StoryBar() {
     return acc;
   }, {} as Record<string, Story[]>);
 
-  const myStories = user ? groupedStories[user.username] || [] : [];
-  const otherUsers = Object.keys(groupedStories).filter(username => username !== user?.username);
+  const myStoriesKey = user ? Object.keys(groupedStories).find(k => k.toLowerCase() === user.username.toLowerCase()) : null;
+  const myStories = myStoriesKey ? groupedStories[myStoriesKey] : [];
+  const otherUsers = Object.keys(groupedStories).filter(username => 
+    !user?.username || username.toLowerCase() !== user.username.toLowerCase()
+  );
   
   // All users with stories in order
-  const allStoryUsers = [user?.username, ...otherUsers].filter(u => u && groupedStories[u]) as string[];
+  const allStoryUsers = [myStoriesKey || user?.username, ...otherUsers].filter(u => u && groupedStories[u]) as string[];
 
   const handleViewStory = (username: string) => {
     setActiveStoryUser(username);
@@ -308,7 +311,7 @@ export default function StoryBar() {
           <div className="relative">
             <div 
               className={`w-16 h-16 rounded-full flex items-center justify-center p-[2px] ${myStories.length > 0 ? 'bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-600' : 'border border-zinc-200'}`}
-              onClick={() => myStories.length > 0 ? handleViewStory(user!.username) : fileInputRef.current?.click()}
+              onClick={() => myStories.length > 0 ? handleViewStory(myStoriesKey || user!.username) : fileInputRef.current?.click()}
             >
               <div className="w-full h-full rounded-full bg-white p-[2px] flex items-center justify-center overflow-hidden bg-zinc-50">
                 {user?.avatarUrl ? (

@@ -9,6 +9,9 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 public class BackendApplication {
 
 	public static void main(String[] args) {
+		// Set JVM Default TimeZone to UTC to align all database operations
+		java.util.TimeZone.setDefault(java.util.TimeZone.getTimeZone("UTC"));
+
 		// Clean environment variables with literal quotes to prevent configuration binding issues
 		System.getenv().forEach((key, value) -> {
 			if (value != null) {
