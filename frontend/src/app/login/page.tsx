@@ -58,9 +58,7 @@ function LoginPageInner() {
           </div>
           <h2 className="mt-6 text-3xl font-extrabold text-black dark:text-white tracking-tight italic select-none cursor-default">ChitChat</h2>
           <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400 font-medium tracking-tight select-none cursor-default">Login to your account</p>
-          <p className="mt-1 text-[10px] text-zinc-400 dark:text-zinc-500 font-mono select-none">
-            API: {process.env.NEXT_PUBLIC_API_URL || 'http://localhost:7860'}
-          </p>
+
         </div>
 
         <div className="space-y-4">
