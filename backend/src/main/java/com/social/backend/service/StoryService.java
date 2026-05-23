@@ -72,7 +72,7 @@ public class StoryService {
         User viewer = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        List<Story> stories = storyRepository.findStoriesForViewer(viewer);
+        List<Story> stories = storyRepository.findStoriesForViewer(viewer.getId());
 
         return stories.stream().map(this::mapToResponse).collect(Collectors.toList());
     }
