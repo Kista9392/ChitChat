@@ -90,9 +90,10 @@ export default function StoryBar() {
     const fetchStories = async () => {
       try {
         const response = await axiosInstance.get('/stories/feed');
+        console.log('[StoryBar] /stories/feed response:', response.data);
         setStories(response.data);
       } catch (err) {
-        console.error('Failed to fetch stories', err);
+        console.error('[StoryBar] Failed to fetch stories:', err);
       } finally {
         setIsLoading(false);
       }
