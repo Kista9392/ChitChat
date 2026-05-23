@@ -75,10 +75,12 @@ export default function StoryBar() {
     formData.append('mediaType', file.type.startsWith('video') ? 'VIDEO' : 'IMAGE');
 
     try {
-      const response = await axiosInstance.post('/stories', formData, {
+      await axiosInstance.post('/stories', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
-      setStories(prev => [response.data, ...prev]);
+      // Refetch from server so groupedStories is always coherent
+      const refreshed = await axiosInstance.get('/stories/feed');
+      setStories(refreshed.data);
     } catch (err) {
       console.error('Failed to create story', err);
     }
@@ -133,7 +135,7 @@ export default function StoryBar() {
 
   const nextStory = () => {
     if (!activeStoryUser) return;
-    const userStories = groupedStories[activeStoryUser];
+    const userStories = groupedStories[activeStoryUser] || [];
     
     elapsedMsRef.current = 0;
     setProgress(0);
@@ -166,7 +168,7 @@ export default function StoryBar() {
       if (currentUserIdx > 0) {
         const prevUser = allStoryUsers[currentUserIdx - 1];
         setActiveStoryUser(prevUser);
-        const prevUserStories = groupedStories[prevUser];
+        const prevUserStories = groupedStories[prevUser] || [];
         setCurrentStoryIndex(prevUserStories.length - 1);
       }
     }
@@ -211,7 +213,7 @@ export default function StoryBar() {
   // Autoplay Timer (Time Lapse with requestAnimationFrame)
   useEffect(() => {
     if (!activeStoryUser || !stories.length) return;
-    const activeStories = groupedStories[activeStoryUser];
+    const activeStories = groupedStories[activeStoryUser] || [];
     const currentStory = activeStories[currentStoryIndex];
     if (!currentStory) return;
 
@@ -260,14 +262,14 @@ export default function StoryBar() {
   }, [activeStoryUser, currentStoryIndex, isPaused, stories]);
 
   const handleDeleteStory = async () => {
-    const activeStories = activeStoryUser ? groupedStories[activeStoryUser] : [];
+    const activeStories = activeStoryUser ? (groupedStories[activeStoryUser] || []) : [];
     const currentStory = activeStories[currentStoryIndex];
     if (!currentStory) return;
 
     try {
       await axiosInstance.delete(`/stories/${currentStory.id}`);
       setStories(prev => prev.filter(s => s.id !== currentStory.id));
-      const userStories = groupedStories[activeStoryUser!];
+      const userStories = groupedStories[activeStoryUser!] || [];
       if (userStories.length === 1) {
         closeStoryViewer();
       } else {
@@ -291,7 +293,7 @@ export default function StoryBar() {
     );
   }
 
-  const activeStories = activeStoryUser ? groupedStories[activeStoryUser] : [];
+  const activeStories = activeStoryUser ? (groupedStories[activeStoryUser] || []) : [];
   const currentStory = activeStories[currentStoryIndex];
 
   return (
@@ -424,7 +426,7 @@ export default function StoryBar() {
               
               {/* Progress Bars (Restored and Functional!) */}
               <div className="absolute top-0 inset-x-0 flex gap-1 p-2 z-10">
-                {groupedStories[activeStoryUser].map((_, i) => (
+                {(groupedStories[activeStoryUser] || []).map((_, i) => (
                   <div key={i} className="flex-1 h-1 bg-white/30 rounded-full overflow-hidden">
                     <div 
                       className="h-full bg-white transition-none"
