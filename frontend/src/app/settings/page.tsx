@@ -697,7 +697,7 @@ export default function SettingsPage() {
           <div className="space-y-1">
             <h3 className="font-bold text-sm text-indigo-950 dark:text-indigo-300 flex items-center gap-2">
               <Shield className="w-4 h-4 text-indigo-500 animate-pulse" />
-              Install Secure App
+              Install Vibely App
             </h3>
             <p className="text-xs text-zinc-500 dark:text-zinc-400 max-w-sm leading-relaxed">
               Install Vibely on your home screen for full background thread notifications. Safe, sandboxed, and respects your data privacy.
@@ -708,7 +708,7 @@ export default function SettingsPage() {
             className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-xs shadow-sm hover:shadow transition-all duration-200 flex items-center justify-center gap-2 whitespace-nowrap self-start md:self-center cursor-pointer"
           >
             <PlusSquare className="w-4 h-4" />
-            Install Secure App
+            Install Vibely App
           </button>
         </div>
       </div>

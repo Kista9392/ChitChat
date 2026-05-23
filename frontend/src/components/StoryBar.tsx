@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/context/AuthContext';
 import { X, ChevronLeft, ChevronRight, Trash2, User, Volume2, VolumeX } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { getOptimizedImageUrl } from '@/lib/utils';
 
 interface Story {
   id: string;
@@ -312,7 +313,7 @@ export default function StoryBar() {
               <div className="w-full h-full rounded-full bg-white p-[2px] flex items-center justify-center overflow-hidden bg-zinc-50">
                 {user?.avatarUrl ? (
                   <img 
-                    src={user.avatarUrl} 
+                    src={getOptimizedImageUrl(user.avatarUrl)} 
                     className="w-full h-full rounded-full object-cover"
                     alt="Your Story"
                   />
@@ -354,7 +355,7 @@ export default function StoryBar() {
                 <div className="w-full h-full rounded-full bg-white p-[2px]">
                   {avatarUrl ? (
                     <img 
-                      src={avatarUrl} 
+                      src={getOptimizedImageUrl(avatarUrl)} 
                       className="w-full h-full rounded-full object-cover"
                       alt={username}
                     />
@@ -444,7 +445,7 @@ export default function StoryBar() {
                 >
                   <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-xs font-bold text-black overflow-hidden hover:scale-105 transition-transform duration-200">
                     {currentStory.authorAvatarUrl ? (
-                      <img src={currentStory.authorAvatarUrl} className="w-full h-full object-cover" />
+                      <img src={getOptimizedImageUrl(currentStory.authorAvatarUrl)} className="w-full h-full object-cover" />
                     ) : (
                       activeStoryUser[0].toUpperCase()
                     )}
