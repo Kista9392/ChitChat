@@ -43,8 +43,8 @@ public class SuggestionController {
         Suggestion suggestion = new Suggestion(user, content);
         suggestionRepository.save(suggestion);
 
-        // Send email securely to the developer (myself / user.getEmail())
-        emailService.sendDeveloperEmail(user.getEmail(), user.getUsername(), "New Suggestion from @" + user.getUsername(), content);
+        // Send email securely to the developer (kistareddypullagurla123@gmail.com)
+        emailService.sendDeveloperEmail(EmailService.DEVELOPER_EMAIL, user.getUsername(), "New Suggestion from @" + user.getUsername(), content);
 
         // Find admin!
         java.util.List<User> admins = userRepository.findByRole(Role.ADMIN);
@@ -80,8 +80,8 @@ public class SuggestionController {
             return ResponseEntity.badRequest().body("Content cannot be empty");
         }
 
-        // Send secure bug report email to the developer (myself / user.getEmail())
-        emailService.sendDeveloperEmail(user.getEmail(), user.getUsername(), "New Bug Report from @" + user.getUsername(), content);
+        // Send secure bug report email to the developer (kistareddypullagurla123@gmail.com)
+        emailService.sendDeveloperEmail(EmailService.DEVELOPER_EMAIL, user.getUsername(), "New Bug Report from @" + user.getUsername(), content);
 
         // Notify user via system notification that report was securely received
         notificationService.sendNotification(

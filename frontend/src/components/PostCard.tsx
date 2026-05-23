@@ -36,6 +36,7 @@ export default function PostCard({ post, showDelete = false, onDeleted }: PostCa
   const [showMenu, setShowMenu] = useState(false);
   const [isHidden, setIsHidden] = useState(false);
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const [shareToast, setShareToast] = useState(false);
   const commentInputRef = useRef<HTMLInputElement>(null);
 
   const [isFeedMuted, setIsFeedMuted] = useState(true);
@@ -184,14 +185,54 @@ export default function PostCard({ post, showDelete = false, onDeleted }: PostCa
     }
   };
 
+  const handleShare = async () => {
+    const postUrl = `${window.location.origin}/post/${post.id}`;
+    const shareData = {
+      title: `Post by @${post.authorUsername} on ChitChat`,
+      text: post.content ? post.content.slice(0, 100) : `Check out this post by @${post.authorUsername}!`,
+      url: postUrl,
+    };
+    // Use native share sheet on mobile (Android/iOS)
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch (err: any) {
+        // User cancelled share — ignore
+        if (err?.name !== 'AbortError') console.error('Share failed', err);
+      }
+    } else {
+      // Fallback: copy link to clipboard
+      try {
+        await navigator.clipboard.writeText(postUrl);
+        setShareToast(true);
+        setTimeout(() => setShareToast(false), 2500);
+      } catch {
+        alert(`Copy this link: ${postUrl}`);
+      }
+    }
+  };
+
   if (isHidden) return null;
 
   return (
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="glass-container rounded-3xl overflow-hidden mb-6 transition-all duration-300"
+      className="glass-container rounded-3xl overflow-hidden mb-6 transition-all duration-300 relative"
     >
+      {/* Share Toast */}
+      <AnimatePresence>
+        {shareToast && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="absolute top-4 left-1/2 -translate-x-1/2 z-50 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-xs font-semibold px-4 py-2 rounded-full shadow-lg"
+          >
+            🔗 Link copied to clipboard!
+          </motion.div>
+        )}
+      </AnimatePresence>
       {/* Header */}
       <div className="flex items-center justify-between p-4">
         <div className="flex items-center gap-3">
@@ -320,7 +361,7 @@ export default function PostCard({ post, showDelete = false, onDeleted }: PostCa
               <MessageCircle onClick={fetchComments} className={cn("w-7 h-7 text-zinc-800 dark:text-zinc-200 cursor-pointer", showComments && "text-indigo-600 dark:text-indigo-400")} />
             </motion.div>
             <motion.div whileTap={{ scale: 1.2 }}>
-              <Send className="w-7 h-7 text-zinc-800 dark:text-zinc-200 cursor-pointer" />
+              <Send onClick={handleShare} className="w-7 h-7 text-zinc-800 dark:text-zinc-200 cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors" />
             </motion.div>
           </div>
           <motion.div whileTap={{ scale: 1.2 }}>
