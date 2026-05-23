@@ -48,11 +48,11 @@ public class User {
     @Enumerated(EnumType.STRING)
     private Role role = Role.USER;
 
-    @Formula("(select count(*) from follows f where f.following_id = {alias}.id)")
-    private int followersCount;
+    @Transient
+    private int followersCount = 0;
 
-    @Formula("(select count(*) from follows f where f.follower_id = {alias}.id)")
-    private int followingCount;
+    @Transient
+    private int followingCount = 0;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

@@ -25,23 +25,28 @@ export default function Sidebar() {
   const pathname = usePathname();
   const { user, logout } = useAuth();
   const [unreadCount, setUnreadCount] = useState<number>(0);
+  const [unreadNotificationsCount, setUnreadNotificationsCount] = useState<number>(0);
 
   useEffect(() => {
     if (!user) return;
 
-    const fetchUnreadCount = async () => {
+    const fetchUnreadCounts = async () => {
       try {
-        const res = await axiosInstance.get('/messages/unread/count');
-        setUnreadCount(Number(res.data) || 0);
+        const [msgRes, notifRes] = await Promise.all([
+          axiosInstance.get('/messages/unread/count'),
+          axiosInstance.get('/notifications/unread/count')
+        ]);
+        setUnreadCount(Number(msgRes.data) || 0);
+        setUnreadNotificationsCount(Number(notifRes.data) || 0);
       } catch (err) {
-        console.error('Failed to fetch unread messages count', err);
+        console.error('Failed to fetch unread counts', err);
       }
     };
 
-    fetchUnreadCount();
+    fetchUnreadCounts();
 
-    // Poll every 5 seconds to keep unread messages count completely in sync
-    const interval = setInterval(fetchUnreadCount, 5000);
+    // Poll every 5 seconds to keep unread counts completely in sync
+    const interval = setInterval(fetchUnreadCounts, 5000);
     return () => clearInterval(interval);
   }, [user]);
 
@@ -82,12 +87,20 @@ export default function Sidebar() {
                       {unreadCount}
                     </span>
                   )}
+                  {item.label === 'Notifications' && unreadNotificationsCount > 0 && (
+                    <span className="absolute top-0 right-0 w-3 h-3 bg-rose-500 rounded-full border-2 border-white dark:border-zinc-900 shadow-sm" />
+                  )}
                 </div>
                 <span className="hidden xl:flex items-center gap-2 text-base tracking-tight">
                   {item.label}
                   {item.label === 'Messages' && unreadCount > 0 && (
                     <span className="px-2 py-0.5 text-xs font-bold bg-rose-500/10 text-rose-500 rounded-full border border-rose-500/20">
                       {unreadCount}
+                    </span>
+                  )}
+                  {item.label === 'Notifications' && unreadNotificationsCount > 0 && (
+                    <span className="px-2 py-0.5 text-xs font-bold bg-rose-500/10 text-rose-500 rounded-full border border-rose-500/20">
+                      {unreadNotificationsCount}
                     </span>
                   )}
                 </span>

@@ -49,15 +49,15 @@ public class SearchService {
         
         return users.stream()
                 .filter(user -> !user.getEmail().equals(currentEmail))
-                .sorted((u1, u2) -> Integer.compare(u2.getFollowersCount(), u1.getFollowersCount()))
+                .sorted((u1, u2) -> Long.compare(followRepository.countByFollowing(u2), followRepository.countByFollowing(u1)))
                 .map(user -> new UserResponse(
                         user.getId(),
                         user.getUsername(),
                         user.getEmail(),
                         user.getBio(),
                         user.getAvatarUrl(),
-                        user.getFollowersCount(),
-                        user.getFollowingCount(),
+                        (int) followRepository.countByFollowing(user),
+                        (int) followRepository.countByFollower(user),
                         user.isShowActivityStatus(),
                         currentUser != null ? followRepository.findByFollowerAndFollowing(currentUser, user).isPresent() : false,
                         user.isPrivateAccount(),
@@ -79,8 +79,8 @@ public class SearchService {
                         u.getEmail(),
                         u.getBio(),
                         u.getAvatarUrl(),
-                        u.getFollowersCount(),
-                        u.getFollowingCount(),
+                        (int) followRepository.countByFollowing(u),
+                        (int) followRepository.countByFollower(u),
                         u.isShowActivityStatus(),
                         false,
                         u.isPrivateAccount(),

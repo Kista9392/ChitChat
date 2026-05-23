@@ -222,8 +222,8 @@ public class UserService {
                 user.getEmail(),
                 user.getBio(),
                 user.getAvatarUrl(),
-                user.getFollowersCount(),
-                user.getFollowingCount(),
+                (int) followRepository.countByFollowing(user),
+                (int) followRepository.countByFollower(user),
                 user.isShowActivityStatus(),
                 isFollowing,
                 user.isPrivateAccount(),
@@ -242,8 +242,8 @@ public class UserService {
                 user.getEmail(),
                 user.getBio(),
                 user.getAvatarUrl(),
-                user.getFollowersCount(),
-                user.getFollowingCount(),
+                (int) followRepository.countByFollowing(user),
+                (int) followRepository.countByFollower(user),
                 user.isShowActivityStatus(),
                 false,
                 user.isPrivateAccount(),
@@ -284,7 +284,7 @@ public class UserService {
         user.setBio(bio);
         userRepository.save(user);
         return new UserResponse(user.getId(), user.getUsername(), user.getEmail(), user.getBio(), user.getAvatarUrl(),
-                user.getFollowersCount(), user.getFollowingCount(), user.isShowActivityStatus(), false,
+                (int) followRepository.countByFollowing(user), (int) followRepository.countByFollower(user), user.isShowActivityStatus(), false,
                 user.isPrivateAccount(), true, user.getCreatedAt());
     }
 
@@ -326,7 +326,7 @@ public class UserService {
         user.setAvatarUrl(avatarUrl);
         userRepository.save(user);
         return new UserResponse(user.getId(), user.getUsername(), user.getEmail(), user.getBio(), user.getAvatarUrl(),
-                user.getFollowersCount(), user.getFollowingCount(), user.isShowActivityStatus(), false,
+                (int) followRepository.countByFollowing(user), (int) followRepository.countByFollower(user), user.isShowActivityStatus(), false,
                 user.isPrivateAccount(), true, user.getCreatedAt());
     }
 
@@ -481,8 +481,8 @@ public class UserService {
                         u.getEmail(),
                         u.getBio(),
                         u.getAvatarUrl(),
-                        u.getFollowersCount(),
-                        u.getFollowingCount(),
+                        (int) followRepository.countByFollowing(u),
+                        (int) followRepository.countByFollower(u),
                         u.isShowActivityStatus(),
                         false,
                         u.isPrivateAccount(),
@@ -518,8 +518,8 @@ public class UserService {
                         u.getEmail(),
                         u.getBio(),
                         u.getAvatarUrl(),
-                        u.getFollowersCount(),
-                        u.getFollowingCount(),
+                        (int) followRepository.countByFollowing(u),
+                        (int) followRepository.countByFollower(u),
                         u.isShowActivityStatus(),
                         false,
                         u.isPrivateAccount(),

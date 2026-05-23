@@ -96,4 +96,11 @@ public class NotificationService {
             notificationRepository.save(notification);
         }
     }
+
+    @Transactional(readOnly = true)
+    public long getUnreadCount(String userEmail) {
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return notificationRepository.countByRecipientAndIsReadFalse(user);
+    }
 }
