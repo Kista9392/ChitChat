@@ -24,7 +24,7 @@ export function getOptimizedImageUrl(url: string | null | undefined): string {
     resolvedUrl = url.startsWith('/') ? `${apiBase}${url}` : `${apiBase}/uploads/${url}`;
   } else {
     // If the database has localhost loopback addresses from a local database run, dynamically rewrite them
-    const targetBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:7860';
+    const targetBase = process.env.NEXT_PUBLIC_API_URL;
     if (targetBase) {
       if (url.includes('localhost:8080') && !targetBase.includes('localhost:8080')) {
         resolvedUrl = url.replace(/https?:\/\/localhost:8080/, targetBase);
