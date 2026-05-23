@@ -64,15 +64,18 @@ public class UserService {
     }
 
     public User registerUser(String username, String email, String rawPassword, String phoneNumber) {
-        if (userRepository.findByEmail(email).isPresent()) {
+        String trimmedUsername = username != null ? username.trim() : null;
+        String trimmedEmail = email != null ? email.trim() : null;
+
+        if (userRepository.findByEmail(trimmedEmail).isPresent()) {
             throw new com.social.backend.exception.UserAlreadyExistsException("Email is already taken!");
         }
-        if (userRepository.findByUsername(username).isPresent()) {
+        if (userRepository.findByUsername(trimmedUsername).isPresent()) {
             throw new com.social.backend.exception.UserAlreadyExistsException("Username is already taken!");
         }
 
         String hashedPassword = passwordEncoder.encode(rawPassword);
-        User newUser = new User(username, email, hashedPassword, phoneNumber);
+        User newUser = new User(trimmedUsername, trimmedEmail, hashedPassword, phoneNumber);
         return userRepository.save(newUser);
     }
 

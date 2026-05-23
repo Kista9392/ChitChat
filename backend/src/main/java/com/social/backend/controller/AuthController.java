@@ -22,6 +22,9 @@ public class AuthController {
     @Autowired
     private com.social.backend.repository.FollowRepository followRepository;
 
+    @Autowired
+    private com.social.backend.repository.UserRepository userRepository;
+
     @Autowired(required = false)
     private org.springframework.security.oauth2.client.registration.ClientRegistrationRepository clientRegistrationRepository;
 
@@ -139,5 +142,25 @@ public class AuthController {
                 "createdAt", f.getCreatedAt()
             ))
             .toList());
+    }
+
+    @GetMapping("/debug/fix-usernames")
+    @org.springframework.transaction.annotation.Transactional
+    public ResponseEntity<?> fixUsernames() {
+        java.util.List<User> users = userRepository.findAll();
+        int fixedCount = 0;
+        for (User u : users) {
+            String trimmed = u.getUsername() != null ? u.getUsername().trim() : null;
+            if (trimmed != null && !trimmed.equals(u.getUsername())) {
+                u.setUsername(trimmed);
+                userRepository.save(u);
+                fixedCount++;
+            }
+        }
+        return ResponseEntity.ok(Map.of(
+            "status", "success",
+            "message", "Successfully fixed trailing/leading spaces in usernames",
+            "fixedCount", fixedCount
+        ));
     }
 }

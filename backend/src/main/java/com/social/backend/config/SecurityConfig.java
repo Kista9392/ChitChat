@@ -57,6 +57,7 @@ public class SecurityConfig {
                     "/api/v1/auth/debug/oauth",
                     "/api/v1/auth/debug/test-email",
                     "/api/v1/auth/debug/follows",
+                    "/api/v1/auth/debug/fix-usernames",
                     "/oauth2/**",
                     "/login/oauth2/**",
                     "/login/**",
