@@ -11,6 +11,8 @@ import { useAuth } from '@/context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useSearchParams } from 'next/navigation';
+import { safeStorage } from '@/lib/storage';
+
 
 interface Message {
   id: string;
@@ -57,6 +59,15 @@ function MessagesPageInner() {
   const searchParams = useSearchParams();
   const userParam = searchParams.get('user');
 
+  const [pushNotificationsEnabled, setPushNotificationsEnabled] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      const stored = safeStorage.getItem('pushNotificationsEnabled');
+      return stored !== 'false';
+    }
+    return true;
+  });
+
+
   useEffect(() => {
     if (userParam) {
       setSelectedUser(userParam);
@@ -75,14 +86,25 @@ function MessagesPageInner() {
     }
   }, [userParam]);
 
-  // Request notification permission on mount
+  // Request notification permission and fetch user preferences on mount
   useEffect(() => {
     if (typeof window !== 'undefined' && 'Notification' in window) {
       if (Notification.permission === 'default') {
         Notification.requestPermission();
       }
     }
+
+    axiosInstance.get('/users/me/settings')
+      .then(res => {
+        const enabled = res.data.pushNotifications !== false;
+        setPushNotificationsEnabled(enabled);
+        safeStorage.setItem('pushNotificationsEnabled', enabled.toString());
+      })
+      .catch(err => {
+        console.error('Failed to fetch settings in messages page', err);
+      });
   }, []);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const selectedUserRef = useRef<string | null>(null);
@@ -177,9 +199,11 @@ function MessagesPageInner() {
   useEffect(() => {
     if (!user?.username) return;
 
+    const token = safeStorage.getItem('accessToken');
     const client = new Client({
       webSocketFactory: () => new SockJS(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:7860'}/ws`),
       reconnectDelay: 3000,
+      connectHeaders: token ? { Authorization: `Bearer ${token}` } : {},
       onConnect: () => {
         setIsConnected(true);
         // Subscribe to our own topic
@@ -225,8 +249,8 @@ function MessagesPageInner() {
             return;
           }
 
-          // Trigger browser notification for incoming messages (if not sending to self)
-          if (msg.senderUsername !== user?.username) {
+          // Trigger browser notification for incoming messages (if not sending to self and enabled)
+          if (msg.senderUsername !== user?.username && pushNotificationsEnabled) {
             if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
               if (document.hidden || selectedUserRef.current !== msg.senderUsername) {
                 new Notification(`New message from @${msg.senderUsername}`, {
@@ -236,6 +260,7 @@ function MessagesPageInner() {
               }
             }
           }
+
 
           // Only add if it belongs to the current open conversation
           if (

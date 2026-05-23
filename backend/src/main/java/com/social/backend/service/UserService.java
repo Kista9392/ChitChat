@@ -242,6 +242,18 @@ public class UserService {
         userRepository.save(user);
     }
 
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+    public java.util.Map<String, Boolean> getSettings(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        java.util.Map<String, Boolean> settings = new java.util.HashMap<>();
+        settings.put("pushNotifications", user.isPushNotificationsEnabled());
+        settings.put("emailNotifications", user.isEmailNotificationsEnabled());
+        settings.put("isPrivateAccount", user.isPrivateAccount());
+        return settings;
+    }
+
+
     @org.springframework.transaction.annotation.Transactional
     public UserResponse updateAvatar(String email, MultipartFile file) {
         User user = userRepository.findByEmail(email)

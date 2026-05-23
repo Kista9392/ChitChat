@@ -61,6 +61,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, []);
 
+  // Register service worker on mount
+  useEffect(() => {
+    if ('serviceWorker' in navigator && typeof window !== 'undefined') {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then(reg => console.log('Service Worker registered successfully:', reg.scope))
+          .catch(err => console.error('Service Worker registration failed:', err));
+      });
+    }
+  }, []);
+
+
   useEffect(() => {
     const isDark = safeStorage.getItem('darkMode') === 'true';
     setDarkMode(isDark);

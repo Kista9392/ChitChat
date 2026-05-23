@@ -4,6 +4,8 @@ import React, { useState, useEffect } from 'react';
 import Sidebar from '@/components/Sidebar';
 import { useAuth } from '@/context/AuthContext';
 import axiosInstance from '@/lib/axios';
+import { safeStorage } from '@/lib/storage';
+
 import { Settings as SettingsIcon, LogOut, Shield, Bell, Moon, User, Lock, Check, AlertCircle, EyeOff, Eye, UserX, Trash2, Globe, BarChart2, Clock, Calendar, Heart, X, Film, Menu, PlusSquare } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -115,6 +117,18 @@ export default function SettingsPage() {
   }, [user]);
 
   useEffect(() => {
+    axiosInstance.get('/users/me/settings')
+      .then(res => {
+        setPushNotifications(res.data.pushNotifications !== false);
+        setEmailNotifications(res.data.emailNotifications === true);
+        setIsPrivateAccount(res.data.isPrivateAccount === true);
+        safeStorage.setItem('pushNotificationsEnabled', (res.data.pushNotifications !== false).toString());
+      })
+      .catch(err => console.error('Failed to fetch settings from backend', err));
+  }, []);
+
+
+  useEffect(() => {
     if (activeTab === 'activity') {
       fetchLikedPosts();
     }
@@ -187,12 +201,14 @@ export default function SettingsPage() {
 
   const handleTogglePushNotifications = async (val: boolean) => {
     setPushNotifications(val);
+    safeStorage.setItem('pushNotificationsEnabled', val.toString());
     try {
       await axiosInstance.put('/users/me/settings', { pushNotifications: val, emailNotifications: emailNotifications });
     } catch (err) {
       console.error('Failed to update settings', err);
     }
   };
+
 
   const handleToggleEmailNotifications = async (val: boolean) => {
     setEmailNotifications(val);

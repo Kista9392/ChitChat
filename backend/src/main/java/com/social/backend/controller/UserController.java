@@ -51,6 +51,16 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
+    // Get settings
+    @GetMapping("/me/settings")
+    public ResponseEntity<Map<String, Boolean>> getSettings(Authentication authentication) {
+        if (authentication == null) {
+            return ResponseEntity.status(401).build();
+        }
+        return ResponseEntity.ok(userService.getSettings(authentication.getName()));
+    }
+
+
     // Upload avatar
     @PostMapping("/me/avatar")
     public ResponseEntity<UserResponse> uploadAvatar(

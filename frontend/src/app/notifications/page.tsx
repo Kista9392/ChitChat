@@ -11,6 +11,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { safeStorage } from '@/lib/storage';
+
 
 export default function NotificationsPage() {
   const { user } = useAuth();
@@ -35,10 +37,13 @@ export default function NotificationsPage() {
       .finally(() => setIsLoading(false));
 
     // Connect WebSocket for real-time notifications
+    const token = safeStorage.getItem('accessToken');
     const client = new Client({
       webSocketFactory: () => new SockJS(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:7860'}/ws`),
       reconnectDelay: 3000,
+      connectHeaders: token ? { Authorization: `Bearer ${token}` } : {},
       onConnect: () => {
+
         client.subscribe(`/topic/notifications/${user.username}`, (frame) => {
           try {
             const body = JSON.parse(frame.body);

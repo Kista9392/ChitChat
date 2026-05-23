@@ -16,7 +16,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "ChitChat",
   description: "A premium social experience",
+  manifest: "/manifest.json",
 };
+
 
 export const viewport = {
   width: "device-width",
