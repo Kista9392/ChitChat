@@ -73,7 +73,7 @@ public class StoryService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         LocalDateTime cutoff = LocalDateTime.now().minusHours(24);
-        List<Story> stories = storyRepository.findActiveStories(user, cutoff);
+        List<Story> stories = storyRepository.findActiveStories(user.getId(), cutoff);
 
         return stories.stream().map(this::mapToResponse).collect(Collectors.toList());
     }
