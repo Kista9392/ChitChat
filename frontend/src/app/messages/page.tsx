@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback, Suspense } from 'react';
 import Sidebar from '@/components/Sidebar';
 import axiosInstance from '@/lib/axios';
-import { Send, Search, MessageCircle, Check, CheckCheck, SmilePlus, Camera, Mic, Play, X, ChevronLeft } from 'lucide-react';
+import { Send, Search, MessageCircle, Check, CheckCheck, SmilePlus, Camera, Mic, Play, X, ChevronLeft, Trash2, Copy, CheckSquare, Square, MoreVertical } from 'lucide-react';
 import Link from 'next/link';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
@@ -46,6 +46,12 @@ function MessagesPageInner() {
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
+
+  // Premium Features States
+  const [activeContextMenu, setActiveContextMenu] = useState<string | null>(null);
+  const [contextMenuPos, setContextMenuPos] = useState<{ x: number, y: number } | null>(null);
+  const [isSelectionMode, setIsSelectionMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   const stompClient = useRef<Client | null>(null);
   const searchParams = useSearchParams();
@@ -185,6 +191,31 @@ function MessagesPageInner() {
             return;
           }
 
+          // Check for transient CLEAR_CHAT receipt
+          if (msg.messageType === 'CLEAR_CHAT') {
+            if (selectedUserRef.current === msg.senderUsername) {
+              setMessages([]);
+            }
+            return;
+          }
+
+          // Check for transient DELETE_MESSAGE receipt
+          if (msg.messageType === 'DELETE_MESSAGE') {
+            if (selectedUserRef.current === msg.senderUsername) {
+              setMessages(prev => prev.filter(m => m.id !== msg.content));
+            }
+            return;
+          }
+
+          // Check for transient DELETE_BULK receipt
+          if (msg.messageType === 'DELETE_BULK') {
+            if (selectedUserRef.current === msg.senderUsername) {
+              const ids = (msg.content || '').split(',');
+              setMessages(prev => prev.filter(m => !ids.includes(m.id)));
+            }
+            return;
+          }
+
           // Only add if it belongs to the current open conversation
           if (
             selectedUserRef.current &&
@@ -244,6 +275,90 @@ function MessagesPageInner() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  // Close context menu on page click
+  useEffect(() => {
+    const handleGlobalClick = () => {
+      setActiveContextMenu(null);
+      setContextMenuPos(null);
+    };
+    window.addEventListener('click', handleGlobalClick);
+    return () => window.removeEventListener('click', handleGlobalClick);
+  }, []);
+
+  const longPressTimeout = useRef<any>(null);
+
+  const handleTouchStart = (messageId: string, e: any) => {
+    if (isSelectionMode) return;
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    
+    if (longPressTimeout.current) clearTimeout(longPressTimeout.current);
+    longPressTimeout.current = setTimeout(() => {
+      setActiveContextMenu(messageId);
+      setContextMenuPos({ x: clientX, y: clientY });
+    }, 600);
+  };
+
+  const handleTouchEnd = () => {
+    if (longPressTimeout.current) {
+      clearTimeout(longPressTimeout.current);
+    }
+  };
+
+  const handleContextMenu = (messageId: string, e: any) => {
+    e.preventDefault();
+    if (isSelectionMode) return;
+    setActiveContextMenu(messageId);
+    setContextMenuPos({ x: e.clientX, y: e.clientY });
+  };
+
+  const clearChat = async () => {
+    if (!selectedUser) return;
+    if (!confirm('Are you sure you want to clear all messages in this conversation? This action is permanent!')) return;
+    try {
+      await axiosInstance.delete(`/messages/${selectedUser}/clear`);
+      setMessages([]);
+    } catch (err) {
+      console.error('Failed to clear chat', err);
+    }
+  };
+
+  const deleteSingleMessage = async (messageId: string) => {
+    if (!selectedUser) return;
+    try {
+      await axiosInstance.delete(`/messages/delete/${messageId}?otherUsername=${selectedUser}`);
+      setMessages(prev => prev.filter(m => m.id !== messageId));
+    } catch (err) {
+      console.error('Failed to delete message', err);
+    }
+  };
+
+  const toggleSelectMessage = (messageId: string) => {
+    setSelectedIds(prev => 
+      prev.includes(messageId) 
+        ? prev.filter(id => id !== messageId) 
+        : [...prev, messageId]
+    );
+  };
+
+  const startSelectionMode = (initialMessageId: string) => {
+    setIsSelectionMode(true);
+    setSelectedIds([initialMessageId]);
+  };
+
+  const deleteBulkMessages = async () => {
+    if (!selectedUser || selectedIds.length === 0) return;
+    if (!confirm(`Are you sure you want to delete these ${selectedIds.length} selected messages?`)) return;
+    try {
+      await axiosInstance.post(`/messages/delete/bulk?otherUsername=${selectedUser}`, selectedIds);
+      setMessages(prev => prev.filter(m => !selectedIds.includes(m.id)));
+      setIsSelectionMode(false);
+      setSelectedIds([]);
+    } catch (err) {
+      console.error('Failed to delete bulk messages', err);
+    }
+  };
 
   const sendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -469,6 +584,34 @@ function MessagesPageInner() {
                     <p className="text-[11px] text-zinc-400">Offline</p>
                   )}
                 </div>
+                <div className="ml-auto flex items-center gap-2">
+                  {isSelectionMode ? (
+                    <button
+                      onClick={() => {
+                        setIsSelectionMode(false);
+                        setSelectedIds([]);
+                      }}
+                      className="px-3 py-1.5 rounded-full text-xs font-bold bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-black dark:text-white transition-colors"
+                    >
+                      Cancel Selection
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => setIsSelectionMode(true)}
+                      className="p-2 text-zinc-400 hover:text-black dark:hover:text-white rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all"
+                      title="Select Messages"
+                    >
+                      <CheckSquare className="w-5 h-5" />
+                    </button>
+                  )}
+                  <button 
+                    onClick={clearChat}
+                    className="p-2 text-red-400 hover:text-red-500 rounded-full hover:bg-red-50 dark:hover:bg-red-950/20 transition-all"
+                    title="Clear Chat"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </button>
+                </div>
               </div>
 
               {/* Messages Area */}
@@ -487,14 +630,36 @@ function MessagesPageInner() {
                     const isMe = m.senderUsername === user?.username;
                     const prevMsg = messages[idx - 1];
                     const showAvatar = !prevMsg || prevMsg.senderUsername !== m.senderUsername;
+                    const isSelected = selectedIds.includes(m.id);
                     return (
                       <motion.div
                         key={m.id || idx}
                         initial={{ opacity: 0, y: 8 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.15 }}
-                        className={cn('flex items-end gap-2', isMe ? 'justify-end' : 'justify-start')}
+                        className={cn(
+                          'flex items-end gap-2 my-1 relative',
+                          isMe ? 'justify-end' : 'justify-start',
+                          isSelectionMode && 'cursor-pointer hover:bg-zinc-500/5 dark:hover:bg-zinc-500/10 p-1 rounded-lg transition-all'
+                        )}
+                        onClick={(e) => {
+                          if (isSelectionMode) {
+                            e.stopPropagation();
+                            toggleSelectMessage(m.id);
+                          }
+                        }}
                       >
+                        {/* Checkbox for receiver (on the far left) */}
+                        {isSelectionMode && !isMe && (
+                          <div className="mr-1 flex-shrink-0">
+                            {isSelected ? (
+                              <CheckSquare className="w-5 h-5 text-blue-500" />
+                            ) : (
+                              <Square className="w-5 h-5 text-zinc-300 dark:text-zinc-600" />
+                            )}
+                          </div>
+                        )}
+
                         {/* Avatar for receiver */}
                         {!isMe && (
                           <div className={cn('w-7 h-7 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0', !showAvatar && 'invisible')}>
@@ -503,12 +668,21 @@ function MessagesPageInner() {
                         )}
 
                         <div className={cn('flex flex-col gap-0.5', isMe ? 'items-end' : 'items-start')}>
-                          <div className={cn(
-                            'max-w-xs xl:max-w-sm px-4 py-2.5 rounded-2xl text-sm leading-relaxed break-words',
-                            isMe
-                              ? 'bg-black dark:bg-zinc-100 text-white dark:text-black rounded-br-sm'
-                              : 'bg-white dark:bg-zinc-800 text-black dark:text-white border border-zinc-100 dark:border-zinc-700 rounded-bl-sm shadow-sm'
-                          )}>
+                          <div 
+                            className={cn(
+                              'max-w-xs xl:max-w-sm px-4 py-2.5 rounded-2xl text-sm leading-relaxed break-words relative transition-all cursor-default select-text',
+                              isMe
+                                ? 'bg-black dark:bg-zinc-100 text-white dark:text-black rounded-br-sm'
+                                : 'bg-white dark:bg-zinc-800 text-black dark:text-white border border-zinc-100 dark:border-zinc-700 rounded-bl-sm shadow-sm',
+                              isSelected && 'ring-2 ring-blue-500 ring-offset-1 dark:ring-offset-zinc-900',
+                              isSelectionMode && 'pointer-events-none'
+                            )}
+                            onContextMenu={(e) => handleContextMenu(m.id, e)}
+                            onTouchStart={(e) => handleTouchStart(m.id, e)}
+                            onTouchEnd={handleTouchEnd}
+                            onMouseDown={(e) => handleTouchStart(m.id, e)}
+                            onMouseUp={handleTouchEnd}
+                          >
                             {m.messageType === 'IMAGE' ? (
                               <img src={m.mediaUrl} alt="Sent image" className="rounded-lg max-w-full h-auto" />
                             ) : m.messageType === 'VOICE' ? (
@@ -534,8 +708,19 @@ function MessagesPageInner() {
                         </div>
 
                         {/* Checkmark for sent */}
-                        {isMe && (
+                        {isMe && !isSelectionMode && (
                           <CheckCheck className={cn("w-3.5 h-3.5 flex-shrink-0 mb-4", m.readAt ? "text-blue-500" : "text-zinc-300")} />
+                        )}
+
+                        {/* Checkbox for sender (on the far right) */}
+                        {isSelectionMode && isMe && (
+                          <div className="ml-1 flex-shrink-0">
+                            {isSelected ? (
+                              <CheckSquare className="w-5 h-5 text-blue-500" />
+                            ) : (
+                              <Square className="w-5 h-5 text-zinc-300 dark:text-zinc-600" />
+                            )}
+                          </div>
                         )}
                       </motion.div>
                     );
@@ -544,46 +729,134 @@ function MessagesPageInner() {
                 <div ref={messagesEndRef} />
               </div>
 
+              {/* Context Menu */}
+              <AnimatePresence>
+                {activeContextMenu && contextMenuPos && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    style={{
+                      position: 'fixed',
+                      left: contextMenuPos.x,
+                      top: contextMenuPos.y,
+                      zIndex: 9999,
+                    }}
+                    className="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-xl shadow-xl py-1.5 min-w-[140px] flex flex-col backdrop-blur-xl"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <button
+                      onClick={() => {
+                        const m = messages.find(msg => msg.id === activeContextMenu);
+                        if (m) {
+                          navigator.clipboard.writeText(m.content);
+                        }
+                        setActiveContextMenu(null);
+                      }}
+                      className="w-full text-left px-4 py-2 text-xs font-bold text-black dark:text-white hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors flex items-center gap-2"
+                    >
+                      <Copy className="w-3.5 h-3.5" />
+                      Copy Text
+                    </button>
+                    <button
+                      onClick={() => {
+                        startSelectionMode(activeContextMenu);
+                        setActiveContextMenu(null);
+                      }}
+                      className="w-full text-left px-4 py-2 text-xs font-bold text-black dark:text-white hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors flex items-center gap-2"
+                    >
+                      <CheckSquare className="w-3.5 h-3.5" />
+                      Select Multiple
+                    </button>
+                    {messages.find(msg => msg.id === activeContextMenu)?.senderUsername === user?.username && (
+                      <button
+                        onClick={() => {
+                          deleteSingleMessage(activeContextMenu);
+                          setActiveContextMenu(null);
+                        }}
+                        className="w-full text-left px-4 py-2 text-xs font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors flex items-center gap-2"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        Unsend / Delete
+                      </button>
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
-
-              {/* Input Bar */}
-              <form onSubmit={sendMessage} className="px-6 py-4 border-t border-white/10 dark:border-zinc-800/40 bg-white/40 dark:bg-zinc-950/40 backdrop-blur-xl flex items-center gap-3 flex-shrink-0 pb-10 md:pb-4">
-                <label className="cursor-pointer text-zinc-400 hover:text-black dark:hover:text-white transition-colors flex-shrink-0">
-                  <Camera className="w-6 h-6" />
-                  <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
-                </label>
-                <button
-                  type="button"
-                  onClick={isRecording ? stopRecording : startRecording}
-                  className={cn("cursor-pointer transition-colors flex-shrink-0", isRecording ? "text-red-500 animate-pulse" : "text-zinc-400 hover:text-black dark:hover:text-white")}
-                >
-                  <Mic className="w-6 h-6" />
-                </button>
-                <div className="flex-1 relative">
-                  <input
-                    ref={inputRef}
-                    type="text"
-                    placeholder="Message..."
-                    className="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-black dark:text-white rounded-full px-5 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10 focus:border-black dark:focus:border-white transition-all pr-12"
-                    value={newMessage}
-                    onChange={e => setNewMessage(e.target.value)}
-                    onKeyDown={e => e.key === 'Enter' && !e.shiftKey && sendMessage(e as any)}
-                  />
+              {/* Input Bar or Floating Selection Bar */}
+              {isSelectionMode ? (
+                <div className="px-6 py-4 border-t border-white/10 dark:border-zinc-800/40 bg-white/40 dark:bg-zinc-950/40 backdrop-blur-xl flex items-center justify-between flex-shrink-0 pb-10 md:pb-4">
+                  <div className="flex items-center gap-2">
+                    <CheckSquare className="w-5 h-5 text-blue-500 animate-pulse" />
+                    <span className="text-sm font-bold text-black dark:text-white">
+                      {selectedIds.length} message(s) selected
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => {
+                        setIsSelectionMode(false);
+                        setSelectedIds([]);
+                      }}
+                      className="px-4 py-2 rounded-full text-xs font-bold bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-black dark:text-white transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={deleteBulkMessages}
+                      disabled={selectedIds.length === 0}
+                      className={cn(
+                        "px-4 py-2 rounded-full text-xs font-bold flex items-center gap-1.5 transition-all",
+                        selectedIds.length > 0
+                          ? "bg-red-500 hover:bg-red-600 text-white shadow-md cursor-pointer"
+                          : "bg-red-300 dark:bg-red-950/20 text-white/50 dark:text-zinc-500 cursor-not-allowed"
+                      )}
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      Delete Selected
+                    </button>
+                  </div>
                 </div>
-                <motion.button
-                  type="submit"
-                  whileTap={{ scale: 0.9 }}
-                  disabled={!newMessage.trim() || isSending}
-                  className={cn(
-                    'w-10 h-10 rounded-full flex items-center justify-center transition-all flex-shrink-0',
-                    newMessage.trim()
-                      ? 'bg-black dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200 shadow-md'
-                      : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-600 cursor-not-allowed'
-                  )}
-                >
-                  <Send className="w-4 h-4" />
-                </motion.button>
-              </form>
+              ) : (
+                <form onSubmit={sendMessage} className="px-6 py-4 border-t border-white/10 dark:border-zinc-800/40 bg-white/40 dark:bg-zinc-950/40 backdrop-blur-xl flex items-center gap-3 flex-shrink-0 pb-10 md:pb-4">
+                  <label className="cursor-pointer text-zinc-400 hover:text-black dark:hover:text-white transition-colors flex-shrink-0">
+                    <Camera className="w-6 h-6" />
+                    <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+                  </label>
+                  <button
+                    type="button"
+                    onClick={isRecording ? stopRecording : startRecording}
+                    className={cn("cursor-pointer transition-colors flex-shrink-0", isRecording ? "text-red-500 animate-pulse" : "text-zinc-400 hover:text-black dark:hover:text-white")}
+                  >
+                    <Mic className="w-6 h-6" />
+                  </button>
+                  <div className="flex-1 relative">
+                    <input
+                      ref={inputRef}
+                      type="text"
+                      placeholder="Message..."
+                      className="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-black dark:text-white rounded-full px-5 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10 focus:border-black dark:focus:border-white transition-all pr-12"
+                      value={newMessage}
+                      onChange={e => setNewMessage(e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && !e.shiftKey && sendMessage(e as any)}
+                    />
+                  </div>
+                  <motion.button
+                    type="submit"
+                    whileTap={{ scale: 0.9 }}
+                    disabled={!newMessage.trim() || isSending}
+                    className={cn(
+                      'w-10 h-10 rounded-full flex items-center justify-center transition-all flex-shrink-0',
+                      newMessage.trim()
+                        ? 'bg-black dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200 shadow-md'
+                        : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-600 cursor-not-allowed'
+                    )}
+                  >
+                    <Send className="w-4 h-4" />
+                  </motion.button>
+                </form>
+              )}
             </>
           ) : (
             /* Empty state */

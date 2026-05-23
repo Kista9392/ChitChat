@@ -126,4 +126,84 @@ public class MessageController {
     public ResponseEntity<Long> getUnreadCount(Authentication authentication) {
         return ResponseEntity.ok(messageService.getUnreadCount(authentication.getName()));
     }
+
+    @DeleteMapping("/{otherUsername}/clear")
+    public ResponseEntity<Void> clearConversation(@PathVariable String otherUsername, Authentication authentication) {
+        messageService.clearConversation(authentication.getName(), otherUsername);
+        
+        try {
+            String currentUsername = messageService.getUsernameByEmail(authentication.getName());
+            MessageResponse clearNotification = new MessageResponse(
+                    null,
+                    currentUsername,
+                    otherUsername,
+                    "clear",
+                    java.time.LocalDateTime.now(),
+                    java.time.LocalDateTime.now(),
+                    null,
+                    "CLEAR_CHAT"
+            );
+            messagingTemplate.convertAndSend("/topic/messages/" + otherUsername, clearNotification);
+        } catch (Exception e) {
+            // Ignore
+        }
+        
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/delete/{messageId}")
+    public ResponseEntity<Void> deleteMessage(@PathVariable java.util.UUID messageId, @RequestParam String otherUsername, Authentication authentication) {
+        messageService.deleteMessage(messageId, authentication.getName());
+        
+        try {
+            String currentUsername = messageService.getUsernameByEmail(authentication.getName());
+            MessageResponse deleteNotification = new MessageResponse(
+                    null,
+                    currentUsername,
+                    otherUsername,
+                    messageId.toString(),
+                    java.time.LocalDateTime.now(),
+                    java.time.LocalDateTime.now(),
+                    null,
+                    "DELETE_MESSAGE"
+            );
+            messagingTemplate.convertAndSend("/topic/messages/" + otherUsername, deleteNotification);
+        } catch (Exception e) {
+            // Ignore
+        }
+        
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/delete/bulk")
+    public ResponseEntity<Void> deleteMessagesBulk(
+            @RequestBody java.util.List<java.util.UUID> messageIds,
+            @RequestParam String otherUsername,
+            Authentication authentication
+    ) {
+        messageService.deleteMessagesBulk(messageIds, authentication.getName());
+        
+        try {
+            String currentUsername = messageService.getUsernameByEmail(authentication.getName());
+            String idsString = messageIds.stream()
+                    .map(java.util.UUID::toString)
+                    .collect(java.util.stream.Collectors.joining(","));
+            
+            MessageResponse deleteBulkNotification = new MessageResponse(
+                    null,
+                    currentUsername,
+                    otherUsername,
+                    idsString,
+                    java.time.LocalDateTime.now(),
+                    java.time.LocalDateTime.now(),
+                    null,
+                    "DELETE_BULK"
+            );
+            messagingTemplate.convertAndSend("/topic/messages/" + otherUsername, deleteBulkNotification);
+        } catch (Exception e) {
+            // Ignore
+        }
+        
+        return ResponseEntity.ok().build();
+    }
 }

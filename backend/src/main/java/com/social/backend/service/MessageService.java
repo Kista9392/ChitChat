@@ -208,4 +208,42 @@ public class MessageService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
         return messageRepository.countByReceiverAndReadAtIsNull(receiver);
     }
+
+    @Transactional
+    public void clearConversation(String currentUserEmail, String otherUsername) {
+        User currentUser = userRepository.findByEmail(currentUserEmail)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        User otherUser = userRepository.findByUsername(otherUsername)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        messageRepository.deleteConversation(currentUser, otherUser);
+    }
+
+    @Transactional
+    public void deleteMessage(java.util.UUID messageId, String currentUserEmail) {
+        User currentUser = userRepository.findByEmail(currentUserEmail)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        Message message = messageRepository.findById(messageId)
+                .orElseThrow(() -> new RuntimeException("Message not found"));
+        
+        if (message.getSender().getId().equals(currentUser.getId()) || 
+            message.getReceiver().getId().equals(currentUser.getId())) {
+            messageRepository.delete(message);
+        } else {
+            throw new RuntimeException("Unauthorized to delete this message");
+        }
+    }
+
+    @Transactional
+    public void deleteMessagesBulk(java.util.List<java.util.UUID> messageIds, String currentUserEmail) {
+        User currentUser = userRepository.findByEmail(currentUserEmail)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        java.util.List<Message> messages = messageRepository.findAllById(messageIds);
+        for (Message m : messages) {
+            if (m.getSender().getId().equals(currentUser.getId()) || 
+                m.getReceiver().getId().equals(currentUser.getId())) {
+                messageRepository.delete(m);
+            }
+        }
+    }
 }

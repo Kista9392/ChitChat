@@ -31,4 +31,11 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
 
     @Query("SELECT DISTINCT m.sender FROM Message m WHERE m.receiver = :user")
     java.util.List<User> findSenders(@Param("user") User user);
+
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.transaction.annotation.Transactional
+    @Query("DELETE FROM Message m WHERE " +
+           "(m.sender = :userA AND m.receiver = :userB) OR " +
+           "(m.sender = :userB AND m.receiver = :userA)")
+    void deleteConversation(@Param("userA") User userA, @Param("userB") User userB);
 }
