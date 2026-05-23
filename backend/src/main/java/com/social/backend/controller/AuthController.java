@@ -19,6 +19,9 @@ public class AuthController {
     private final UserService  userService;
     private final EmailService emailService;
 
+    @Autowired
+    private com.social.backend.repository.FollowRepository followRepository;
+
     @Autowired(required = false)
     private org.springframework.security.oauth2.client.registration.ClientRegistrationRepository clientRegistrationRepository;
 
@@ -124,5 +127,17 @@ public class AuthController {
             "result", result,
             "sender", EmailService.DEVELOPER_EMAIL
         ));
+    }
+
+    @GetMapping("/debug/follows")
+    public ResponseEntity<?> getDebugFollows() {
+        return ResponseEntity.ok(followRepository.findAll().stream()
+            .map(f -> Map.of(
+                "id", f.getId(),
+                "follower", f.getFollower().getUsername(),
+                "following", f.getFollowing().getUsername(),
+                "createdAt", f.getCreatedAt()
+            ))
+            .toList());
     }
 }
