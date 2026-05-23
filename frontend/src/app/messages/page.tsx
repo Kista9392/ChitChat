@@ -74,6 +74,15 @@ function MessagesPageInner() {
       });
     }
   }, [userParam]);
+
+  // Request notification permission on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      if (Notification.permission === 'default') {
+        Notification.requestPermission();
+      }
+    }
+  }, []);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const selectedUserRef = useRef<string | null>(null);
@@ -214,6 +223,18 @@ function MessagesPageInner() {
               setMessages(prev => prev.filter(m => !ids.includes(m.id)));
             }
             return;
+          }
+
+          // Trigger browser notification for incoming messages (if not sending to self)
+          if (msg.senderUsername !== user?.username) {
+            if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+              if (document.hidden || selectedUserRef.current !== msg.senderUsername) {
+                new Notification(`New message from @${msg.senderUsername}`, {
+                  body: msg.messageType === 'IMAGE' ? '📷 Sent you an image' : msg.messageType === 'VOICE' ? '🎙️ Sent you a voice message' : msg.content,
+                  icon: '/favicon.ico'
+                });
+              }
+            }
           }
 
           // Only add if it belongs to the current open conversation
