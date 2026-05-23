@@ -51,28 +51,54 @@ public class EmailService {
     private final ObjectMapper  objectMapper = new ObjectMapper();
 
     private boolean isConfigured() {
-        return brevoApiKey != null
-                && !brevoApiKey.isBlank()
-                && !brevoApiKey.equals("NOT_SET")
-                && brevoApiKey.startsWith("xkeysib-");
+        if (brevoApiKey == null || brevoApiKey.isBlank() || brevoApiKey.equals("NOT_SET")) {
+            System.err.println("[EmailService] BREVO_API_KEY is not set in environment!");
+            return false;
+        }
+        System.out.println("[EmailService] BREVO_API_KEY found, length=" + brevoApiKey.length()
+                + ", prefix=" + brevoApiKey.substring(0, Math.min(10, brevoApiKey.length())) + "...");
+        return true;
     }
 
     /**
-     * Core send method — fires an HTTPS POST to Brevo API.
-     * Works from any cloud host (HTTPS port 443 is never blocked).
+     * Synchronous version — returns the raw Brevo API response for debugging.
+     * Called from the test endpoint to surface any errors immediately.
+     */
+    public String testEmail(String to) {
+        if (!isConfigured()) {
+            return "ERROR: BREVO_API_KEY not set or empty in HF Secrets.";
+        }
+        try {
+            Map<String, Object> payload = Map.of(
+                "sender",      Map.of("name", SENDER_NAME, "email", SENDER_EMAIL),
+                "to",          List.of(Map.of("email", to)),
+                "subject",     "ChitChat Email Test",
+                "htmlContent", "<p>This is a test email from ChitChat. If you received this, email is working!</p>"
+            );
+            String json = objectMapper.writeValueAsString(payload);
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(BREVO_API_URL))
+                    .header("api-key",      brevoApiKey.trim())
+                    .header("Content-Type", "application/json")
+                    .header("Accept",       "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(json))
+                    .timeout(Duration.ofSeconds(20))
+                    .build();
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            return "HTTP " + response.statusCode() + ": " + response.body();
+        } catch (Exception e) {
+            return "EXCEPTION: " + e.getClass().getSimpleName() + " - " + e.getMessage();
+        }
+    }
+
+    /**
+     * Core async send — fires HTTPS POST to Brevo API.
      */
     @Async
     public void sendEmail(String to, String subject, String htmlBody) {
         System.out.println("=== EmailService: to=" + to + " | subject=" + subject);
 
-        if (!isConfigured()) {
-            System.err.println(
-                "[EmailService] BREVO_API_KEY not set or invalid. " +
-                "Sign up free at https://app.brevo.com, generate an API key, " +
-                "then add BREVO_API_KEY to your HF Space secrets."
-            );
-            return;
-        }
+        if (!isConfigured()) return;
 
         try {
             Map<String, Object> payload = Map.of(
@@ -86,7 +112,7 @@ public class EmailService {
 
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(BREVO_API_URL))
-                    .header("api-key",      brevoApiKey)
+                    .header("api-key",      brevoApiKey.trim())
                     .header("Content-Type", "application/json")
                     .header("Accept",       "application/json")
                     .POST(HttpRequest.BodyPublishers.ofString(json))
@@ -97,14 +123,17 @@ public class EmailService {
                     request, HttpResponse.BodyHandlers.ofString());
 
             if (response.statusCode() == 200 || response.statusCode() == 201) {
-                System.out.println("[EmailService] Sent OK to " + to + " | " + response.body());
+                System.out.println("[EmailService] ✅ Sent OK to " + to + " | " + response.body());
             } else {
-                System.err.println("[EmailService] Brevo error " + response.statusCode()
-                        + ": " + response.body());
+                System.err.println("[EmailService] ❌ Brevo error HTTP " + response.statusCode()
+                        + " | Body: " + response.body()
+                        + " | Sender: " + SENDER_EMAIL
+                        + " | To: " + to);
             }
 
         } catch (Exception e) {
-            System.err.println("[EmailService] FAILED: " + e.getMessage());
+            System.err.println("[EmailService] ❌ EXCEPTION: " + e.getClass().getSimpleName()
+                    + " - " + e.getMessage());
         }
     }
 

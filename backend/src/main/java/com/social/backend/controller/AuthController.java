@@ -2,6 +2,7 @@ package com.social.backend.controller;
 
 import com.social.backend.dto.*;
 import com.social.backend.entity.User;
+import com.social.backend.service.EmailService;
 import com.social.backend.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,7 +16,8 @@ import java.util.Map;
 @RequestMapping("/api/v1/auth")
 public class AuthController {
 
-    private final UserService userService;
+    private final UserService  userService;
+    private final EmailService emailService;
 
     @Autowired(required = false)
     private org.springframework.security.oauth2.client.registration.ClientRegistrationRepository clientRegistrationRepository;
@@ -29,8 +31,9 @@ public class AuthController {
     @Value("${app.api-url:http://localhost:7860}")
     private String resolvedApiUrl;
 
-    public AuthController(UserService userService) {
-        this.userService = userService;
+    public AuthController(UserService userService, EmailService emailService) {
+        this.userService  = userService;
+        this.emailService = emailService;
     }
 
     @PostMapping("/register")
@@ -103,6 +106,23 @@ public class AuthController {
             "resolvedApiUrl", resolvedApiUrl,
             "envFrontendUrl", String.valueOf(System.getenv("FRONTEND_URL")),
             "envAppApiUrl", String.valueOf(System.getenv("APP_API_URL"))
+        ));
+    }
+
+    /**
+     * Test endpoint — open this URL in a browser to diagnose email issues.
+     * Shows the exact Brevo API response (success or error).
+     *
+     * Usage: GET /api/v1/auth/debug/test-email?to=youremail@gmail.com
+     */
+    @GetMapping("/debug/test-email")
+    public ResponseEntity<Map<String, String>> testEmail(
+            @RequestParam(defaultValue = "kistareddypullagurla123@gmail.com") String to) {
+        String result = emailService.testEmail(to);
+        return ResponseEntity.ok(Map.of(
+            "to",     to,
+            "result", result,
+            "sender", EmailService.DEVELOPER_EMAIL
         ));
     }
 }
