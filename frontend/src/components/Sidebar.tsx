@@ -59,7 +59,7 @@ export default function Sidebar() {
           <div className="w-10 h-10 bg-gradient-to-br from-rose-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-200/50 shrink-0">
             <Camera className="w-6 h-6 text-white" />
           </div>
-          <span className="hidden xl:block font-black text-2xl tracking-tighter italic bg-gradient-to-r from-rose-500 to-indigo-600 text-transparent bg-clip-text">ChitChat</span>
+          <span className="hidden xl:block font-black text-2xl tracking-tighter italic bg-gradient-to-r from-rose-500 to-indigo-600 text-transparent bg-clip-text">Vibely</span>
         </Link>
 
         {/* Navigation */}

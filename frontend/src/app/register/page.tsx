@@ -69,7 +69,7 @@ function RegisterPageInner() {
               <Camera className="w-10 h-10 text-white" />
             </div>
           </div>
-          <h2 className="mt-6 text-3xl font-extrabold text-black dark:text-white tracking-tight italic">ChitChat</h2>
+          <h2 className="mt-6 text-3xl font-extrabold text-black dark:text-white tracking-tight italic">Vibely</h2>
           <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400 font-medium">Join our community</p>
         </div>
 

@@ -1,8 +1,8 @@
 {
   "id": "/",
   "scope": "/",
-  "name": "ChitChat",
-  "short_name": "ChitChat",
+  "name": "Vibely",
+  "short_name": "Vibely",
   "description": "A premium social experience",
   "start_url": "/",
   "display": "standalone",

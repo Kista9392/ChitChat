@@ -1,0 +1,18 @@
+User-agent: *
+Allow: /
+Allow: /explore
+Allow: /reels
+Allow: /search
+Allow: /login
+Allow: /register
+
+# Disallow indexing on secure, personal user routes to protect data privacy
+Disallow: /messages
+Disallow: /settings
+Disallow: /create
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /oauth2/
+
+# Link directly to Next.js dynamic sitemap path
+Sitemap: https://vibely-social.vercel.app/sitemap.xml

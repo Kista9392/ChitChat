@@ -77,7 +77,7 @@ export default function SettingsPage() {
 
   const handleInstallClick = async () => {
     if (!deferredPrompt) {
-      alert("To securely install ChitChat, use your browser's menu (e.g., click 'Add to Home Screen' or the install icon in the URL bar) for direct sandboxed installation!");
+      alert("To securely install Vibely, use your browser's menu (e.g., click 'Add to Home Screen' or the install icon in the URL bar) for direct sandboxed installation!");
       return;
     }
     try {
@@ -700,7 +700,7 @@ export default function SettingsPage() {
               Install Secure App
             </h3>
             <p className="text-xs text-zinc-500 dark:text-zinc-400 max-w-sm leading-relaxed">
-              Install ChitChat on your home screen for full background thread notifications. Safe, sandboxed, and respects your data privacy.
+              Install Vibely on your home screen for full background thread notifications. Safe, sandboxed, and respects your data privacy.
             </p>
           </div>
           <button
