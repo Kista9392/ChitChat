@@ -14,102 +14,97 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Email service using the Resend REST API (https://resend.com).
+ * Email service using the Brevo (formerly Sendinblue) REST API.
  *
- * WHY RESEND instead of JavaMailSender / SMTP?
- * Hugging Face Spaces blocks all outbound SMTP connections on ports 25, 587 and 465
- * at the network level to prevent spam. No SMTP credentials fix can bypass this.
- * Resend sends via HTTPS (port 443) which is always open, making it the only
- * reliable way to send email from HF Spaces.
+ * WHY BREVO instead of Resend?
+ * Resend's free "onboarding@resend.dev" sender can ONLY deliver to the Resend
+ * account owner's email. Other users (friends, real users) never receive anything.
+ * Brevo's free plan sends to ANY email address (300/day, 9,000/month) using
+ * just a verified sender email — no domain ownership required.
  *
- * FREE TIER: 3,000 emails/month, 100/day — more than enough for ChitChat.
- *
- * Setup (one-time):
- *   1. Sign up at https://resend.com (free)
- *   2. Go to API Keys → Create API Key → copy it
- *   3. In HF Space → Settings → Repository secrets:
- *      RESEND_API_KEY = re_xxxxxxxxxxxxxxxxxxxxxxxx
+ * SETUP (one-time, ~2 minutes):
+ *   1. Sign up free at https://app.brevo.com
+ *   2. Go to Settings → Senders & IP → Add a Sender:
+ *         Email: kistareddypullagurla123@gmail.com
+ *         Name:  ChitChat
+ *      → Click the verification link Brevo sends to your Gmail
+ *   3. Go to Settings → API Keys → Generate API Key → copy it
+ *   4. In HF Space → Settings → Repository secrets:
+ *         BREVO_API_KEY = xkeysib-xxxxxxxxxxxxxxxxxxxxxxxx
  */
 @Service
 public class EmailService {
 
-    /** The developer's Gmail — all bug reports and suggestions go here */
+    /** Developer email — all bug reports and suggestions are sent here */
     public static final String DEVELOPER_EMAIL = "kistareddypullagurla123@gmail.com";
 
-    /**
-     * Sender address shown in the "From" field.
-     *
-     * On Resend's FREE plan, you can send FROM:
-     *   - onboarding@resend.dev  (always works, no domain setup)
-     *   - your-domain.com        (after adding DNS records in Resend dashboard)
-     *
-     * Start with "onboarding@resend.dev" and switch to your custom domain later.
-     */
-    private static final String FROM_ADDRESS = "ChitChat <onboarding@resend.dev>";
+    private static final String BREVO_API_URL  = "https://api.brevo.com/v3/smtp/email";
+    private static final String SENDER_NAME    = "ChitChat";
+    private static final String SENDER_EMAIL   = DEVELOPER_EMAIL; // Must be verified in Brevo
 
-    private static final String RESEND_API_URL = "https://api.resend.com/emails";
+    @Value("${BREVO_API_KEY:NOT_SET}")
+    private String brevoApiKey;
 
-    @Value("${RESEND_API_KEY:NOT_SET}")
-    private String resendApiKey;
-
-    private final HttpClient httpClient = HttpClient.newBuilder()
+    private final HttpClient    httpClient   = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(15))
             .build();
-
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper  objectMapper = new ObjectMapper();
 
     private boolean isConfigured() {
-        return resendApiKey != null
-                && !resendApiKey.isBlank()
-                && !resendApiKey.equals("NOT_SET")
-                && resendApiKey.startsWith("re_");
+        return brevoApiKey != null
+                && !brevoApiKey.isBlank()
+                && !brevoApiKey.equals("NOT_SET")
+                && brevoApiKey.startsWith("xkeysib-");
     }
 
     /**
-     * Core method: sends an email via the Resend REST API.
-     * Uses Java 17 built-in HttpClient — no extra dependencies needed.
+     * Core send method — fires an HTTPS POST to Brevo API.
+     * Works from any cloud host (HTTPS port 443 is never blocked).
      */
     @Async
     public void sendEmail(String to, String subject, String htmlBody) {
-        System.out.println("=== EmailService: Sending email to " + to + " | Subject: " + subject);
+        System.out.println("=== EmailService: to=" + to + " | subject=" + subject);
 
         if (!isConfigured()) {
             System.err.println(
-                "RESEND_API_KEY not set or invalid. " +
-                "Add RESEND_API_KEY secret to your HF Space. " +
-                "Sign up free at https://resend.com"
+                "[EmailService] BREVO_API_KEY not set or invalid. " +
+                "Sign up free at https://app.brevo.com, generate an API key, " +
+                "then add BREVO_API_KEY to your HF Space secrets."
             );
             return;
         }
 
         try {
             Map<String, Object> payload = Map.of(
-                "from",    FROM_ADDRESS,
-                "to",      List.of(to),
-                "subject", subject,
-                "html",    htmlBody
+                "sender",      Map.of("name", SENDER_NAME, "email", SENDER_EMAIL),
+                "to",          List.of(Map.of("email", to)),
+                "subject",     subject,
+                "htmlContent", htmlBody
             );
 
             String json = objectMapper.writeValueAsString(payload);
 
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(RESEND_API_URL))
-                    .header("Authorization", "Bearer " + resendApiKey)
+                    .uri(URI.create(BREVO_API_URL))
+                    .header("api-key",      brevoApiKey)
                     .header("Content-Type", "application/json")
+                    .header("Accept",       "application/json")
                     .POST(HttpRequest.BodyPublishers.ofString(json))
                     .timeout(Duration.ofSeconds(20))
                     .build();
 
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> response = httpClient.send(
+                    request, HttpResponse.BodyHandlers.ofString());
 
             if (response.statusCode() == 200 || response.statusCode() == 201) {
-                System.out.println("Email sent successfully to: " + to + " | Response: " + response.body());
+                System.out.println("[EmailService] Sent OK to " + to + " | " + response.body());
             } else {
-                System.err.println("Resend API error " + response.statusCode() + ": " + response.body());
+                System.err.println("[EmailService] Brevo error " + response.statusCode()
+                        + ": " + response.body());
             }
 
         } catch (Exception e) {
-            System.err.println("FAILED TO SEND EMAIL via Resend: " + e.getMessage());
+            System.err.println("[EmailService] FAILED: " + e.getMessage());
         }
     }
 
@@ -118,64 +113,79 @@ public class EmailService {
     @Async
     public void sendOtpEmail(String toEmail, String otp) {
         System.out.println("=================================================");
-        System.out.println("DEBUG: OTP for " + toEmail + " is: " + otp);
+        System.out.println("DEBUG OTP for " + toEmail + " : " + otp);
         System.out.println("=================================================");
 
-        String html = "<div style='font-family:sans-serif;max-width:480px;margin:auto;padding:24px;" +
-                "border-radius:12px;border:1px solid #e5e7eb;'>" +
-                "<h2 style='color:#4F46E5;'>&#128272; Password Reset</h2>" +
-                "<p>Hi there! You requested a password reset for your <strong>ChitChat</strong> account.</p>" +
-                "<p>Your 6-digit verification code:</p>" +
-                "<h1 style='letter-spacing:12px;color:#4F46E5;background:#EEF2FF;padding:20px;" +
-                "border-radius:8px;text-align:center;font-size:36px;'>" + otp + "</h1>" +
-                "<p style='color:#6b7280;font-size:13px;'>&#9200; Expires in <strong>5 minutes</strong>. " +
-                "Never share this code with anyone.</p>" +
-                "<hr style='border:none;border-top:1px solid #e5e7eb;margin:16px 0;'/>" +
-                "<p style='color:#9ca3af;font-size:11px;'>ChitChat &mdash; Connecting people securely.</p>" +
-                "</div>";
+        String html =
+            "<div style='font-family:Inter,sans-serif;max-width:480px;margin:auto;" +
+            "padding:32px;border-radius:16px;border:1px solid #e5e7eb;background:#fff;'>" +
+            "<div style='text-align:center;margin-bottom:24px;'>" +
+            "<div style='display:inline-block;background:linear-gradient(135deg,#4F46E5,#7C3AED);" +
+            "border-radius:12px;padding:12px;'>" +
+            "<span style='font-size:28px;'>&#128272;</span></div>" +
+            "<h1 style='color:#18181b;font-size:22px;margin:16px 0 4px;'>Password Reset</h1>" +
+            "<p style='color:#71717a;font-size:14px;margin:0;'>ChitChat</p></div>" +
+            "<p style='color:#3f3f46;font-size:15px;'>Your 6-digit verification code:</p>" +
+            "<div style='background:linear-gradient(135deg,#EEF2FF,#F5F3FF);border:2px solid #C7D2FE;" +
+            "border-radius:12px;padding:24px;text-align:center;margin:16px 0;'>" +
+            "<span style='font-size:40px;font-weight:800;letter-spacing:14px;color:#4F46E5;'>"
+            + otp + "</span></div>" +
+            "<p style='color:#71717a;font-size:13px;text-align:center;'>" +
+            "&#9200; Expires in <strong>5 minutes</strong>. Never share this code.</p>" +
+            "<hr style='border:none;border-top:1px solid #f4f4f5;margin:24px 0;'/>" +
+            "<p style='color:#a1a1aa;font-size:11px;text-align:center;'>" +
+            "If you didn't request this, please ignore this email.</p>" +
+            "</div>";
 
         sendEmail(toEmail, "Your ChitChat Password Reset Code", html);
     }
 
     @Async
     public void sendLoginNotificationEmail(String toEmail, String username) {
-        String html = "<div style='font-family:sans-serif;max-width:480px;margin:auto;padding:24px;" +
-                "border-radius:12px;border:1px solid #e5e7eb;'>" +
-                "<h2 style='color:#DC2626;'>&#9888;&#65039; New Login Detected</h2>" +
-                "<p>Hi <strong>" + username + "</strong>,</p>" +
-                "<p>Your ChitChat account was just logged into via <strong>Google</strong>.</p>" +
-                "<p>If this was you, you can safely ignore this email.</p>" +
-                "<p style='color:#DC2626;'><strong>If this wasn't you, please secure your account immediately.</strong></p>" +
-                "<hr style='border:none;border-top:1px solid #e5e7eb;margin:16px 0;'/>" +
-                "<p style='color:#9ca3af;font-size:11px;'>ChitChat Security Team</p>" +
-                "</div>";
+        String html =
+            "<div style='font-family:Inter,sans-serif;max-width:480px;margin:auto;" +
+            "padding:32px;border-radius:16px;border:1px solid #e5e7eb;background:#fff;'>" +
+            "<h2 style='color:#DC2626;'>&#9888;&#65039; New Login Detected</h2>" +
+            "<p style='color:#3f3f46;'>Hi <strong>" + username + "</strong>,</p>" +
+            "<p style='color:#3f3f46;'>Your ChitChat account was just logged in via Google.</p>" +
+            "<p style='color:#3f3f46;'>If this was you, you can safely ignore this email.</p>" +
+            "<div style='background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;" +
+            "padding:12px;margin:16px 0;'>" +
+            "<p style='color:#DC2626;margin:0;font-weight:600;'>" +
+            "If this wasn't you, secure your account immediately!</p></div>" +
+            "<hr style='border:none;border-top:1px solid #f4f4f5;margin:24px 0;'/>" +
+            "<p style='color:#a1a1aa;font-size:11px;'>ChitChat Security Team</p>" +
+            "</div>";
 
         sendEmail(toEmail, "New Login Detected - ChitChat", html);
     }
 
     @Async
-    public void sendDeveloperEmail(String developerEmail, String senderUsername, String subject, String body) {
-        System.out.println("=================================================");
-        System.out.println("Developer report from @" + senderUsername + " to " + developerEmail);
-        System.out.println("Subject: " + subject);
-        System.out.println("Body: " + body);
-        System.out.println("=================================================");
+    public void sendDeveloperEmail(String developerEmail, String senderUsername,
+                                   String subject, String body) {
+        System.out.println("[EmailService] Report from @" + senderUsername
+                + " → " + developerEmail + " | " + subject);
 
-        String html = "<div style='font-family:sans-serif;max-width:600px;margin:auto;padding:24px;" +
-                "border-radius:12px;border:1px solid #e5e7eb;'>" +
-                "<h2 style='color:#4F46E5;'>&#128233; ChitChat Report</h2>" +
-                "<table style='width:100%;border-collapse:collapse;margin-bottom:16px;'>" +
-                "<tr><td style='padding:8px;background:#f9fafb;font-weight:bold;width:80px;'>From</td>" +
-                "<td style='padding:8px;'>@" + senderUsername + "</td></tr>" +
-                "<tr><td style='padding:8px;background:#f9fafb;font-weight:bold;'>Type</td>" +
-                "<td style='padding:8px;'>" + subject + "</td></tr>" +
-                "</table>" +
-                "<div style='background:#f3f4f6;padding:16px;border-radius:8px;color:#1f2937;line-height:1.6;'>" +
-                body.replace("\n", "<br/>") +
-                "</div>" +
-                "<hr style='border:none;border-top:1px solid #e5e7eb;margin:16px 0;'/>" +
-                "<p style='color:#9ca3af;font-size:11px;'>ChitChat &mdash; Auto-generated report</p>" +
-                "</div>";
+        String html =
+            "<div style='font-family:Inter,sans-serif;max-width:600px;margin:auto;" +
+            "padding:32px;border-radius:16px;border:1px solid #e5e7eb;background:#fff;'>" +
+            "<h2 style='color:#4F46E5;'>&#128233; ChitChat Report</h2>" +
+            "<table style='width:100%;border-collapse:collapse;margin-bottom:16px;" +
+            "border-radius:8px;overflow:hidden;border:1px solid #e5e7eb;'>" +
+            "<tr><td style='padding:10px 14px;background:#f9fafb;font-weight:700;" +
+            "width:80px;color:#6b7280;font-size:13px;'>FROM</td>" +
+            "<td style='padding:10px 14px;color:#18181b;font-weight:600;'>@"
+            + senderUsername + "</td></tr>" +
+            "<tr><td style='padding:10px 14px;background:#f9fafb;font-weight:700;" +
+            "color:#6b7280;font-size:13px;'>TYPE</td>" +
+            "<td style='padding:10px 14px;color:#18181b;'>" + subject + "</td></tr>" +
+            "</table>" +
+            "<div style='background:#f9fafb;padding:16px;border-radius:8px;" +
+            "color:#3f3f46;line-height:1.7;border:1px solid #e5e7eb;'>" +
+            body.replace("\n", "<br/>") + "</div>" +
+            "<hr style='border:none;border-top:1px solid #f4f4f5;margin:24px 0;'/>" +
+            "<p style='color:#a1a1aa;font-size:11px;'>ChitChat &mdash; Auto-generated report</p>" +
+            "</div>";
 
         sendEmail(developerEmail, "[ChitChat] " + subject, html);
     }
