@@ -130,24 +130,6 @@ public class MessageController {
     @DeleteMapping("/{otherUsername}/clear")
     public ResponseEntity<Void> clearConversation(@PathVariable String otherUsername, Authentication authentication) {
         messageService.clearConversation(authentication.getName(), otherUsername);
-        
-        try {
-            String currentUsername = messageService.getUsernameByEmail(authentication.getName());
-            MessageResponse clearNotification = new MessageResponse(
-                    null,
-                    currentUsername,
-                    otherUsername,
-                    "clear",
-                    java.time.LocalDateTime.now(),
-                    java.time.LocalDateTime.now(),
-                    null,
-                    "CLEAR_CHAT"
-            );
-            messagingTemplate.convertAndSend("/topic/messages/" + otherUsername, clearNotification);
-        } catch (Exception e) {
-            // Ignore
-        }
-        
         return ResponseEntity.ok().build();
     }
 

@@ -215,7 +215,17 @@ public class MessageService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
         User otherUser = userRepository.findByUsername(otherUsername)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        messageRepository.deleteConversation(currentUser, otherUser);
+        
+        java.util.List<Message> messages = messageRepository.findAllMessagesBetweenUsers(currentUser, otherUser);
+        for (Message m : messages) {
+            if (m.getSender().getId().equals(currentUser.getId())) {
+                m.setDeletedBySender(true);
+            }
+            if (m.getReceiver().getId().equals(currentUser.getId())) {
+                m.setDeletedByReceiver(true);
+            }
+        }
+        messageRepository.saveAll(messages);
     }
 
     @Transactional

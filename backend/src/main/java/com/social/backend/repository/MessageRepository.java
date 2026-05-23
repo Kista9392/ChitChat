@@ -14,11 +14,9 @@ import java.util.UUID;
 @Repository
 public interface MessageRepository extends JpaRepository<Message, UUID> {
     
-    // Logic: Fetch conversation between User A and User B, ordered by oldest first
-    // This custom @Query handles both sides of the conversation (sent and received)
     @Query("SELECT m FROM Message m WHERE " +
-           "(m.sender = :userA AND m.receiver = :userB) OR " +
-           "(m.sender = :userB AND m.receiver = :userA) " +
+           "((m.sender = :userA AND m.receiver = :userB AND (m.deletedBySender IS NULL OR m.deletedBySender = false)) OR " +
+           " (m.sender = :userB AND m.receiver = :userA AND (m.deletedByReceiver IS NULL OR m.deletedByReceiver = false))) " +
            "ORDER BY m.createdAt DESC")
     Page<Message> findConversation(@Param("userA") User userA, @Param("userB") User userB, Pageable pageable);
 
@@ -26,16 +24,14 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
 
     long countByReceiverAndReadAtIsNull(User receiver);
 
-    @Query("SELECT DISTINCT m.receiver FROM Message m WHERE m.sender = :user")
+    @Query("SELECT DISTINCT m.receiver FROM Message m WHERE m.sender = :user AND (m.deletedBySender IS NULL OR m.deletedBySender = false)")
     java.util.List<User> findReceivers(@Param("user") User user);
 
-    @Query("SELECT DISTINCT m.sender FROM Message m WHERE m.receiver = :user")
+    @Query("SELECT DISTINCT m.sender FROM Message m WHERE m.receiver = :user AND (m.deletedByReceiver IS NULL OR m.deletedByReceiver = false)")
     java.util.List<User> findSenders(@Param("user") User user);
 
-    @org.springframework.data.jpa.repository.Modifying
-    @org.springframework.transaction.annotation.Transactional
-    @Query("DELETE FROM Message m WHERE " +
+    @Query("SELECT m FROM Message m WHERE " +
            "(m.sender = :userA AND m.receiver = :userB) OR " +
            "(m.sender = :userB AND m.receiver = :userA)")
-    void deleteConversation(@Param("userA") User userA, @Param("userB") User userB);
+    java.util.List<Message> findAllMessagesBetweenUsers(@Param("userA") User userA, @Param("userB") User userB);
 }

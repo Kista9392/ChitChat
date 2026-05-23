@@ -36,6 +36,12 @@ public class Message {
     @Column(name = "read_at")
     private LocalDateTime readAt;
 
+    @Column(name = "deleted_by_sender")
+    private Boolean deletedBySender = false;
+
+    @Column(name = "deleted_by_receiver")
+    private Boolean deletedByReceiver = false;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
@@ -60,4 +66,10 @@ public class Message {
 
     public LocalDateTime getReadAt() { return readAt; }
     public void setReadAt(LocalDateTime readAt) { this.readAt = readAt; }
+
+    public boolean isDeletedBySender() { return deletedBySender != null && deletedBySender; }
+    public void setDeletedBySender(Boolean deletedBySender) { this.deletedBySender = deletedBySender; }
+
+    public boolean isDeletedByReceiver() { return deletedByReceiver != null && deletedByReceiver; }
+    public void setDeletedByReceiver(Boolean deletedByReceiver) { this.deletedByReceiver = deletedByReceiver; }
 }
