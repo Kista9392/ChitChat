@@ -196,6 +196,12 @@ public class MessageService {
                 .collect(java.util.stream.Collectors.toList());
     }
 
+    public String getUsernameByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .map(User::getUsername)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+    }
+
     @Transactional(readOnly = true)
     public long getUnreadCount(String email) {
         User receiver = userRepository.findByEmail(email)

@@ -101,6 +101,24 @@ public class MessageController {
     @PostMapping("/{senderUsername}/read")
     public ResponseEntity<?> markAsRead(@PathVariable String senderUsername, Authentication authentication) {
         messageService.markMessagesAsRead(authentication.getName(), senderUsername);
+        
+        try {
+            String currentUsername = messageService.getUsernameByEmail(authentication.getName());
+            MessageResponse readReceipt = new MessageResponse(
+                    null,
+                    currentUsername,
+                    senderUsername,
+                    "read",
+                    java.time.LocalDateTime.now(),
+                    java.time.LocalDateTime.now(),
+                    null,
+                    "READ"
+            );
+            messagingTemplate.convertAndSend("/topic/messages/" + senderUsername, readReceipt);
+        } catch (Exception e) {
+            // Log and ignore to prevent blocking
+        }
+        
         return ResponseEntity.ok().build();
     }
 

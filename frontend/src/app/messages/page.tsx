@@ -170,6 +170,21 @@ function MessagesPageInner() {
         // Subscribe to our own topic
         client.subscribe(`/topic/messages/${user.username}`, (frame) => {
           const msg: Message = JSON.parse(frame.body);
+          
+          // Check for transient READ receipts
+          if (msg.messageType === 'READ') {
+            if (selectedUserRef.current === msg.senderUsername) {
+              setMessages(prev =>
+                prev.map(m =>
+                  m.receiverUsername === msg.senderUsername
+                    ? { ...m, readAt: msg.createdAt }
+                    : m
+                )
+              );
+            }
+            return;
+          }
+
           // Only add if it belongs to the current open conversation
           if (
             selectedUserRef.current &&
@@ -428,15 +443,7 @@ function MessagesPageInner() {
                   <p className="font-bold text-sm text-black dark:text-white truncate">{c.username}</p>
                   <p className="text-xs text-zinc-400 truncate">Tap to chat</p>
                 </div>
-                <button 
-                  className="px-3 py-1 bg-black dark:bg-white text-white dark:text-black rounded-lg text-xs font-bold hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    selectUser(c.username);
-                  }}
-                >
-                  Message
-                </button>
+
               </div>
             ))}
           </div>
