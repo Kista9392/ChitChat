@@ -77,28 +77,91 @@ public class UserService {
     }
 
     public AuthResponse loginUser(String identifier, String rawPassword) {
+        // ── Account lockout check ────────────────────────────────────────────
+        // Resolve email from identifier first (needed for lockout key)
         User user = userRepository.findByEmail(identifier)
                 .or(() -> userRepository.findByPhoneNumber(identifier))
                 .orElseThrow(() -> new RuntimeException("Invalid credentials"));
 
-        if (!passwordEncoder.matches(rawPassword, user.getPasswordHash())) {
-            throw new RuntimeException("Invalid credentials");
+        String lockKey    = "account_locked:" + user.getEmail();
+        String failKey    = "login_fail:"     + user.getEmail();
+
+        try {
+            // Check if account is currently locked
+            if (Boolean.TRUE.equals(redisTemplate.hasKey(lockKey))) {
+                Long ttl = redisTemplate.getExpire(lockKey, TimeUnit.MINUTES);
+                throw new RuntimeException(
+                    "Your account is temporarily locked due to too many failed login attempts. " +
+                    "Please try again in " + (ttl != null ? ttl : 15) + " minute(s), " +
+                    "or reset your password via 'Forgot Password'."
+                );
+            }
+        } catch (RuntimeException re) {
+            throw re; // rethrow lockout message as-is
+        } catch (Exception e) {
+            // Redis down — fail open, allow login attempt
         }
 
-        String accessToken = jwtService.generateAccessToken(user.getEmail());
-        String refreshToken = jwtService.generateRefreshToken(user.getEmail());
+        // ── Password check ───────────────────────────────────────────────────
+        if (!passwordEncoder.matches(rawPassword, user.getPasswordHash())) {
+            // Increment failed-attempt counter
+            try {
+                Long attempts = redisTemplate.opsForValue().increment(failKey);
+                if (attempts != null && attempts == 1) {
+                    redisTemplate.expire(failKey, 15, TimeUnit.MINUTES); // window resets after 15 min
+                }
+                if (attempts != null && attempts >= 5) {
+                    // Lock the account for 15 minutes
+                    redisTemplate.opsForValue().set(lockKey, "locked", 15, TimeUnit.MINUTES);
+                    redisTemplate.delete(failKey);
+                    // Notify user via email so they know what happened
+                    emailService.sendEmail(
+                        user.getEmail(),
+                        "ChitChat Account Temporarily Locked",
+                        "<div style='font-family:sans-serif;max-width:480px;margin:auto;padding:24px;" +
+                        "border-radius:12px;border:1px solid #e5e7eb;'>" +
+                        "<h2 style='color:#DC2626;'>&#128274; Account Locked</h2>" +
+                        "<p>Hi <strong>" + user.getUsername() + "</strong>,</p>" +
+                        "<p>Your ChitChat account has been <strong>temporarily locked for 15 minutes</strong> " +
+                        "after 5 consecutive failed login attempts.</p>" +
+                        "<p>If this wasn't you, your account may be under attack. " +
+                        "We recommend resetting your password immediately.</p>" +
+                        "<a href='https://chit-chat-beta-seven.vercel.app/forgot-password' " +
+                        "style='display:inline-block;background:#4F46E5;color:#fff;padding:10px 20px;" +
+                        "border-radius:8px;text-decoration:none;font-weight:bold;margin-top:12px;'>" +
+                        "Reset Password</a>" +
+                        "<hr style='border:none;border-top:1px solid #e5e7eb;margin:16px 0;'/>" +
+                        "<p style='color:#9ca3af;font-size:11px;'>ChitChat Security Team</p>" +
+                        "</div>"
+                    );
+                    throw new RuntimeException(
+                        "Your account has been locked for 15 minutes due to 5 failed login attempts. " +
+                        "Check your email for details, or use 'Forgot Password' to regain access."
+                    );
+                }
+                long remaining = 5 - (attempts != null ? attempts : 0);
+                throw new RuntimeException(
+                    "Invalid credentials. " + remaining + " attempt(s) remaining before account lockout."
+                );
+            } catch (RuntimeException re) {
+                throw re;
+            } catch (Exception e) {
+                throw new RuntimeException("Invalid credentials");
+            }
+        }
 
-        // Commented out Redis storage to avoid slow timeouts if Redis port is not
-        // exposed.
-        // redisTemplate.opsForValue().set(
-        // "refreshToken:" + user.getEmail(),
-        // refreshToken,
-        // 7,
-        // TimeUnit.DAYS
-        // );
+        // ── Successful login — clear any failed attempt counters ─────────────
+        try {
+            redisTemplate.delete(failKey);
+            redisTemplate.delete(lockKey);
+        } catch (Exception ignored) { }
+
+        String accessToken  = jwtService.generateAccessToken(user.getEmail());
+        String refreshToken = jwtService.generateRefreshToken(user.getEmail());
 
         return new AuthResponse(accessToken, refreshToken, user.getUsername(), user.getAvatarUrl());
     }
+
 
     public AuthResponse refreshToken(String refreshToken) {
         String email = jwtService.extractEmail(refreshToken);

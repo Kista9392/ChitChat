@@ -2,6 +2,7 @@ package com.social.backend.config;
 
 import com.social.backend.security.JwtAuthFilter;
 import com.social.backend.security.OAuth2SuccessHandler;
+import com.social.backend.security.RateLimitFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,7 +19,8 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 @EnableWebSecurity
 public class SecurityConfig {
 
-    private final JwtAuthFilter jwtAuthFilter;
+    private final JwtAuthFilter    jwtAuthFilter;
+    private final RateLimitFilter  rateLimitFilter;
 
     @Autowired(required = false)
     private OAuth2SuccessHandler oAuth2SuccessHandler;
@@ -29,8 +31,9 @@ public class SecurityConfig {
     @Autowired(required = false)
     private ClientRegistrationRepository clientRegistrationRepository;
 
-    public SecurityConfig(JwtAuthFilter jwtAuthFilter) {
-        this.jwtAuthFilter = jwtAuthFilter;
+    public SecurityConfig(JwtAuthFilter jwtAuthFilter, RateLimitFilter rateLimitFilter) {
+        this.jwtAuthFilter   = jwtAuthFilter;
+        this.rateLimitFilter = rateLimitFilter;
     }
 
     @Bean
@@ -76,7 +79,9 @@ public class SecurityConfig {
             });
         }
 
-        http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+        // Rate limiter runs FIRST — before JWT auth — so abusive IPs are blocked cheaply
+        http.addFilterBefore(rateLimitFilter,  UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(jwtAuthFilter,    UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
