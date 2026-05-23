@@ -9,6 +9,7 @@ import PostCard from '@/components/PostCard';
 import axiosInstance from '@/lib/axios';
 import { PlusSquare, Heart } from 'lucide-react';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 
 export default function HomePage() {
   const { user, isLoading } = useAuth();
@@ -93,7 +94,13 @@ export default function HomePage() {
         </Link>
       </div>
 
-      <main className="pl-0 md:pl-20 xl:pl-64 pt-[calc(4rem+env(safe-area-inset-top,0px))] md:pt-0 pb-[calc(7.5rem+env(safe-area-inset-bottom,0px))] md:pb-8 min-h-screen bg-transparent transition-all duration-300">
+      <motion.main
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+        style={{ willChange: 'transform, opacity' }}
+        className="pl-0 md:pl-20 xl:pl-64 pt-[calc(4rem+env(safe-area-inset-top,0px))] md:pt-0 pb-[calc(7.5rem+env(safe-area-inset-bottom,0px))] md:pb-8 min-h-screen bg-transparent transition-all duration-300"
+      >
         <div className="max-w-6xl mx-auto px-4 py-6 md:p-8">
           
           {/* 2-Column Grid for Feed + Suggestions */}
@@ -241,7 +248,7 @@ export default function HomePage() {
 
           </div>
         </div>
-      </main>
+      </motion.main>
     </div>
   );
 }

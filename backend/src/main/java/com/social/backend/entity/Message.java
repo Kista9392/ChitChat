@@ -42,6 +42,9 @@ public class Message {
     @Column(name = "deleted_by_receiver")
     private Boolean deletedByReceiver = false;
 
+    @Column(name = "is_edited")
+    private Boolean isEdited = false;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
@@ -72,4 +75,8 @@ public class Message {
 
     public boolean isDeletedByReceiver() { return deletedByReceiver != null && deletedByReceiver; }
     public void setDeletedByReceiver(Boolean deletedByReceiver) { this.deletedByReceiver = deletedByReceiver; }
+
+    public Boolean getIsEdited() { return isEdited != null && isEdited; }
+    public void setIsEdited(Boolean isEdited) { this.isEdited = isEdited; }
+    public void setContent(String content) { this.content = content; }
 }

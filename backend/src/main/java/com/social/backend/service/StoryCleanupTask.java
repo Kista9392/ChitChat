@@ -22,7 +22,7 @@ public class StoryCleanupTask {
     @Transactional
     public void cleanupExpiredStories() {
         System.out.println("--- STARTING BACKGROUND STORY CLEANUP ---");
-        storyRepository.deleteExpiredStories(LocalDateTime.now());
+        storyRepository.deleteExpiredStories(LocalDateTime.now().minusHours(24));
         System.out.println("--- FINISHED BACKGROUND STORY CLEANUP ---");
     }
 }

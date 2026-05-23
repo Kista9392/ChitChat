@@ -11,5 +11,6 @@ public record MessageResponse(
         LocalDateTime createdAt,
         LocalDateTime readAt,
         String mediaUrl,
-        String messageType
+        String messageType,
+        Boolean isEdited
 ) {}

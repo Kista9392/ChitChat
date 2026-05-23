@@ -6,7 +6,7 @@ import { useAuth } from '@/context/AuthContext';
 import axiosInstance from '@/lib/axios';
 import { safeStorage } from '@/lib/storage';
 
-import { Settings as SettingsIcon, LogOut, Shield, Bell, Moon, User, Lock, Check, AlertCircle, EyeOff, Eye, UserX, Trash2, Globe, BarChart2, Clock, Calendar, Heart, X, Film, Menu, PlusSquare } from 'lucide-react';
+import { Settings as SettingsIcon, LogOut, Shield, Bell, Moon, User, Lock, Check, AlertCircle, EyeOff, Eye, UserX, Trash2, Globe, BarChart2, Clock, Calendar, Heart, X, Film, Menu, PlusSquare, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
@@ -339,10 +339,398 @@ export default function SettingsPage() {
     </button>
   );
 
+  const renderAccountInfo = () => (
+    <div className="space-y-4 max-w-md">
+      <div>
+        <label className="text-xs font-bold text-zinc-500 dark:text-zinc-400 mb-1 block uppercase">Username</label>
+        <input
+          type="text"
+          className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 text-sm text-zinc-500 dark:text-zinc-400 cursor-not-allowed"
+          value={user?.username || ''}
+          disabled
+        />
+      </div>
+
+      <div>
+        <label className="text-xs font-bold text-zinc-500 dark:text-zinc-400 mb-1 block uppercase">Email Address</label>
+        <input
+          type="email"
+          className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 text-sm text-zinc-500 dark:text-zinc-400 cursor-not-allowed"
+          value={fullProfile?.email || user?.email || 'Loading...'}
+          disabled
+        />
+      </div>
+
+      <div>
+        <label className="text-xs font-bold text-zinc-500 dark:text-zinc-400 mb-1 block uppercase">Member Since</label>
+        <input
+          type="text"
+          className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 text-sm text-zinc-500 dark:text-zinc-400 cursor-not-allowed"
+          value={fullProfile?.createdAt ? new Date(fullProfile.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Loading...'}
+          disabled
+        />
+      </div>
+    </div>
+  );
+
+  const renderPrivacy = () => (
+    <div className="space-y-4 max-w-md">
+      <div className="flex items-center justify-between p-4 bg-zinc-50 dark:bg-zinc-800/30 rounded-xl border border-zinc-100 dark:border-zinc-800">
+        <div>
+          <p className="font-bold text-sm text-black dark:text-white">Private Account</p>
+          <p className="text-xs text-zinc-400 dark:text-zinc-500">Only approved accounts can see your posts.</p>
+        </div>
+        <Toggle enabled={isPrivateAccount} setEnabled={handleTogglePrivateAccount} />
+      </div>
+
+      <div className="flex items-center justify-between p-4 bg-zinc-50 dark:bg-zinc-800/30 rounded-xl border border-zinc-100 dark:border-zinc-800">
+        <div>
+          <p className="font-bold text-sm text-black dark:text-white">Show Activity Status</p>
+          <p className="text-xs text-zinc-400 dark:text-zinc-500">Allow accounts you follow to see when you were last active.</p>
+        </div>
+        <Toggle enabled={showActivity} setEnabled={handleToggleActivity} />
+      </div>
+    </div>
+  );
+
+  const renderSecurity = () => (
+    <form onSubmit={handlePasswordChange} className="space-y-4 max-w-md">
+      <div>
+        <label className="text-xs font-bold text-zinc-500 dark:text-zinc-400 mb-1 block uppercase">Current Password</label>
+        <input
+          type="password"
+          className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl px-4 py-3 text-sm text-black dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10 focus:border-black dark:focus:border-white transition-all"
+          value={oldPassword}
+          onChange={(e) => setOldPassword(e.target.value)}
+          required
+        />
+      </div>
+
+      <div>
+        <label className="text-xs font-bold text-zinc-500 dark:text-zinc-400 mb-1 block uppercase">New Password</label>
+        <input
+          type="password"
+          className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl px-4 py-3 text-sm text-black dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10 focus:border-black dark:focus:border-white transition-all"
+          value={newPassword}
+          onChange={(e) => setNewPassword(e.target.value)}
+          required
+        />
+      </div>
+
+      <div>
+        <label className="text-xs font-bold text-zinc-500 dark:text-zinc-400 mb-1 block uppercase">Confirm New Password</label>
+        <input
+          type="password"
+          className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl px-4 py-3 text-sm text-black dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10 focus:border-black dark:focus:border-white transition-all"
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+          required
+        />
+      </div>
+
+      <AnimatePresence>
+        {passwordStatus && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className={cn(
+              "flex items-center gap-2 p-3 rounded-xl text-sm font-medium",
+              passwordStatus.type === 'success' ? "bg-green-50 dark:bg-emerald-950/20 text-green-700 dark:text-emerald-400" : "bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-400"
+            )}
+          >
+            {passwordStatus.type === 'success' ? <Check className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
+            {passwordStatus.message}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <button
+        type="submit"
+        disabled={isChangingPassword}
+        className="px-6 py-3 bg-black dark:bg-indigo-600 text-white rounded-xl font-bold text-sm hover:bg-zinc-800 dark:hover:bg-indigo-700 transition-colors disabled:opacity-50"
+      >
+        {isChangingPassword ? 'Updating...' : 'Update Password'}
+      </button>
+    </form>
+  );
+
+  const renderNotifications = () => (
+    <div className="space-y-3 max-w-md">
+      <div className="flex items-center justify-between p-4 bg-zinc-50 dark:bg-zinc-800/30 rounded-xl border border-zinc-100 dark:border-zinc-800">
+        <div>
+          <p className="font-bold text-sm text-black dark:text-white">Push Notifications</p>
+          <p className="text-xs text-zinc-400 dark:text-zinc-500">Get instant alerts on your device</p>
+        </div>
+        <Toggle enabled={pushNotifications} setEnabled={handleTogglePushNotifications} />
+      </div>
+
+      <div className="flex items-center justify-between p-4 bg-zinc-50 dark:bg-zinc-800/30 rounded-xl border border-zinc-100 dark:border-zinc-800">
+        <div>
+          <p className="font-bold text-sm text-black dark:text-white">Email Notifications</p>
+          <p className="text-xs text-zinc-400 dark:text-zinc-500">Receive digests and updates</p>
+        </div>
+        <Toggle enabled={emailNotifications} setEnabled={handleToggleEmailNotifications} />
+      </div>
+    </div>
+  );
+
+  const renderActivity = () => (
+    <div className="space-y-6">
+      {/* Liked Reels/Posts */}
+      <div>
+        <h3 className="font-bold text-sm text-black dark:text-white mb-3 flex items-center gap-2">
+          <Heart className="w-4 h-4 text-red-500" />
+          Liked Posts & Reels
+        </h3>
+        {isLoadingLiked ? (
+          <div className="text-sm text-zinc-400">Loading liked posts...</div>
+        ) : likedPosts.length === 0 ? (
+          <div className="text-sm text-zinc-400 p-4 bg-zinc-50 dark:bg-zinc-800/30 rounded-xl border border-zinc-100 dark:border-zinc-800">You haven't liked any posts yet.</div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            {likedPosts.map((post) => (
+              <div key={post.id} className="relative group bg-zinc-100 dark:bg-zinc-800 rounded-xl overflow-hidden aspect-square">
+                {post.mediaUrl ? (
+                  post.mediaType === 'VIDEO' ? (
+                    <video src={post.mediaUrl} className="w-full h-full object-cover" preload="metadata" muted />
+                  ) : (
+                    <img src={post.mediaUrl} alt="" className="w-full h-full object-cover" />
+                  )
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-xs text-zinc-400 p-2">
+                    {post.content?.substring(0, 30)}...
+                  </div>
+                )}
+                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
+                  <button 
+                    onClick={() => setSelectedPostForView({ mediaUrl: post.mediaUrl, mediaType: post.mediaType })}
+                    className="p-2 bg-white dark:bg-zinc-800 rounded-full text-black dark:text-white hover:scale-110 transition-transform"
+                    title="View"
+                  >
+                    <Eye className="w-4 h-4" />
+                  </button>
+                  <button 
+                    onClick={() => handleUnlike(post.id)}
+                    className="p-2 bg-white dark:bg-zinc-800 rounded-full text-red-500 hover:scale-110 transition-transform"
+                    title="Unlike"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Not Interested */}
+      <div className="border-t border-zinc-100 dark:border-zinc-800 pt-6">
+        <h3 className="font-bold text-sm text-black dark:text-white mb-3 flex items-center gap-2">
+          <EyeOff className="w-4 h-4 text-zinc-500" />
+          Not Interested
+        </h3>
+        <p className="text-xs text-zinc-400 dark:text-zinc-500 mb-3">Posts you've marked as not interested will appear here. You can remove them to see them again.</p>
+        
+        <div className="space-y-2">
+          {notInterestedPosts.map((item) => (
+            <div key={item.id} className="flex items-center justify-between p-3 bg-zinc-50 dark:bg-zinc-800/30 rounded-xl border border-zinc-100 dark:border-zinc-800">
+              <div className="flex items-center gap-3">
+                {item.type === 'VIDEO' ? <Film className="w-4 h-4 text-zinc-400" /> : <Globe className="w-4 h-4 text-zinc-400" />}
+                <span className="text-sm font-medium text-black dark:text-white">{item.title}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button 
+                  onClick={() => setSelectedPostForView({ mediaUrl: item.mediaUrl, mediaType: item.type, title: item.title })}
+                  className="p-1.5 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-full transition-colors"
+                  title="View"
+                >
+                  <Eye className="w-4 h-4 text-zinc-500 dark:text-zinc-400" />
+                </button>
+                <button 
+                  onClick={() => handleRemoveNotInterested(item.id)}
+                  className="p-1.5 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-full transition-colors"
+                  title="Remove"
+                >
+                  <X className="w-4 h-4 text-zinc-500" />
+                </button>
+              </div>
+            </div>
+          ))}
+          {notInterestedPosts.length === 0 && (
+            <div className="text-sm text-zinc-400 p-4 bg-zinc-50 dark:bg-zinc-800/30 rounded-xl border border-zinc-100 dark:border-zinc-800">No items marked as not interested.</div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderDisplay = () => (
+    <div className="space-y-4 max-w-md">
+      <div className="flex items-center justify-between p-4 bg-zinc-50 dark:bg-zinc-800 rounded-xl border border-zinc-100 dark:border-zinc-700">
+        <div>
+          <p className="font-bold text-sm text-black dark:text-white">Dark Mode</p>
+          <p className="text-xs text-zinc-400">Reduce eye strain in low light</p>
+        </div>
+        <Toggle enabled={darkMode} setEnabled={toggleDarkMode} />
+      </div>
+    </div>
+  );
+
+  const renderMore = () => (
+    <div className="space-y-8 max-w-2xl">
+      {/* User Suggestions */}
+      <div>
+        <h3 className="font-bold text-sm text-black dark:text-white mb-3 flex items-center gap-2">
+          <User className="w-4 h-4 text-zinc-500" />
+          Suggested for You
+        </h3>
+        <p className="text-xs text-zinc-400 dark:text-zinc-500 mb-3">Accounts you might want to follow.</p>
+        
+        {isLoadingSuggestions ? (
+          <div className="text-sm text-zinc-400">Loading suggestions...</div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {suggestions.map((u) => (
+              <div key={u.id} className="flex items-center justify-between p-3 bg-zinc-50 dark:bg-zinc-800/30 rounded-xl border border-zinc-100 dark:border-zinc-800">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-zinc-200 dark:bg-zinc-700 overflow-hidden">
+                    {u.avatarUrl ? (
+                      <img src={u.avatarUrl} alt={u.username} className="w-full h-full object-cover" />
+                    ) : (
+                      <User className="w-6 h-6 text-zinc-400 m-2" />
+                    )}
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-black dark:text-white">{u.username}</p>
+                    <p className="text-xs text-zinc-400">{u.followersCount} followers</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => handleFollowSuggestion(u.username)}
+                  className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300"
+                >
+                  Follow
+                </button>
+              </div>
+            ))}
+            {suggestions.length === 0 && (
+              <div className="text-sm text-zinc-400 dark:text-zinc-500">No suggestions available.</div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Feature Suggestions */}
+      <div className="border-t border-zinc-100 dark:border-zinc-800 pt-6">
+        <h3 className="font-bold text-sm text-black dark:text-white mb-3 flex items-center gap-2">
+          <PlusSquare className="w-4 h-4 text-zinc-500" />
+          Feature Suggestions
+        </h3>
+        <p className="text-xs text-zinc-400 dark:text-zinc-500 mb-3">Have an idea for a new feature? Let us know!</p>
+        
+        <form onSubmit={handleSendSuggestion} className="space-y-4">
+          <textarea
+            className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl px-4 py-3 text-sm text-black dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10 focus:border-black dark:focus:border-white transition-all h-32"
+            placeholder="Describe your suggestion here..."
+            value={userSuggestion}
+            onChange={(e) => setUserSuggestion(e.target.value)}
+            required
+          />
+          <button
+            type="submit"
+            className="bg-black dark:bg-indigo-600 text-white px-6 py-2.5 rounded-xl font-bold text-sm hover:bg-zinc-800 dark:hover:bg-indigo-700 transition-colors"
+          >
+            Submit Suggestion
+          </button>
+        </form>
+        
+        {suggestionStatus && (
+          <div className={cn(
+            "mt-3 text-sm p-3 rounded-xl flex items-center gap-2 border",
+            suggestionStatus.type === 'success' ? "bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border-emerald-100 dark:border-emerald-900/30" : "bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-400 border-red-100 dark:border-red-900/30"
+          )}>
+            {suggestionStatus.type === 'success' ? <Check className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
+            {suggestionStatus.message}
+          </div>
+        )}
+      </div>
+
+      {/* Bug Reports & Complaints */}
+      <div className="border-t border-zinc-100 dark:border-zinc-800 pt-6">
+        <h3 className="font-bold text-sm text-black dark:text-white mb-3 flex items-center gap-2">
+          <AlertCircle className="w-4 h-4 text-zinc-500" />
+          Bug Reports & Complaints
+        </h3>
+        <p className="text-xs text-zinc-400 dark:text-zinc-500 mb-3">Found a bug or have a complaint? Let us know.</p>
+        
+        <form onSubmit={handleSendReport} className="space-y-4">
+          <textarea
+            className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl px-4 py-3 text-sm text-black dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10 focus:border-black dark:focus:border-white transition-all h-32"
+            placeholder="Describe the issue or complaint here..."
+            value={bugReport}
+            onChange={(e) => setBugReport(e.target.value)}
+            required
+          />
+          <button
+            type="submit"
+            className="bg-black dark:bg-indigo-600 text-white px-6 py-2.5 rounded-xl font-bold text-sm hover:bg-zinc-800 dark:hover:bg-indigo-700 transition-colors"
+          >
+            Submit Report
+          </button>
+        </form>
+        
+        {reportStatus && (
+          <div className={cn(
+            "mt-3 text-sm p-3 rounded-xl flex items-center gap-2 border",
+            reportStatus.type === 'success' ? "bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border-emerald-100 dark:border-emerald-900/30" : "bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-400 border-red-100 dark:border-red-900/30"
+          )}>
+            {reportStatus.type === 'success' ? <Check className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
+            {reportStatus.message}
+          </div>
+        )}
+      </div>
+
+      {/* Secure PWA App Installation */}
+      <div className="border-t border-zinc-100 dark:border-zinc-800 pt-6">
+        <div className="p-5 bg-gradient-to-br from-indigo-50/50 to-purple-50/50 dark:from-indigo-950/20 dark:to-purple-950/20 rounded-2xl border border-indigo-100/50 dark:border-indigo-500/10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <h3 className="font-bold text-sm text-indigo-950 dark:text-indigo-300 flex items-center gap-2">
+              <Shield className="w-4 h-4 text-indigo-500 animate-pulse" />
+              Install Secure App
+            </h3>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 max-w-sm leading-relaxed">
+              Install ChitChat on your home screen for full background thread notifications. Safe, sandboxed, and respects your data privacy.
+            </p>
+          </div>
+          <button
+            onClick={handleInstallClick}
+            className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-xs shadow-sm hover:shadow transition-all duration-200 flex items-center justify-center gap-2 whitespace-nowrap self-start md:self-center cursor-pointer"
+          >
+            <PlusSquare className="w-4 h-4" />
+            Install Secure App
+          </button>
+        </div>
+      </div>
+
+      {/* Contact Us */}
+      <div className="border-t border-zinc-100 dark:border-zinc-800 pt-6">
+        <h3 className="font-bold text-sm text-black dark:text-white mb-3">Contact Us</h3>
+        <p className="text-xs text-zinc-400 dark:text-zinc-500 mb-3">For any queries, reach out to us at support@chitchat.com</p>
+      </div>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-white dark:bg-zinc-950">
       <Sidebar />
-      <main className="pl-0 md:pl-20 xl:pl-64 pb-28 md:pb-8 min-h-screen bg-zinc-50/30 dark:bg-zinc-950">
+      <motion.main 
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35, ease: 'easeOut' }}
+        style={{ willChange: 'transform, opacity' }}
+        className="pl-0 md:pl-20 xl:pl-64 pb-28 md:pb-8 min-h-screen bg-zinc-50/30 dark:bg-zinc-950"
+      >
         <div className="max-w-5xl mx-auto p-4 md:p-10">
           
           <div className="flex items-center gap-4 mb-8">
@@ -355,7 +743,8 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          <div className="flex flex-col md:flex-row gap-6">
+          {/* Desktop Responsive Split-Column Side View Layout */}
+          <div className="hidden md:flex flex-row gap-6">
             {/* Left Column: Navigation */}
             <div className="w-full md:w-64 flex-shrink-0">
               <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-100 dark:border-zinc-800 p-2 space-y-1 shadow-sm flex flex-col gap-1 w-full">
@@ -387,458 +776,77 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            {/* Right Column: Content */}
+            {/* Right Column: Content Card */}
             <div className="flex-1">
               <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-100 dark:border-zinc-800 p-6 shadow-sm min-h-[450px]">
-                
-                {/* Account Info Tab */}
-                {activeTab === 'account' && (
-                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-                    <div className="flex items-center gap-3 mb-6">
-                      <User className="w-5 h-5 text-black dark:text-white" />
-                      <h2 className="font-bold text-lg text-black dark:text-white">Account Information</h2>
-                    </div>
-
-                    <div className="space-y-4 max-w-md">
-                      <div>
-                        <label className="text-xs font-bold text-zinc-500 dark:text-zinc-400 mb-1 block uppercase">Username</label>
-                        <input
-                          type="text"
-                          className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 text-sm text-zinc-500 dark:text-zinc-400 cursor-not-allowed"
-                          value={user?.username || ''}
-                          disabled
-                        />
-                      </div>
-
-                      <div>
-                        <label className="text-xs font-bold text-zinc-500 dark:text-zinc-400 mb-1 block uppercase">Email Address</label>
-                        <input
-                          type="email"
-                          className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 text-sm text-zinc-500 dark:text-zinc-400 cursor-not-allowed"
-                          value={fullProfile?.email || user?.email || 'Loading...'}
-                          disabled
-                        />
-                      </div>
-
-                      <div>
-                        <label className="text-xs font-bold text-zinc-500 dark:text-zinc-400 mb-1 block uppercase">Member Since</label>
-                        <input
-                          type="text"
-                          className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 text-sm text-zinc-500 dark:text-zinc-400 cursor-not-allowed"
-                          value={fullProfile?.createdAt ? new Date(fullProfile.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Loading...'}
-                          disabled
-                        />
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-
-                {/* Privacy Tab */}
-                {activeTab === 'privacy' && (
-                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-                    <div className="flex items-center gap-3 mb-6">
-                      <EyeOff className="w-5 h-5 text-black dark:text-white" />
-                      <h2 className="font-bold text-lg text-black dark:text-white">Account Privacy</h2>
-                    </div>
-
-                    <div className="space-y-4 max-w-md">
-                      <div className="flex items-center justify-between p-4 bg-zinc-50 dark:bg-zinc-800/30 rounded-xl border border-zinc-100 dark:border-zinc-800">
-                        <div>
-                          <p className="font-bold text-sm text-black dark:text-white">Private Account</p>
-                          <p className="text-xs text-zinc-400 dark:text-zinc-500">Only approved accounts can see your posts.</p>
-                        </div>
-                        <Toggle enabled={isPrivateAccount} setEnabled={handleTogglePrivateAccount} />
-                      </div>
-
-                      <div className="flex items-center justify-between p-4 bg-zinc-50 dark:bg-zinc-800/30 rounded-xl border border-zinc-100 dark:border-zinc-800">
-                        <div>
-                          <p className="font-bold text-sm text-black dark:text-white">Show Activity Status</p>
-                          <p className="text-xs text-zinc-400 dark:text-zinc-500">Allow accounts you follow to see when you were last active.</p>
-                        </div>
-                        <Toggle enabled={showActivity} setEnabled={handleToggleActivity} />
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-
-                {/* Security Tab */}
-                {activeTab === 'security' && (
-                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-                    <div className="flex items-center gap-3 mb-6">
-                      <Lock className="w-5 h-5 text-black dark:text-white" />
-                      <h2 className="font-bold text-lg text-black dark:text-white">Change Password</h2>
-                    </div>
-
-                    <form onSubmit={handlePasswordChange} className="space-y-4 max-w-md">
-                      <div>
-                        <label className="text-xs font-bold text-zinc-500 dark:text-zinc-400 mb-1 block uppercase">Current Password</label>
-                        <input
-                          type="password"
-                          className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl px-4 py-3 text-sm text-black dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10 focus:border-black dark:focus:border-white transition-all"
-                          value={oldPassword}
-                          onChange={(e) => setOldPassword(e.target.value)}
-                          required
-                        />
-                      </div>
-
-                      <div>
-                        <label className="text-xs font-bold text-zinc-500 dark:text-zinc-400 mb-1 block uppercase">New Password</label>
-                        <input
-                          type="password"
-                          className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl px-4 py-3 text-sm text-black dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10 focus:border-black dark:focus:border-white transition-all"
-                          value={newPassword}
-                          onChange={(e) => setNewPassword(e.target.value)}
-                          required
-                        />
-                      </div>
-
-                      <div>
-                        <label className="text-xs font-bold text-zinc-500 dark:text-zinc-400 mb-1 block uppercase">Confirm New Password</label>
-                        <input
-                          type="password"
-                          className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl px-4 py-3 text-sm text-black dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10 focus:border-black dark:focus:border-white transition-all"
-                          value={confirmPassword}
-                          onChange={(e) => setConfirmPassword(e.target.value)}
-                          required
-                        />
-                      </div>
-
-                      <AnimatePresence>
-                        {passwordStatus && (
-                          <motion.div
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: 'auto' }}
-                            exit={{ opacity: 0, height: 0 }}
-                            className={cn(
-                              "flex items-center gap-2 p-3 rounded-xl text-sm font-medium",
-                              passwordStatus.type === 'success' ? "bg-green-50 dark:bg-emerald-950/20 text-green-700 dark:text-emerald-400" : "bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-400"
-                            )}
-                          >
-                            {passwordStatus.type === 'success' ? <Check className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
-                            {passwordStatus.message}
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-
-                      <button
-                        type="submit"
-                        disabled={isChangingPassword}
-                        className="px-6 py-3 bg-black dark:bg-indigo-600 text-white rounded-xl font-bold text-sm hover:bg-zinc-800 dark:hover:bg-indigo-700 transition-colors disabled:opacity-50"
-                      >
-                        {isChangingPassword ? 'Updating...' : 'Update Password'}
-                      </button>
-                    </form>
-                  </motion.div>
-                )}
-
-                {/* Notifications Tab */}
-                {activeTab === 'notifications' && (
-                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-                    <div className="flex items-center gap-3 mb-6">
-                      <Bell className="w-5 h-5 text-black dark:text-white" />
-                      <h2 className="font-bold text-lg text-black dark:text-white">Notification Settings</h2>
-                    </div>
-
-                    <div className="space-y-3 max-w-md">
-                      <div className="flex items-center justify-between p-4 bg-zinc-50 dark:bg-zinc-800/30 rounded-xl border border-zinc-100 dark:border-zinc-800">
-                        <div>
-                          <p className="font-bold text-sm text-black dark:text-white">Push Notifications</p>
-                          <p className="text-xs text-zinc-400 dark:text-zinc-500">Get instant alerts on your device</p>
-                        </div>
-                        <Toggle enabled={pushNotifications} setEnabled={handleTogglePushNotifications} />
-                      </div>
-
-                      <div className="flex items-center justify-between p-4 bg-zinc-50 dark:bg-zinc-800/30 rounded-xl border border-zinc-100 dark:border-zinc-800">
-                        <div>
-                          <p className="font-bold text-sm text-black dark:text-white">Email Notifications</p>
-                          <p className="text-xs text-zinc-400 dark:text-zinc-500">Receive digests and updates</p>
-                        </div>
-                        <Toggle enabled={emailNotifications} setEnabled={handleToggleEmailNotifications} />
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-
-                {/* Activity Tab */}
-                {activeTab === 'activity' && (
-                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-                    <div className="flex items-center gap-3 mb-6">
-                      <BarChart2 className="w-5 h-5 text-black dark:text-white" />
-                      <h2 className="font-bold text-lg text-black dark:text-white">My Activity</h2>
-                    </div>
-
-                    <div className="space-y-6">
-                      {/* Liked Reels/Posts */}
-                      <div>
-                        <h3 className="font-bold text-sm text-black dark:text-white mb-3 flex items-center gap-2">
-                          <Heart className="w-4 h-4 text-red-500" />
-                          Liked Posts & Reels
-                        </h3>
-                        {isLoadingLiked ? (
-                          <div className="text-sm text-zinc-400">Loading liked posts...</div>
-                        ) : likedPosts.length === 0 ? (
-                          <div className="text-sm text-zinc-400 p-4 bg-zinc-50 dark:bg-zinc-800/30 rounded-xl border border-zinc-100 dark:border-zinc-800">You haven't liked any posts yet.</div>
-                        ) : (
-                          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                            {likedPosts.map((post) => (
-                              <div key={post.id} className="relative group bg-zinc-100 dark:bg-zinc-800 rounded-xl overflow-hidden aspect-square">
-                                {post.mediaUrl ? (
-                                  post.mediaType === 'VIDEO' ? (
-                                    <video src={post.mediaUrl} className="w-full h-full object-cover" preload="metadata" muted />
-                                  ) : (
-                                    <img src={post.mediaUrl} alt="" className="w-full h-full object-cover" />
-                                  )
-                                ) : (
-                                  <div className="w-full h-full flex items-center justify-center text-xs text-zinc-400 p-2">
-                                    {post.content?.substring(0, 30)}...
-                                  </div>
-                                )}
-                                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
-                                  <button 
-                                    onClick={() => setSelectedPostForView({ mediaUrl: post.mediaUrl, mediaType: post.mediaType })}
-                                    className="p-2 bg-white dark:bg-zinc-800 rounded-full text-black dark:text-white hover:scale-110 transition-transform"
-                                    title="View"
-                                  >
-                                    <Eye className="w-4 h-4" />
-                                  </button>
-                                  <button 
-                                    onClick={() => handleUnlike(post.id)}
-                                    className="p-2 bg-white dark:bg-zinc-800 rounded-full text-red-500 hover:scale-110 transition-transform"
-                                    title="Unlike"
-                                  >
-                                    <X className="w-4 h-4" />
-                                  </button>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Not Interested */}
-                      <div className="border-t border-zinc-100 dark:border-zinc-800 pt-6">
-                        <h3 className="font-bold text-sm text-black dark:text-white mb-3 flex items-center gap-2">
-                          <EyeOff className="w-4 h-4 text-zinc-500" />
-                          Not Interested
-                        </h3>
-                        <p className="text-xs text-zinc-400 dark:text-zinc-500 mb-3">Posts you've marked as not interested will appear here. You can remove them to see them again.</p>
-                        
-                        <div className="space-y-2">
-                          {notInterestedPosts.map((item) => (
-                            <div key={item.id} className="flex items-center justify-between p-3 bg-zinc-50 dark:bg-zinc-800/30 rounded-xl border border-zinc-100 dark:border-zinc-800">
-                              <div className="flex items-center gap-3">
-                                {item.type === 'VIDEO' ? <Film className="w-4 h-4 text-zinc-400" /> : <Globe className="w-4 h-4 text-zinc-400" />}
-                                <span className="text-sm font-medium text-black dark:text-white">{item.title}</span>
-                              </div>
-                                <div className="flex items-center gap-2">
-                                  <button 
-                                    onClick={() => setSelectedPostForView({ mediaUrl: item.mediaUrl, mediaType: item.type, title: item.title })}
-                                    className="p-1.5 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-full transition-colors"
-                                    title="View"
-                                  >
-                                    <Eye className="w-4 h-4 text-zinc-500 dark:text-zinc-400" />
-                                  </button>
-                                  <button 
-                                    onClick={() => handleRemoveNotInterested(item.id)}
-                                    className="p-1.5 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-full transition-colors"
-                                    title="Remove"
-                                  >
-                                    <X className="w-4 h-4 text-zinc-500" />
-                                  </button>
-                                </div>
-                            </div>
-                          ))}
-                          {notInterestedPosts.length === 0 && (
-                            <div className="text-sm text-zinc-400 p-4 bg-zinc-50 dark:bg-zinc-800/30 rounded-xl border border-zinc-100 dark:border-zinc-800">No items marked as not interested.</div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-
-
-
-                {/* Display Tab */}
-                {activeTab === 'display' && (
-                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-                    <div className="flex items-center gap-3 mb-6">
-                      <Moon className="w-5 h-5 text-black dark:text-white" />
-                      <h2 className="font-bold text-lg text-black dark:text-white">Display Preferences</h2>
-                    </div>
-
-                    <div className="space-y-4 max-w-md">
-                      <div className="flex items-center justify-between p-4 bg-zinc-50 dark:bg-zinc-800 rounded-xl border border-zinc-100 dark:border-zinc-700">
-                        <div>
-                          <p className="font-bold text-sm text-black dark:text-white">Dark Mode</p>
-                          <p className="text-xs text-zinc-400">Reduce eye strain in low light</p>
-                        </div>
-                        <Toggle enabled={darkMode} setEnabled={toggleDarkMode} />
-                      </div>
-
-                    </div>
-                  </motion.div>
-                )}
-
-
-                {/* More Tab */}
-                {activeTab === 'more' && (
-                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-                    <div className="flex items-center gap-3 mb-6">
-                      <Menu className="w-5 h-5 text-black dark:text-white" />
-                      <h2 className="font-bold text-lg text-black dark:text-white">More Options</h2>
-                    </div>
-
-                    <div className="space-y-8 max-w-2xl">
-                      {/* User Suggestions */}
-                      <div>
-                        <h3 className="font-bold text-sm text-black dark:text-white mb-3 flex items-center gap-2">
-                          <User className="w-4 h-4 text-zinc-500" />
-                          Suggested for You
-                        </h3>
-                        <p className="text-xs text-zinc-400 dark:text-zinc-500 mb-3">Accounts you might want to follow.</p>
-                        
-                        {isLoadingSuggestions ? (
-                          <div className="text-sm text-zinc-400">Loading suggestions...</div>
-                        ) : (
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {suggestions.map((u) => (
-                              <div key={u.id} className="flex items-center justify-between p-3 bg-zinc-50 dark:bg-zinc-800/30 rounded-xl border border-zinc-100 dark:border-zinc-800">
-                                <div className="flex items-center gap-3">
-                                  <div className="w-10 h-10 rounded-full bg-zinc-200 dark:bg-zinc-700 overflow-hidden">
-                                    {u.avatarUrl ? (
-                                      <img src={u.avatarUrl} alt={u.username} className="w-full h-full object-cover" />
-                                    ) : (
-                                      <User className="w-6 h-6 text-zinc-400 m-2" />
-                                    )}
-                                  </div>
-                                  <div>
-                                    <p className="text-sm font-bold text-black dark:text-white">{u.username}</p>
-                                    <p className="text-xs text-zinc-400">{u.followersCount} followers</p>
-                                  </div>
-                                </div>
-                                <button 
-                                  onClick={() => handleFollowSuggestion(u.username)}
-                                  className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300"
-                                >
-                                  Follow
-                                </button>
-                              </div>
-                            ))}
-                            {suggestions.length === 0 && (
-                              <div className="text-sm text-zinc-400 dark:text-zinc-500">No suggestions available.</div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Feature Suggestions */}
-                      <div className="border-t border-zinc-100 dark:border-zinc-800 pt-6">
-                        <h3 className="font-bold text-sm text-black dark:text-white mb-3 flex items-center gap-2">
-                          <PlusSquare className="w-4 h-4 text-zinc-500" />
-                          Feature Suggestions
-                        </h3>
-                        <p className="text-xs text-zinc-400 dark:text-zinc-500 mb-3">Have an idea for a new feature? Let us know!</p>
-                        
-                        <form onSubmit={handleSendSuggestion} className="space-y-4">
-                          <textarea
-                            className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl px-4 py-3 text-sm text-black dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10 focus:border-black dark:focus:border-white transition-all h-32"
-                            placeholder="Describe your suggestion here..."
-                            value={userSuggestion}
-                            onChange={(e) => setUserSuggestion(e.target.value)}
-                            required
-                          />
-                          <button
-                            type="submit"
-                            className="bg-black dark:bg-indigo-600 text-white px-6 py-2.5 rounded-xl font-bold text-sm hover:bg-zinc-800 dark:hover:bg-indigo-700 transition-colors"
-                          >
-                            Submit Suggestion
-                          </button>
-                        </form>
-                        
-                        {suggestionStatus && (
-                          <div className={cn(
-                            "mt-3 text-sm p-3 rounded-xl flex items-center gap-2 border",
-                            suggestionStatus.type === 'success' ? "bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border-emerald-100 dark:border-emerald-900/30" : "bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-400 border-red-100 dark:border-red-900/30"
-                          )}>
-                            {suggestionStatus.type === 'success' ? <Check className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
-                            {suggestionStatus.message}
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Bug Reports & Complaints */}
-                      <div className="border-t border-zinc-100 dark:border-zinc-800 pt-6">
-                        <h3 className="font-bold text-sm text-black dark:text-white mb-3 flex items-center gap-2">
-                          <AlertCircle className="w-4 h-4 text-zinc-500" />
-                          Bug Reports & Complaints
-                        </h3>
-                        <p className="text-xs text-zinc-400 dark:text-zinc-500 mb-3">Found a bug or have a complaint? Let us know.</p>
-                        
-                        <form onSubmit={handleSendReport} className="space-y-4">
-                          <textarea
-                            className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl px-4 py-3 text-sm text-black dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10 focus:border-black dark:focus:border-white transition-all h-32"
-                            placeholder="Describe the issue or complaint here..."
-                            value={bugReport}
-                            onChange={(e) => setBugReport(e.target.value)}
-                            required
-                          />
-                          <button
-                            type="submit"
-                            className="bg-black dark:bg-indigo-600 text-white px-6 py-2.5 rounded-xl font-bold text-sm hover:bg-zinc-800 dark:hover:bg-indigo-700 transition-colors"
-                          >
-                            Submit Report
-                          </button>
-                        </form>
-                        
-                        {reportStatus && (
-                          <div className={cn(
-                            "mt-3 text-sm p-3 rounded-xl flex items-center gap-2 border",
-                            reportStatus.type === 'success' ? "bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border-emerald-100 dark:border-emerald-900/30" : "bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-400 border-red-100 dark:border-red-900/30"
-                          )}>
-                            {reportStatus.type === 'success' ? <Check className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
-                            {reportStatus.message}
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Secure PWA App Installation */}
-                      <div className="border-t border-zinc-100 dark:border-zinc-800 pt-6">
-                        <div className="p-5 bg-gradient-to-br from-indigo-50/50 to-purple-50/50 dark:from-indigo-950/20 dark:to-purple-950/20 rounded-2xl border border-indigo-100/50 dark:border-indigo-500/10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                          <div className="space-y-1">
-                            <h3 className="font-bold text-sm text-indigo-950 dark:text-indigo-300 flex items-center gap-2">
-                              <Shield className="w-4 h-4 text-indigo-500 animate-pulse" />
-                              Install Secure App
-                            </h3>
-                            <p className="text-xs text-zinc-500 dark:text-zinc-400 max-w-sm leading-relaxed">
-                              Install ChitChat on your home screen for full background thread notifications. Safe, sandboxed, and respects your data privacy.
-                            </p>
-                          </div>
-                          <button
-                            onClick={handleInstallClick}
-                            className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-xs shadow-sm hover:shadow transition-all duration-200 flex items-center justify-center gap-2 whitespace-nowrap self-start md:self-center cursor-pointer"
-                          >
-                            <PlusSquare className="w-4 h-4" />
-                            Install Secure App
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Contact Us */}
-                      <div className="border-t border-zinc-100 dark:border-zinc-800 pt-6">
-                        <h3 className="font-bold text-sm text-black dark:text-white mb-3">Contact Us</h3>
-                        <p className="text-xs text-zinc-400 dark:text-zinc-500 mb-3">For any queries, reach out to us at support@chitchat.com</p>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-
+                {activeTab === 'account' && renderAccountInfo()}
+                {activeTab === 'privacy' && renderPrivacy()}
+                {activeTab === 'security' && renderSecurity()}
+                {activeTab === 'notifications' && renderNotifications()}
+                {activeTab === 'activity' && renderActivity()}
+                {activeTab === 'display' && renderDisplay()}
+                {activeTab === 'more' && renderMore()}
               </div>
             </div>
           </div>
 
+          {/* Mobile Accordion Dropdown Layout */}
+          <div className="flex flex-col md:hidden space-y-3">
+            {tabs.map((tab) => {
+              const isExpanded = activeTab === tab.id;
+              return (
+                <div key={tab.id} className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-100 dark:border-zinc-800 shadow-sm overflow-hidden">
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab(isExpanded ? null : tab.id as TabType)}
+                    className={cn(
+                      "w-full flex items-center justify-between px-5 py-4 text-sm font-bold transition-all text-left",
+                      isExpanded ? "bg-zinc-50 dark:bg-zinc-800/20 border-b border-zinc-100 dark:border-zinc-800 text-black dark:text-white" : "text-zinc-700 dark:text-zinc-300"
+                    )}
+                  >
+                    <div className="flex items-center gap-3">
+                      {tab.icon}
+                      {tab.title}
+                    </div>
+                    <ChevronDown className={cn("w-4 h-4 transition-transform duration-300", isExpanded && "rotate-180")} />
+                  </button>
+                  
+                  <AnimatePresence initial={false}>
+                    {isExpanded && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2, ease: "easeInOut" }}
+                      >
+                        <div className="p-5 border-t border-zinc-100 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+                          {tab.id === 'account' && renderAccountInfo()}
+                          {tab.id === 'privacy' && renderPrivacy()}
+                          {tab.id === 'security' && renderSecurity()}
+                          {tab.id === 'notifications' && renderNotifications()}
+                          {tab.id === 'activity' && renderActivity()}
+                          {tab.id === 'display' && renderDisplay()}
+                          {tab.id === 'more' && renderMore()}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              );
+            })}
+            
+            {/* Mobile Log Out Button */}
+            <button
+              onClick={logout}
+              className="w-full flex items-center justify-center gap-3 px-5 py-4 bg-red-50 dark:bg-red-950/20 border border-red-100/10 text-red-500 font-bold rounded-2xl text-sm hover:opacity-90 active:scale-[0.98] transition-all shadow-sm"
+            >
+              <LogOut className="w-5 h-5" />
+              Log Out
+            </button>
+          </div>
+
         </div>
-      </main>
+      </motion.main>
       {/* Modal for Viewing Post/Reel */}
       <AnimatePresence>
         {selectedPostForView && (

@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback, Suspense } from 'react';
 import Sidebar from '@/components/Sidebar';
 import axiosInstance from '@/lib/axios';
-import { Send, Search, MessageCircle, Check, CheckCheck, SmilePlus, Camera, Mic, Play, X, ChevronLeft, Trash2, Copy, CheckSquare, Square, MoreVertical } from 'lucide-react';
+import { Send, Search, MessageCircle, Check, CheckCheck, SmilePlus, Camera, Mic, Play, X, ChevronLeft, Trash2, Copy, CheckSquare, Square, MoreVertical, Edit3 } from 'lucide-react';
 import Link from 'next/link';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
@@ -23,6 +23,7 @@ interface Message {
   readAt?: string;
   mediaUrl?: string;
   messageType?: string;
+  isEdited?: boolean;
 }
 
 interface Contact {
@@ -38,6 +39,7 @@ function MessagesPageInner() {
   const [followers, setFollowers] = useState<Contact[]>([]);
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [filteredContacts, setFilteredContacts] = useState<Contact[]>([]);
+  const [editingMessage, setEditingMessage] = useState<Message | null>(null);
   const [contactSearch, setContactSearch] = useState('');
   const [selectedUser, setSelectedUser] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -268,8 +270,10 @@ function MessagesPageInner() {
             (msg.senderUsername === selectedUserRef.current || msg.receiverUsername === selectedUserRef.current)
           ) {
             setMessages(prev => {
-              // Deduplicate: don't add if already exists (since sender gets it back via REST too)
-              if (prev.some(m => m.id === msg.id)) return prev;
+              // Deduplicate or replace in place (helps with edits or status sync)
+              if (prev.some(m => m.id === msg.id)) {
+                return prev.map(m => m.id === msg.id ? msg : m);
+              }
               return [...prev, msg];
             });
             // Mark as read if we are actively viewing this chat!
@@ -415,13 +419,20 @@ function MessagesPageInner() {
     setIsSending(true);
 
     try {
-      // Send via REST — backend saves + pushes via WebSocket to receiver
-      const res = await axiosInstance.post(`/messages/${selectedUser}`, { content: text });
-      // Add immediately to our own view (don't wait for WS echo)
-      setMessages(prev => {
-        if (prev.some(m => m.id === res.data.id)) return prev;
-        return [...prev, res.data];
-      });
+      if (editingMessage) {
+        // Edit mode!
+        const res = await axiosInstance.put(`/messages/edit/${editingMessage.id}`, { content: text });
+        setMessages(prev => prev.map(m => m.id === editingMessage.id ? res.data : m));
+        setEditingMessage(null);
+      } else {
+        // Send mode!
+        const res = await axiosInstance.post(`/messages/${selectedUser}`, { content: text });
+        // Add immediately to our own view (don't wait for WS echo)
+        setMessages(prev => {
+          if (prev.some(m => m.id === res.data.id)) return prev;
+          return [...prev, res.data];
+        });
+      }
     } catch (err: any) {
       const msg = err?.response?.data?.message || 'Failed to send message';
       setErrorMsg(msg);
@@ -519,7 +530,13 @@ function MessagesPageInner() {
   return (
     <div className="min-h-[100dvh] bg-transparent">
       <Sidebar />
-      <main className="pl-0 md:pl-20 xl:pl-64 pb-[calc(6rem+env(safe-area-inset-bottom,0px))] md:pb-0 h-[100dvh] flex overflow-hidden bg-transparent">
+      <motion.main 
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, ease: 'easeOut' }}
+        style={{ willChange: 'transform, opacity' }}
+        className="pl-0 md:pl-20 xl:pl-64 pb-[calc(6rem+env(safe-area-inset-bottom,0px))] md:pb-0 h-[100dvh] flex overflow-hidden bg-transparent"
+      >
 
         {/* LEFT: Contacts */}
         <div className={cn("w-full md:w-72 xl:w-80 border-r border-white/10 dark:border-zinc-800/40 bg-white/30 dark:bg-zinc-950/30 backdrop-blur-xl flex flex-col flex-shrink-0", selectedUser ? "hidden md:flex" : "flex")}>
@@ -747,7 +764,12 @@ function MessagesPageInner() {
                                 <p className="text-xs text-zinc-600 truncate">{m.content}</p>
                               </div>
                             ) : (
-                              m.content
+                              <div className="flex flex-col gap-0.5">
+                                <span>{m.content}</span>
+                                {m.isEdited && (
+                                  <span className="text-[9px] opacity-60 self-end mt-0.5 italic">(edited)</span>
+                                )}
+                              </div>
                             )}
                           </div>
                           <span className="text-[10px] text-zinc-400 px-1">{formatTime(m.createdAt)}</span>
@@ -814,6 +836,23 @@ function MessagesPageInner() {
                       <CheckSquare className="w-3.5 h-3.5" />
                       Select Multiple
                     </button>
+                    {messages.find(msg => msg.id === activeContextMenu)?.senderUsername === user?.username && 
+                     messages.find(msg => msg.id === activeContextMenu)?.messageType === 'TEXT' && (
+                      <button
+                        onClick={() => {
+                          const m = messages.find(msg => msg.id === activeContextMenu);
+                          if (m) {
+                            setEditingMessage(m);
+                            setNewMessage(m.content);
+                          }
+                          setActiveContextMenu(null);
+                        }}
+                        className="w-full text-left px-4 py-2 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors flex items-center gap-2 border-b border-zinc-100/50 dark:border-zinc-800/30"
+                      >
+                        <Edit3 className="w-3.5 h-3.5" />
+                        Edit Message
+                      </button>
+                    )}
                     {messages.find(msg => msg.id === activeContextMenu)?.senderUsername === user?.username && (
                       <button
                         onClick={() => {
@@ -865,43 +904,60 @@ function MessagesPageInner() {
                   </div>
                 </div>
               ) : (
-                <form onSubmit={sendMessage} className="px-6 py-4 border-t border-white/10 dark:border-zinc-800/40 bg-white/40 dark:bg-zinc-950/40 backdrop-blur-xl flex items-center gap-3 flex-shrink-0 pb-10 md:pb-4">
-                  <label className="cursor-pointer text-zinc-400 hover:text-black dark:hover:text-white transition-colors flex-shrink-0">
-                    <Camera className="w-6 h-6" />
-                    <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
-                  </label>
-                  <button
-                    type="button"
-                    onClick={isRecording ? stopRecording : startRecording}
-                    className={cn("cursor-pointer transition-colors flex-shrink-0", isRecording ? "text-red-500 animate-pulse" : "text-zinc-400 hover:text-black dark:hover:text-white")}
-                  >
-                    <Mic className="w-6 h-6" />
-                  </button>
-                  <div className="flex-1 relative">
-                    <input
-                      ref={inputRef}
-                      type="text"
-                      placeholder="Message..."
-                      className="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-black dark:text-white rounded-full px-5 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10 focus:border-black dark:focus:border-white transition-all pr-12"
-                      value={newMessage}
-                      onChange={e => setNewMessage(e.target.value)}
-                      onKeyDown={e => e.key === 'Enter' && !e.shiftKey && sendMessage(e as any)}
-                    />
-                  </div>
-                  <motion.button
-                    type="submit"
-                    whileTap={{ scale: 0.9 }}
-                    disabled={!newMessage.trim() || isSending}
-                    className={cn(
-                      'w-10 h-10 rounded-full flex items-center justify-center transition-all flex-shrink-0',
-                      newMessage.trim()
-                        ? 'bg-black dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200 shadow-md'
-                        : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-600 cursor-not-allowed'
-                    )}
-                  >
-                    <Send className="w-4 h-4" />
-                  </motion.button>
-                </form>
+                <div className="border-t border-white/10 dark:border-zinc-800/40 bg-white/40 dark:bg-zinc-950/40 backdrop-blur-xl flex flex-col flex-shrink-0">
+                  {/* Editing Message Indicator */}
+                  {editingMessage && (
+                    <div className="px-6 py-2 bg-indigo-50/50 dark:bg-indigo-950/20 border-b border-indigo-100/30 dark:border-indigo-950/40 flex items-center justify-between text-xs font-bold text-indigo-600 dark:text-indigo-400">
+                      <span className="truncate">Editing: "{editingMessage.content}"</span>
+                      <button 
+                        onClick={() => {
+                          setEditingMessage(null);
+                          setNewMessage('');
+                        }}
+                        className="p-1 text-zinc-400 hover:text-red-500 rounded-full transition-colors"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  )}
+                  <form onSubmit={sendMessage} className="px-6 py-4 flex items-center gap-3 pb-10 md:pb-4">
+                    <label className="cursor-pointer text-zinc-400 hover:text-black dark:hover:text-white transition-colors flex-shrink-0">
+                      <Camera className="w-6 h-6" />
+                      <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+                    </label>
+                    <button
+                      type="button"
+                      onClick={isRecording ? stopRecording : startRecording}
+                      className={cn("cursor-pointer transition-colors flex-shrink-0", isRecording ? "text-red-500 animate-pulse" : "text-zinc-400 hover:text-black dark:hover:text-white")}
+                    >
+                      <Mic className="w-6 h-6" />
+                    </button>
+                    <div className="flex-1 relative">
+                      <input
+                        ref={inputRef}
+                        type="text"
+                        placeholder="Message..."
+                        className="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-black dark:text-white rounded-full px-5 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10 focus:border-black dark:focus:border-white transition-all pr-12"
+                        value={newMessage}
+                        onChange={e => setNewMessage(e.target.value)}
+                        onKeyDown={e => e.key === 'Enter' && !e.shiftKey && sendMessage(e as any)}
+                      />
+                    </div>
+                    <motion.button
+                      type="submit"
+                      whileTap={{ scale: 0.9 }}
+                      disabled={!newMessage.trim() || isSending}
+                      className={cn(
+                        'w-10 h-10 rounded-full flex items-center justify-center transition-all flex-shrink-0',
+                        newMessage.trim()
+                          ? 'bg-black dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200 shadow-md'
+                          : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-600 cursor-not-allowed'
+                      )}
+                    >
+                      <Send className="w-4 h-4" />
+                    </motion.button>
+                  </form>
+                </div>
               )}
             </>
           ) : (
@@ -930,7 +986,7 @@ function MessagesPageInner() {
           )}
         </AnimatePresence>
         </div>
-      </main>
+      </motion.main>
     </div>
   );
 }

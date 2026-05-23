@@ -73,7 +73,13 @@ export default function ExplorePage() {
   return (
     <div className="min-h-screen bg-white dark:bg-zinc-950">
       <Sidebar />
-      <main className="pl-0 md:pl-20 xl:pl-64 pb-28 md:pb-8 min-h-screen bg-zinc-50/30 dark:bg-transparent flex flex-col items-center p-4 md:p-8">
+      <motion.main
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+        style={{ willChange: 'transform, opacity' }}
+        className="pl-0 md:pl-20 xl:pl-64 pb-28 md:pb-8 min-h-screen bg-zinc-50/30 dark:bg-transparent flex flex-col items-center p-4 md:p-8"
+      >
         <div className="max-w-4xl w-full space-y-6">
           
           {/* Header */}
@@ -147,7 +153,7 @@ export default function ExplorePage() {
             )}
           </div>
         </div>
-      </main>
+      </motion.main>
     </div>
   );
 }

@@ -112,7 +112,8 @@ public class MessageController {
                     java.time.LocalDateTime.now(),
                     java.time.LocalDateTime.now(),
                     null,
-                    "READ"
+                    "READ",
+                    false
             );
             messagingTemplate.convertAndSend("/topic/messages/" + senderUsername, readReceipt);
         } catch (Exception e) {
@@ -147,7 +148,8 @@ public class MessageController {
                     java.time.LocalDateTime.now(),
                     java.time.LocalDateTime.now(),
                     null,
-                    "DELETE_MESSAGE"
+                    "DELETE_MESSAGE",
+                    false
             );
             messagingTemplate.convertAndSend("/topic/messages/" + otherUsername, deleteNotification);
         } catch (Exception e) {
@@ -179,7 +181,8 @@ public class MessageController {
                     java.time.LocalDateTime.now(),
                     java.time.LocalDateTime.now(),
                     null,
-                    "DELETE_BULK"
+                    "DELETE_BULK",
+                    false
             );
             messagingTemplate.convertAndSend("/topic/messages/" + otherUsername, deleteBulkNotification);
         } catch (Exception e) {
@@ -187,5 +190,26 @@ public class MessageController {
         }
         
         return ResponseEntity.ok().build();
+    }
+
+    public record MessageEditRequest(String content) {}
+
+    @PutMapping("/edit/{messageId}")
+    public ResponseEntity<MessageResponse> editMessage(
+            @PathVariable java.util.UUID messageId,
+            @RequestBody MessageEditRequest request,
+            Authentication authentication
+    ) {
+        MessageResponse response = messageService.editMessage(messageId, authentication.getName(), request.content());
+        
+        try {
+            // Send edit notification via WebSocket to both receiver and sender
+            messagingTemplate.convertAndSend("/topic/messages/" + response.receiverUsername(), response);
+            messagingTemplate.convertAndSend("/topic/messages/" + response.senderUsername(), response);
+        } catch (Exception e) {
+            // Ignore
+        }
+        
+        return ResponseEntity.ok(response);
     }
 }

@@ -68,7 +68,8 @@ public class MessageService {
                 savedMessage.getCreatedAt(),
                 savedMessage.getReadAt(),
                 savedMessage.getMediaUrl(),
-                savedMessage.getMessageType().name()
+                savedMessage.getMessageType().name(),
+                savedMessage.getIsEdited()
         );
     }
 
@@ -98,7 +99,8 @@ public class MessageService {
                 savedMessage.getCreatedAt(),
                 savedMessage.getReadAt(),
                 savedMessage.getMediaUrl(),
-                savedMessage.getMessageType().name()
+                savedMessage.getMessageType().name(),
+                savedMessage.getIsEdited()
         );
     }
 
@@ -128,7 +130,8 @@ public class MessageService {
                 savedMessage.getCreatedAt(),
                 savedMessage.getReadAt(),
                 savedMessage.getMediaUrl(),
-                savedMessage.getMessageType().name()
+                savedMessage.getMessageType().name(),
+                savedMessage.getIsEdited()
         );
     }
 
@@ -150,7 +153,8 @@ public class MessageService {
                 msg.getCreatedAt(),
                 msg.getReadAt(),
                 msg.getMediaUrl(),
-                msg.getMessageType().name()
+                msg.getMessageType().name(),
+                msg.getIsEdited()
         ));
     }
 
@@ -255,5 +259,38 @@ public class MessageService {
                 messageRepository.delete(m);
             }
         }
+    }
+
+    @Transactional
+    public MessageResponse editMessage(java.util.UUID messageId, String email, String newContent) {
+        User sender = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        Message message = messageRepository.findById(messageId)
+                .orElseThrow(() -> new RuntimeException("Message not found"));
+        
+        if (!message.getSender().getId().equals(sender.getId())) {
+            throw new RuntimeException("You can only edit your own messages");
+        }
+        
+        if (message.getMessageType() != com.social.backend.entity.MessageType.TEXT) {
+            throw new RuntimeException("You can only edit text messages");
+        }
+        
+        message.setContent(newContent);
+        message.setIsEdited(true);
+        Message savedMessage = messageRepository.save(message);
+        
+        return new MessageResponse(
+                savedMessage.getId(),
+                savedMessage.getSender().getUsername(),
+                savedMessage.getReceiver().getUsername(),
+                savedMessage.getContent(),
+                savedMessage.getCreatedAt(),
+                savedMessage.getReadAt(),
+                savedMessage.getMediaUrl(),
+                savedMessage.getMessageType().name(),
+                true
+        );
     }
 }

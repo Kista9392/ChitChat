@@ -311,7 +311,13 @@ export default function ReelsPage() {
   return (
     <div className="min-h-[100dvh] bg-gradient-to-br from-violet-50 via-white to-rose-50 dark:from-zinc-950 dark:via-zinc-900 dark:to-zinc-950 w-full max-w-full overflow-x-hidden relative">
       <Sidebar />
-      <div className="pl-0 md:pl-20 xl:pl-64 pb-[calc(6.5rem+env(safe-area-inset-bottom,0px))] md:pb-0 min-h-[100dvh] w-full max-w-full overflow-x-hidden flex flex-col md:flex-row gap-0 md:gap-6 p-0 md:p-8 items-center justify-center md:items-start md:justify-start">
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+        style={{ willChange: 'transform, opacity' }}
+        className="pl-0 md:pl-20 xl:pl-64 pb-[calc(6.5rem+env(safe-area-inset-bottom,0px))] md:pb-0 min-h-[100dvh] w-full max-w-full overflow-x-hidden flex flex-col md:flex-row gap-0 md:gap-6 p-0 md:p-8 items-center justify-center md:items-start md:justify-start"
+      >
 
         {/* LEFT: arrows + card */}
         <div className="flex gap-0 md:gap-4 items-center pt-0 md:pt-6 w-full md:w-auto justify-center max-w-full overflow-x-hidden">
@@ -556,7 +562,7 @@ export default function ReelsPage() {
           </div>
         )}
       </AnimatePresence>
-    </div>
+    </motion.div>
 
       {/* Share toast */}
       <AnimatePresence>
