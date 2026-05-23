@@ -82,8 +82,10 @@ public class UserService {
     public AuthResponse loginUser(String identifier, String rawPassword) {
         // ── Account lockout check ────────────────────────────────────────────
         // Resolve email from identifier first (needed for lockout key)
-        User user = userRepository.findByEmail(identifier)
-                .or(() -> userRepository.findByPhoneNumber(identifier))
+        String trimmedIdentifier = identifier != null ? identifier.trim() : "";
+        User user = userRepository.findByEmail(trimmedIdentifier)
+                .or(() -> userRepository.findByUsername(trimmedIdentifier))
+                .or(() -> userRepository.findByPhoneNumber(trimmedIdentifier))
                 .orElseThrow(() -> new RuntimeException("Invalid credentials"));
 
         String lockKey    = "account_locked:" + user.getEmail();
@@ -184,31 +186,34 @@ public class UserService {
     }
 
     public String forgotPassword(String email) {
-        if (userRepository.findByEmail(email).isEmpty()) {
+        String trimmedEmail = email != null ? email.trim() : "";
+        if (userRepository.findByEmail(trimmedEmail).isEmpty()) {
             throw new RuntimeException("User with this email does not exist");
         }
         String otp = String.format("%06d", new Random().nextInt(999999));
-        redisTemplate.opsForValue().set("otp:" + email, otp, 5, TimeUnit.MINUTES);
-        emailService.sendOtpEmail(email, otp);
-        return "OTP sent to " + email;
+        redisTemplate.opsForValue().set("otp:" + trimmedEmail, otp, 5, TimeUnit.MINUTES);
+        emailService.sendOtpEmail(trimmedEmail, otp);
+        return "OTP sent to " + trimmedEmail;
     }
 
     public String resetPassword(String email, String otp, String newPassword) {
-        String savedOtp = redisTemplate.opsForValue().get("otp:" + email);
+        String trimmedEmail = email != null ? email.trim() : "";
+        String savedOtp = redisTemplate.opsForValue().get("otp:" + trimmedEmail);
         if (savedOtp == null || !savedOtp.equals(otp)) {
             throw new RuntimeException("Invalid or expired OTP");
         }
-        User user = userRepository.findByEmail(email)
+        User user = userRepository.findByEmail(trimmedEmail)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         user.setPasswordHash(passwordEncoder.encode(newPassword));
         userRepository.save(user);
-        redisTemplate.delete("otp:" + email);
+        redisTemplate.delete("otp:" + trimmedEmail);
         return "Password successfully reset";
     }
 
     @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public UserResponse getUserProfile(String username, String currentUserEmail) {
-        User user = userRepository.findByUsername(username)
+        String trimmedUsername = username != null ? username.trim() : "";
+        User user = userRepository.findByUsername(trimmedUsername)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         boolean isFollowing = false;
@@ -259,7 +264,8 @@ public class UserService {
         User follower = userRepository.findByEmail(currentUserEmail)
                 .orElseThrow(() -> new RuntimeException("Current user not found"));
 
-        User following = userRepository.findByUsername(targetUsername)
+        String trimmedTargetUsername = targetUsername != null ? targetUsername.trim() : "";
+        User following = userRepository.findByUsername(trimmedTargetUsername)
                 .orElseThrow(() -> new RuntimeException("Target user not found"));
 
         if (follower.getId().equals(following.getId())) {
@@ -459,7 +465,8 @@ public class UserService {
 
     @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public List<UserResponse> getFollowers(String username, String currentUserEmail) {
-        User targetUser = userRepository.findByUsername(username)
+        String trimmedUsername = username != null ? username.trim() : "";
+        User targetUser = userRepository.findByUsername(trimmedUsername)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         User currentUser = userRepository.findByEmail(currentUserEmail)
@@ -496,7 +503,8 @@ public class UserService {
 
     @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public List<UserResponse> getFollowing(String username, String currentUserEmail) {
-        User targetUser = userRepository.findByUsername(username)
+        String trimmedUsername = username != null ? username.trim() : "";
+        User targetUser = userRepository.findByUsername(trimmedUsername)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         User currentUser = userRepository.findByEmail(currentUserEmail)
