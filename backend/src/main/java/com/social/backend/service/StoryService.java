@@ -69,11 +69,10 @@ public class StoryService {
 
     @Transactional(readOnly = true)
     public List<StoryResponse> getActiveStories(String email) {
-        // user check is still good to verify auth
-        userRepository.findByEmail(email)
+        User viewer = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        List<Story> stories = storyRepository.findActiveStories();
+        List<Story> stories = storyRepository.findStoriesForViewer(viewer);
 
         return stories.stream().map(this::mapToResponse).collect(Collectors.toList());
     }

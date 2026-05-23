@@ -12,9 +12,23 @@ import java.util.List;
 import java.util.UUID;
 
 public interface StoryRepository extends JpaRepository<Story, UUID> {
-    
-    @Query("SELECT s FROM Story s JOIN FETCH s.user u ORDER BY s.createdAt DESC")
-    List<Story> findActiveStories();
+
+    /**
+     * Returns all active stories authored by:
+     *  - the requesting user themselves, OR
+     *  - any user that the requesting user follows
+     * Ordered newest-first.
+     */
+    @Query("""
+            SELECT s FROM Story s
+            JOIN FETCH s.user u
+            WHERE u = :viewer
+               OR u IN (
+                   SELECT f.following FROM Follow f WHERE f.follower = :viewer
+               )
+            ORDER BY s.createdAt DESC
+            """)
+    List<Story> findStoriesForViewer(@Param("viewer") User viewer);
 
     @Modifying
     @Query("DELETE FROM Story s WHERE s.createdAt < :cutoff")
