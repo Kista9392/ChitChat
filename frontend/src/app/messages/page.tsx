@@ -814,16 +814,18 @@ function MessagesPageInner() {
                       <CheckSquare className="w-3.5 h-3.5" />
                       Select Multiple
                     </button>
-                    <button
-                      onClick={() => {
-                        deleteSingleMessage(activeContextMenu);
-                        setActiveContextMenu(null);
-                      }}
-                      className="w-full text-left px-4 py-2 text-xs font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors flex items-center gap-2"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                      Unsend
-                    </button>
+                    {messages.find(msg => msg.id === activeContextMenu)?.senderUsername === user?.username && (
+                      <button
+                        onClick={() => {
+                          deleteSingleMessage(activeContextMenu);
+                          setActiveContextMenu(null);
+                        }}
+                        className="w-full text-left px-4 py-2 text-xs font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors flex items-center gap-2"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        Unsend
+                      </button>
+                    )}
                   </motion.div>
                 )}
               </AnimatePresence>
