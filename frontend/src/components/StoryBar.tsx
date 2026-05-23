@@ -480,7 +480,7 @@ export default function StoryBar() {
                 {currentStory.mediaType === 'VIDEO' ? (
                   <video 
                     ref={videoElRef}
-                    src={currentStory.mediaUrl} 
+                    src={getOptimizedImageUrl(currentStory.mediaUrl)} 
                     className="w-full h-full object-cover" 
                     autoPlay 
                     muted={isStoryMuted}
@@ -495,7 +495,7 @@ export default function StoryBar() {
                   />
                 ) : (
                   <img 
-                    src={currentStory.mediaUrl} 
+                    src={getOptimizedImageUrl(currentStory.mediaUrl)} 
                     className="w-full h-full object-cover"
                     alt="Story"
                   />

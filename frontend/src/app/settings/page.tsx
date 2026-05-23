@@ -716,7 +716,7 @@ export default function SettingsPage() {
       {/* Contact Us */}
       <div className="border-t border-zinc-100 dark:border-zinc-800 pt-6">
         <h3 className="font-bold text-sm text-black dark:text-white mb-3">Contact Us</h3>
-        <p className="text-xs text-zinc-400 dark:text-zinc-500 mb-3">For any queries, reach out to us at support@chitchat.com</p>
+        <p className="text-xs text-zinc-400 dark:text-zinc-500 mb-3">For any queries, reach out to us at support@vibely.social</p>
       </div>
     </div>
   );
