@@ -1,4 +1,6 @@
 {
+  "id": "/",
+  "scope": "/",
   "name": "ChitChat",
   "short_name": "ChitChat",
   "description": "A premium social experience",

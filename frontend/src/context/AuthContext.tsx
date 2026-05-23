@@ -64,11 +64,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   // Register service worker on mount
   useEffect(() => {
     if ('serviceWorker' in navigator && typeof window !== 'undefined') {
-      window.addEventListener('load', () => {
+      const registerSW = () => {
         navigator.serviceWorker.register('/sw.js')
           .then(reg => console.log('Service Worker registered successfully:', reg.scope))
           .catch(err => console.error('Service Worker registration failed:', err));
-      });
+      };
+
+      if (document.readyState === 'complete') {
+        registerSW();
+      } else {
+        window.addEventListener('load', registerSW);
+        return () => window.removeEventListener('load', registerSW);
+      }
     }
   }, []);
 
