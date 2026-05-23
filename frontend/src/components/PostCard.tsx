@@ -65,6 +65,37 @@ export default function PostCard({ post, showDelete = false, onDeleted }: PostCa
     }
   }, [isFeedMuted]);
 
+  // Play/pause video dynamically based on viewport visibility
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            video.muted = isFeedMuted;
+            video.play().catch((err) => {
+              console.log('Video autoplay blocked or paused:', err);
+            });
+          } else {
+            video.pause();
+          }
+        });
+      },
+      {
+        threshold: 0.6, // Trigger when 60% of the video card is visible in the viewport
+      }
+    );
+
+    observer.observe(video);
+
+    return () => {
+      observer.unobserve(video);
+      observer.disconnect();
+    };
+  }, [isFeedMuted]);
+
   const toggleFeedMute = (e: React.MouseEvent) => {
     e.stopPropagation();
     const stored = localStorage.getItem('feedMuted');

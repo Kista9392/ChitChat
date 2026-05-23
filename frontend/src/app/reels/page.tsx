@@ -42,6 +42,7 @@ export default function ReelsPage() {
   const [showShareModal, setShowShareModal] = useState(false);
   const [followers, setFollowers] = useState<any[]>([]);
   const videoRefs = useRef<{ [key: number]: HTMLVideoElement | null }>({});
+  const activeVideoRef = useRef<HTMLVideoElement | null>(null);
 
   useEffect(() => { fetchReels(0); }, []);
 
@@ -82,12 +83,21 @@ export default function ReelsPage() {
   useEffect(() => {
     setShowComments(false);
     setComments([]);
+
+    // Pause the previously active video if it exists and is different from the target video
+    const targetVideo = videoRefs.current[currentIndex];
+    if (activeVideoRef.current && activeVideoRef.current !== targetVideo) {
+      activeVideoRef.current.pause();
+      activeVideoRef.current.muted = true;
+    }
+
     Object.entries(videoRefs.current).forEach(([idx, video]) => {
       if (!video) return;
       if (Number(idx) === currentIndex) { 
         video.muted = isMuted; // Programmatically enforce the exact mute property on the active video
         video.play().catch(() => {}); 
         setIsPlaying(true); 
+        activeVideoRef.current = video;
         const reelId = reels[currentIndex]?.id;
         if (reelId) {
           axiosInstance.post(`/posts/${reelId}/view`).catch(() => {});
@@ -329,7 +339,10 @@ export default function ReelsPage() {
                 style={{ willChange: 'transform, opacity', transform: 'translateZ(0)' }}
                 className="absolute inset-0">
 
-                <video ref={el => { videoRefs.current[currentIndex] = el; }} src={currentReel?.mediaUrl ? getOptimizedVideoUrl(currentReel.mediaUrl) : ''}
+                <video ref={el => { 
+                  videoRefs.current[currentIndex] = el; 
+                  if (el) activeVideoRef.current = el;
+                }} src={currentReel?.mediaUrl ? getOptimizedVideoUrl(currentReel.mediaUrl) : ''}
                   className="w-full h-full object-cover" loop autoPlay muted={isMuted} playsInline onClick={togglePlay} preload="auto" />
 
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30 pointer-events-none" />

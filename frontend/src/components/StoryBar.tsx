@@ -5,6 +5,7 @@ import axiosInstance from '@/lib/axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/context/AuthContext';
 import { X, ChevronLeft, ChevronRight, Trash2, User, Volume2, VolumeX } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 interface Story {
   id: string;
@@ -16,6 +17,7 @@ interface Story {
 
 export default function StoryBar() {
   const { user } = useAuth();
+  const router = useRouter();
   const [stories, setStories] = useState<Story[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -432,15 +434,22 @@ export default function StoryBar() {
 
               {/* Header */}
               <div className="absolute top-4 left-0 right-0 px-4 flex items-center justify-between z-10 pointer-events-none">
-                <div className="flex items-center gap-3 pointer-events-auto">
-                  <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-xs font-bold text-black overflow-hidden">
+                <div 
+                  className="flex items-center gap-3 pointer-events-auto cursor-pointer"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    closeStoryViewer();
+                    router.push(`/${activeStoryUser}`);
+                  }}
+                >
+                  <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-xs font-bold text-black overflow-hidden hover:scale-105 transition-transform duration-200">
                     {currentStory.authorAvatarUrl ? (
                       <img src={currentStory.authorAvatarUrl} className="w-full h-full object-cover" />
                     ) : (
                       activeStoryUser[0].toUpperCase()
                     )}
                   </div>
-                  <span className="text-white font-bold text-sm drop-shadow-md">{activeStoryUser}</span>
+                  <span className="text-white font-bold text-sm drop-shadow-md hover:underline">{activeStoryUser}</span>
                 </div>
                 
                 <div className="flex items-center gap-2 pointer-events-auto">
