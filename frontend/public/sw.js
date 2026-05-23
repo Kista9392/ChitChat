@@ -6,6 +6,16 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(self.clients.claim());
 });
 
+self.addEventListener('fetch', (event) => {
+  // Pass-through fetch event handler required to satisfy PWA WebAPK installation criteria
+  event.respondWith(
+    fetch(event.request).catch((err) => {
+      // Offline fallback if request is in cache, otherwise let it fail
+      return caches.match(event.request).then((response) => response || Promise.reject(err));
+    })
+  );
+});
+
 self.addEventListener('push', (event) => {
   let data = {};
   if (event.data) {
