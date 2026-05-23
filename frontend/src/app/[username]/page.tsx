@@ -5,7 +5,8 @@ import { useParams } from 'next/navigation';
 import Sidebar from '@/components/Sidebar';
 import PostCard from '@/components/PostCard';
 import axiosInstance from '@/lib/axios';
-import { Grid, Bookmark, User as UserIcon, Camera, UserPlus, UserCheck, Plus, Trash2, FolderOpen, Heart, MessageCircle, X, Settings, Film } from 'lucide-react';
+import { Grid, Bookmark, User as UserIcon, Camera, UserPlus, UserCheck, Plus, Trash2, FolderOpen, Heart, MessageCircle, X, Settings, Film, Lock } from 'lucide-react';
+
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/context/AuthContext';
@@ -48,6 +49,8 @@ export default function ProfilePage() {
   const [followError, setFollowError] = useState<string | null>(null);
 
   const isOwnProfile = currentUser?.username === username;
+  const isLocked = profile?.isPrivateAccount && !isOwnProfile && !isFollowing;
+
 
   const fetchFollowList = async (type: 'followers' | 'following') => {
     setShowFollowModal(type);
@@ -296,7 +299,20 @@ export default function ProfilePage() {
           </div>
 
           {/* Tabs */}
-          <div className="flex border-b border-zinc-200 dark:border-zinc-800 mb-6">
+          {isLocked ? (
+            <div className="text-center py-24 bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-100 dark:border-zinc-800 shadow-sm p-6 flex flex-col items-center justify-center gap-4">
+              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-md">
+                <Lock className="w-7 h-7 text-white" />
+              </div>
+              <h3 className="font-bold text-lg text-black dark:text-white">This Account is Private</h3>
+              <p className="text-sm text-zinc-400 dark:text-zinc-500 max-w-sm">
+                Follow this account to see their photos and videos.
+              </p>
+            </div>
+          ) : (
+            <>
+              <div className="flex border-b border-zinc-200 dark:border-zinc-800 mb-6">
+
             <button
               onClick={() => setActiveTab('posts')}
               className={cn('flex items-center gap-2 px-6 py-3 text-xs font-bold uppercase tracking-widest transition-colors border-b-2 -mb-[2px]',
@@ -519,7 +535,10 @@ export default function ProfilePage() {
               )}
             </div>
           )}
+          </>
+          )}
         </div>
+
       </main>
 
       {/* New Collection Modal */}

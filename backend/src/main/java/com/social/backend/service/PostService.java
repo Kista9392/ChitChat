@@ -12,6 +12,8 @@ import com.social.backend.repository.UserRepository;
 import com.social.backend.repository.CommentRepository;
 import com.social.backend.repository.CommentLikeRepository;
 import com.social.backend.repository.SavedPostRepository;
+import com.social.backend.repository.FollowRepository;
+
 import com.social.backend.entity.Hashtag;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -37,11 +39,12 @@ public class PostService {
     private final CommentRepository commentRepository;
     private final CommentLikeRepository commentLikeRepository;
     private final SavedPostRepository savedPostRepository;
+    private final FollowRepository followRepository;
 
     @org.springframework.beans.factory.annotation.Value("${app.api-url:http://localhost:8080}")
     private String apiUrl;
 
-    public PostService(PostRepository postRepository, UserRepository userRepository, PostLikeRepository postLikeRepository, NotificationService notificationService, HashtagRepository hashtagRepository, FileStorageService fileStorageService, CommentRepository commentRepository, CommentLikeRepository commentLikeRepository, SavedPostRepository savedPostRepository) {
+    public PostService(PostRepository postRepository, UserRepository userRepository, PostLikeRepository postLikeRepository, NotificationService notificationService, HashtagRepository hashtagRepository, FileStorageService fileStorageService, CommentRepository commentRepository, CommentLikeRepository commentLikeRepository, SavedPostRepository savedPostRepository, FollowRepository followRepository) {
         this.postRepository = postRepository;
         this.userRepository = userRepository;
         this.postLikeRepository = postLikeRepository;
@@ -51,7 +54,9 @@ public class PostService {
         this.commentRepository = commentRepository;
         this.commentLikeRepository = commentLikeRepository;
         this.savedPostRepository = savedPostRepository;
+        this.followRepository = followRepository;
     }
+
 
     @Transactional
     public PostResponse createPost(String userEmail, String content, MultipartFile file, String mediaTypeStr) {
@@ -134,13 +139,32 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public List<PostResponse> getUserPosts(String username) {
-        User user = userRepository.findByUsername(username)
+    public List<PostResponse> getUserPosts(String username, String currentUserEmail) {
+        User targetUser = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        return postRepository.findByAuthorOrderByCreatedAtDesc(user).stream()
+
+        // Private Account Check
+        if (targetUser.isPrivateAccount()) {
+            boolean isAllowed = false;
+            if (currentUserEmail != null) {
+                User currentUser = userRepository.findByEmail(currentUserEmail).orElse(null);
+                if (currentUser != null) {
+                    if (currentUser.getId().equals(targetUser.getId()) || 
+                        followRepository.findByFollowerAndFollowing(currentUser, targetUser).isPresent()) {
+                        isAllowed = true;
+                    }
+                }
+            }
+            if (!isAllowed) {
+                throw new org.springframework.security.access.AccessDeniedException("This account is private.");
+            }
+        }
+
+        return postRepository.findByAuthorOrderByCreatedAtDesc(targetUser).stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
+
 
     @Transactional(readOnly = true)
     public List<PostResponse> getLikedPosts(String email) {
@@ -179,9 +203,10 @@ public class PostService {
 
     @Transactional(readOnly = true)
     public Page<PostResponse> getReels(Pageable pageable) {
-        return postRepository.findByMediaTypeOrderByCreatedAtDesc(com.social.backend.entity.MediaType.VIDEO, pageable)
+        return postRepository.findReels(com.social.backend.entity.MediaType.VIDEO, pageable)
                 .map(this::mapToResponse);
     }
+
 
     @Transactional(readOnly = true)
     public Page<PostResponse> getExplorePosts(String email, Pageable pageable) {

@@ -92,7 +92,7 @@ public class SearchService {
 
     @Transactional(readOnly = true)
     public Page<PostResponse> searchPosts(String query, Pageable pageable) {
-        Page<Post> posts = postRepository.findByContentContainingIgnoreCase(query, pageable);
+        Page<Post> posts = postRepository.searchPostsPublic(query, pageable);
         return mapPostPage(posts);
     }
 
@@ -100,9 +100,10 @@ public class SearchService {
     public Page<PostResponse> searchByHashtag(String tagName, Pageable pageable) {
         // Remove # if the user included it in the search query
         String cleanTag = tagName.startsWith("#") ? tagName.substring(1) : tagName;
-        Page<Post> posts = postRepository.findByHashtagName(cleanTag.toLowerCase(), pageable);
+        Page<Post> posts = postRepository.findByHashtagNamePublic(cleanTag.toLowerCase(), pageable);
         return mapPostPage(posts);
     }
+
 
     private Page<PostResponse> mapPostPage(Page<Post> posts) {
         return posts.map(post -> new PostResponse(

@@ -51,9 +51,11 @@ public class PostController {
     }
 
     @GetMapping("/user/{username}")
-    public ResponseEntity<java.util.List<PostResponse>> getUserPosts(@PathVariable String username) {
-        return ResponseEntity.ok(postService.getUserPosts(username));
+    public ResponseEntity<java.util.List<PostResponse>> getUserPosts(@PathVariable String username, Authentication authentication) {
+        String currentUserEmail = authentication != null ? authentication.getName() : null;
+        return ResponseEntity.ok(postService.getUserPosts(username, currentUserEmail));
     }
+
 
     @GetMapping("/liked")
     public ResponseEntity<java.util.List<PostResponse>> getLikedPosts(Authentication authentication) {

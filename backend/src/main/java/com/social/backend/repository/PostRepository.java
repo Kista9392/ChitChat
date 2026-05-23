@@ -26,14 +26,20 @@ public interface PostRepository extends JpaRepository<Post, UUID> {
     Page<Post> findFeedPosts(@Param("user") User user, Pageable pageable);
 
     Page<Post> findByContentContainingIgnoreCase(String content, Pageable pageable);
-
     @org.springframework.data.jpa.repository.Query("SELECT p FROM Post p JOIN p.hashtags h WHERE h.name = :tagName")
     Page<Post> findByHashtagName(String tagName, Pageable pageable);
 
     java.util.List<Post> findByAuthorOrderByCreatedAtDesc(com.social.backend.entity.User author);
 
-    Page<Post> findByMediaTypeOrderByCreatedAtDesc(com.social.backend.entity.MediaType mediaType, Pageable pageable);
-
-    @org.springframework.data.jpa.repository.Query("SELECT p FROM Post p WHERE p.author != :user AND NOT EXISTS (SELECT f FROM Follow f WHERE f.follower = :user AND f.following = p.author) ORDER BY p.createdAt DESC")
+    @org.springframework.data.jpa.repository.Query("SELECT p FROM Post p WHERE p.author != :user AND (p.author.isPrivateAccount = false OR p.author.isPrivateAccount IS NULL) AND NOT EXISTS (SELECT f FROM Follow f WHERE f.follower = :user AND f.following = p.author) ORDER BY p.createdAt DESC")
     Page<Post> findExplorePosts(com.social.backend.entity.User user, Pageable pageable);
+
+    @org.springframework.data.jpa.repository.Query("SELECT p FROM Post p WHERE p.mediaType = :mediaType AND (p.author.isPrivateAccount = false OR p.author.isPrivateAccount IS NULL) ORDER BY p.createdAt DESC")
+    Page<Post> findReels(@Param("mediaType") com.social.backend.entity.MediaType mediaType, Pageable pageable);
+
+    @org.springframework.data.jpa.repository.Query("SELECT p FROM Post p WHERE LOWER(p.content) LIKE LOWER(CONCAT('%', :query, '%')) AND (p.author.isPrivateAccount = false OR p.author.isPrivateAccount IS NULL) ORDER BY p.createdAt DESC")
+    Page<Post> searchPostsPublic(@Param("query") String query, Pageable pageable);
+
+    @org.springframework.data.jpa.repository.Query("SELECT p FROM Post p JOIN p.hashtags h WHERE h.name = :tagName AND (p.author.isPrivateAccount = false OR p.author.isPrivateAccount IS NULL) ORDER BY p.createdAt DESC")
+    Page<Post> findByHashtagNamePublic(@Param("tagName") String tagName, Pageable pageable);
 }

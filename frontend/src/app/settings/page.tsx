@@ -49,6 +49,48 @@ export default function SettingsPage() {
   const [reportStatus, setReportStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
   const [userSuggestion, setUserSuggestion] = useState('');
   const [suggestionStatus, setSuggestionStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
+  
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [isInstallable, setIsInstallable] = useState(false);
+
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e: any) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setIsInstallable(true);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    if (typeof window !== 'undefined') {
+      if (window.matchMedia('(display-mode: standalone)').matches) {
+        setIsInstallable(false);
+      } else {
+        setIsInstallable('serviceWorker' in navigator);
+      }
+    }
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) {
+      alert("To securely install ChitChat, use your browser's menu (e.g., click 'Add to Home Screen' or the install icon in the URL bar) for direct sandboxed installation!");
+      return;
+    }
+    try {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      console.log(`User response to secure install prompt: ${outcome}`);
+    } catch (err) {
+      console.error('Failed to trigger secure PWA install', err);
+    }
+    setDeferredPrompt(null);
+    setIsInstallable(false);
+  };
+
   // Full profile data fetched from API (includes email, createdAt)
   const [fullProfile, setFullProfile] = useState<{ email: string; createdAt: string } | null>(null);
 
@@ -626,9 +668,30 @@ export default function SettingsPage() {
                         </div>
                         <Toggle enabled={darkMode} setEnabled={toggleDarkMode} />
                       </div>
+
+                      {/* Secure PWA App Installation */}
+                      <div className="p-5 bg-gradient-to-br from-indigo-50/50 to-purple-50/50 dark:from-indigo-950/20 dark:to-purple-950/20 rounded-2xl border border-indigo-100/50 dark:border-indigo-500/10 flex flex-col md:flex-row md:items-center justify-between gap-4 mt-6">
+                        <div className="space-y-1">
+                          <h3 className="font-bold text-sm text-indigo-950 dark:text-indigo-300 flex items-center gap-2">
+                            <Shield className="w-4 h-4 text-indigo-500 animate-pulse" />
+                            Install Secure App
+                          </h3>
+                          <p className="text-xs text-zinc-500 dark:text-zinc-400 max-w-sm leading-relaxed">
+                            Install ChitChat on your home screen for full background thread notifications. Safe, sandboxed, and respects your data privacy.
+                          </p>
+                        </div>
+                        <button
+                          onClick={handleInstallClick}
+                          className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-xs shadow-sm hover:shadow transition-all duration-200 flex items-center justify-center gap-2 whitespace-nowrap self-start md:self-center cursor-pointer"
+                        >
+                          <PlusSquare className="w-4 h-4" />
+                          Install Secure App
+                        </button>
+                      </div>
                     </div>
                   </motion.div>
                 )}
+
 
                 {/* More Tab */}
                 {activeTab === 'more' && (
