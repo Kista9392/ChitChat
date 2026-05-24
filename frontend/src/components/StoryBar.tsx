@@ -501,12 +501,12 @@ export default function StoryBar() {
                 </div>
 
                 {/* Media */}
-                <div className="w-full h-full flex items-center justify-center">
+                <div className="w-full h-full flex items-center justify-center bg-black">
                   {currentStory.mediaType === 'VIDEO' ? (
                     <video 
                       ref={videoElRef}
                       src={getOptimizedImageUrl(currentStory.mediaUrl)} 
-                      className="w-full h-full object-cover" 
+                      className="w-full h-full object-contain" 
                       autoPlay 
                       muted={isStoryMuted}
                       controls={false}
@@ -521,7 +521,7 @@ export default function StoryBar() {
                   ) : (
                     <img 
                       src={getOptimizedImageUrl(currentStory.mediaUrl)} 
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-contain"
                       alt="Story"
                     />
                   )}
