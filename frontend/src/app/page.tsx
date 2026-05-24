@@ -88,7 +88,7 @@ export default function HomePage() {
         <Link href="/create" className="p-2 text-zinc-700 dark:text-zinc-300 hover:text-indigo-600 transition-colors duration-200" title="Create Post">
           <PlusSquare className="w-6 h-6" />
         </Link>
-        <span className="font-black text-xl tracking-tighter italic bg-gradient-to-r from-rose-500 to-indigo-600 text-transparent bg-clip-text">Vibely</span>
+        <span className="font-black text-xl tracking-tighter italic bg-gradient-to-r from-rose-500 to-indigo-600 text-transparent bg-clip-text">ChitChat</span>
         <Link href="/notifications" className="p-2 text-zinc-700 dark:text-zinc-300 hover:text-indigo-600 transition-colors duration-200" title="Notifications">
           <Heart className="w-6 h-6" />
         </Link>

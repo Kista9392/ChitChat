@@ -26,7 +26,7 @@ import java.util.Map;
  *   1. Sign up free at https://app.brevo.com
  *   2. Go to Settings → Senders & IP → Add a Sender:
  *         Email: kistareddypullagurla123@gmail.com
- *         Name:  Vibely
+ *         Name:  ChitChat
  *      → Click the verification link Brevo sends to your Gmail
  *   3. Go to Settings → API Keys → Generate API Key → copy it
  *   4. In HF Space → Settings → Repository secrets:
@@ -39,7 +39,7 @@ public class EmailService {
     public static final String DEVELOPER_EMAIL = "kistareddypullagurla123@gmail.com";
 
     private static final String BREVO_API_URL  = "https://api.brevo.com/v3/smtp/email";
-    private static final String SENDER_NAME    = "Vibely";
+    private static final String SENDER_NAME    = "ChitChat";
     private static final String SENDER_EMAIL   = DEVELOPER_EMAIL; // Must be verified in Brevo
 
     @Value("${BREVO_API_KEY:NOT_SET}")
@@ -72,8 +72,8 @@ public class EmailService {
             Map<String, Object> payload = Map.of(
                 "sender",      Map.of("name", SENDER_NAME, "email", SENDER_EMAIL),
                 "to",          List.of(Map.of("email", to)),
-                "subject",     "Vibely Email Test",
-                "htmlContent", "<p>This is a test email from Vibely. If you received this, email is working!</p>"
+                "subject",     "ChitChat Email Test",
+                "htmlContent", "<p>This is a test email from ChitChat. If you received this, email is working!</p>"
             );
             String json = objectMapper.writeValueAsString(payload);
             HttpRequest request = HttpRequest.newBuilder()
@@ -153,7 +153,7 @@ public class EmailService {
             "border-radius:12px;padding:12px;'>" +
             "<span style='font-size:28px;'>&#128272;</span></div>" +
             "<h1 style='color:#18181b;font-size:22px;margin:16px 0 4px;'>Password Reset</h1>" +
-            "<p style='color:#71717a;font-size:14px;margin:0;'>Vibely</p></div>" +
+            "<p style='color:#71717a;font-size:14px;margin:0;'>ChitChat</p></div>" +
             "<p style='color:#3f3f46;font-size:15px;'>Your 6-digit verification code:</p>" +
             "<div style='background:linear-gradient(135deg,#EEF2FF,#F5F3FF);border:2px solid #C7D2FE;" +
             "border-radius:12px;padding:24px;text-align:center;margin:16px 0;'>" +
@@ -166,7 +166,7 @@ public class EmailService {
             "If you didn't request this, please ignore this email.</p>" +
             "</div>";
 
-        sendEmail(toEmail, "Your Vibely Password Reset Code", html);
+        sendEmail(toEmail, "Your ChitChat Password Reset Code", html);
     }
 
     @Async
@@ -176,17 +176,17 @@ public class EmailService {
             "padding:32px;border-radius:16px;border:1px solid #e5e7eb;background:#fff;'>" +
             "<h2 style='color:#DC2626;'>&#9888;&#65039; New Login Detected</h2>" +
             "<p style='color:#3f3f46;'>Hi <strong>" + username + "</strong>,</p>" +
-            "<p style='color:#3f3f46;'>Your Vibely account was just logged in via Google.</p>" +
+            "<p style='color:#3f3f46;'>Your ChitChat account was just logged in via Google.</p>" +
             "<p style='color:#3f3f46;'>If this was you, you can safely ignore this email.</p>" +
             "<div style='background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;" +
             "padding:12px;margin:16px 0;'>" +
             "<p style='color:#DC2626;margin:0;font-weight:600;'>" +
             "If this wasn't you, secure your account immediately!</p></div>" +
             "<hr style='border:none;border-top:1px solid #f4f4f5;margin:24px 0;'/>" +
-            "<p style='color:#a1a1aa;font-size:11px;'>Vibely Security Team</p>" +
+            "<p style='color:#a1a1aa;font-size:11px;'>ChitChat Security Team</p>" +
             "</div>";
 
-        sendEmail(toEmail, "New Login Detected - Vibely", html);
+        sendEmail(toEmail, "New Login Detected - ChitChat", html);
     }
 
     @Async
@@ -198,7 +198,7 @@ public class EmailService {
         String html =
             "<div style='font-family:Inter,sans-serif;max-width:600px;margin:auto;" +
             "padding:32px;border-radius:16px;border:1px solid #e5e7eb;background:#fff;'>" +
-            "<h2 style='color:#4F46E5;'>&#128233; Vibely Report</h2>" +
+            "<h2 style='color:#4F46E5;'>&#128233; ChitChat Report</h2>" +
             "<table style='width:100%;border-collapse:collapse;margin-bottom:16px;" +
             "border-radius:8px;overflow:hidden;border:1px solid #e5e7eb;'>" +
             "<tr><td style='padding:10px 14px;background:#f9fafb;font-weight:700;" +
@@ -213,9 +213,9 @@ public class EmailService {
             "color:#3f3f46;line-height:1.7;border:1px solid #e5e7eb;'>" +
             body.replace("\n", "<br/>") + "</div>" +
             "<hr style='border:none;border-top:1px solid #f4f4f5;margin:24px 0;'/>" +
-            "<p style='color:#a1a1aa;font-size:11px;'>Vibely &mdash; Auto-generated report</p>" +
+            "<p style='color:#a1a1aa;font-size:11px;'>ChitChat &mdash; Auto-generated report</p>" +
             "</div>";
 
-        sendEmail(developerEmail, "[Vibely] " + subject, html);
+        sendEmail(developerEmail, "[ChitChat] " + subject, html);
     }
 }

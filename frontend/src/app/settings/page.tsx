@@ -77,7 +77,7 @@ export default function SettingsPage() {
 
   const handleInstallClick = async () => {
     if (!deferredPrompt) {
-      alert("To securely install Vibely, use your browser's menu (e.g., click 'Add to Home Screen' or the install icon in the URL bar) for direct sandboxed installation!");
+      alert("To securely install ChitChat, use your browser's menu (e.g., click 'Add to Home Screen' or the install icon in the URL bar) for direct sandboxed installation!");
       return;
     }
     try {
@@ -697,10 +697,10 @@ export default function SettingsPage() {
           <div className="space-y-1">
             <h3 className="font-bold text-sm text-indigo-950 dark:text-indigo-300 flex items-center gap-2">
               <Shield className="w-4 h-4 text-indigo-500 animate-pulse" />
-              Install Vibely App
+              Install ChitChat App
             </h3>
             <p className="text-xs text-zinc-500 dark:text-zinc-400 max-w-sm leading-relaxed">
-              Install Vibely on your home screen for full background thread notifications. Safe, sandboxed, and respects your data privacy.
+              Install ChitChat on your home screen for full background thread notifications. Safe, sandboxed, and respects your data privacy.
             </p>
           </div>
           <button
@@ -708,7 +708,7 @@ export default function SettingsPage() {
             className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-xs shadow-sm hover:shadow transition-all duration-200 flex items-center justify-center gap-2 whitespace-nowrap self-start md:self-center cursor-pointer"
           >
             <PlusSquare className="w-4 h-4" />
-            Install Vibely App
+            Install ChitChat App
           </button>
         </div>
       </div>
@@ -716,7 +716,7 @@ export default function SettingsPage() {
       {/* Contact Us */}
       <div className="border-t border-zinc-100 dark:border-zinc-800 pt-6">
         <h3 className="font-bold text-sm text-black dark:text-white mb-3">Contact Us</h3>
-        <p className="text-xs text-zinc-400 dark:text-zinc-500 mb-3">For any queries, reach out to us at support@vibely.social</p>
+        <p className="text-xs text-zinc-400 dark:text-zinc-500 mb-3">For any queries, reach out to us at support@chitchat.social</p>
       </div>
     </div>
   );

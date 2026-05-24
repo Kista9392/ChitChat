@@ -66,7 +66,7 @@ function LoginPageInner() {
               <Camera className="w-10 h-10 text-white" />
             </div>
           </div>
-          <h2 className="mt-6 text-3xl font-extrabold text-black dark:text-white tracking-tight italic select-none cursor-default">Vibely</h2>
+          <h2 className="mt-6 text-3xl font-extrabold text-black dark:text-white tracking-tight italic select-none cursor-default">ChitChat</h2>
           <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400 font-medium tracking-tight select-none cursor-default">Login to your account</p>
 
         </div>

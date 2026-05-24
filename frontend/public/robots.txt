@@ -15,4 +15,4 @@ Disallow: /reset-password
 Disallow: /oauth2/
 
 # Link directly to Next.js dynamic sitemap path
-Sitemap: https://vibely-social.vercel.app/sitemap.xml
+Sitemap: https://chit-chat-beta-seven.vercel.app/sitemap.xml

@@ -14,11 +14,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Vibely | A Premium Social Network",
-  description: "Connect, share stories, chat in real-time, and scroll through premium reels on Vibely - the ultimate next-gen social experience.",
+  title: "ChitChat | A Premium Social Network",
+  description: "Connect, share stories, chat in real-time, and scroll through premium reels on ChitChat - the ultimate next-gen social experience.",
   manifest: "/manifest.json",
-  keywords: ["Vibely", "social network", "real-time chat", "stories", "reels", "premium social networking", "Vibely App"],
-  metadataBase: new URL("https://vibely-social.vercel.app"),
+  keywords: ["ChitChat", "social network", "real-time chat", "stories", "reels", "premium social networking", "ChitChat App"],
+  metadataBase: new URL("https://chit-chat-beta-seven.vercel.app"),
   robots: "index, follow",
   icons: {
     icon: [
@@ -32,15 +32,15 @@ export const metadata: Metadata = {
   },
   openGraph: {
     type: "website",
-    title: "Vibely | A Premium Social Network",
-    description: "Connect, share stories, chat in real-time, and scroll through premium reels on Vibely.",
-    siteName: "Vibely",
-    url: "https://vibely-social.vercel.app"
+    title: "ChitChat | A Premium Social Network",
+    description: "Connect, share stories, chat in real-time, and scroll through premium reels on ChitChat.",
+    siteName: "ChitChat",
+    url: "https://chit-chat-beta-seven.vercel.app"
   },
   twitter: {
     card: "summary_large_image",
-    title: "Vibely | A Premium Social Network",
-    description: "Connect, share stories, chat in real-time, and scroll through premium reels on Vibely."
+    title: "ChitChat | A Premium Social Network",
+    description: "Connect, share stories, chat in real-time, and scroll through premium reels on ChitChat."
   }
 };
 
@@ -61,9 +61,9 @@ export default function RootLayout({
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "WebApplication",
-    "name": "Vibely",
-    "url": "https://vibely-social.vercel.app",
-    "description": "Connect, share stories, chat in real-time, and scroll through premium reels on Vibely - the ultimate next-gen social experience.",
+    "name": "ChitChat",
+    "url": "https://chit-chat-beta-seven.vercel.app",
+    "description": "Connect, share stories, chat in real-time, and scroll through premium reels on ChitChat - the ultimate next-gen social experience.",
     "applicationCategory": "SocialNetworkingApplication",
     "operatingSystem": "All",
     "browserRequirements": "Requires JavaScript. Requires HTML5."
