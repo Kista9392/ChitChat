@@ -97,7 +97,8 @@ public class SecurityConfig {
             "http://localhost:3000",
             "http://127.0.0.1:3000",
             "https://kittu9392-chitchat-backend.hf.space",
-            "https://chit-chat-beta-seven.vercel.app"
+            "https://chit-chat-beta-seven.vercel.app",
+            "https://vibely-social.vercel.app"
         ));
         if (frontendUrl != null && !frontendUrl.isBlank()) {
             origins.add(frontendUrl.replaceAll("[\\r\\n]", "").trim());
