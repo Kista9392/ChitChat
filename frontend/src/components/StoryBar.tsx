@@ -395,16 +395,8 @@ export default function StoryBar() {
               exit={{ opacity: 0 }}
               className="fixed inset-0 bg-black/90 z-[100] flex flex-col items-center justify-center"
             >
-              {/* Close Button */}
-              <button 
-                onClick={(e) => { e.stopPropagation(); closeStoryViewer(); }}
-                className="absolute top-4 right-4 text-white hover:text-zinc-300 transition-colors z-[110]"
-              >
-                <X className="w-8 h-8" />
-              </button>
-
-              {/* Navigation */}
-              <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-between px-4 md:px-20 z-10 pointer-events-none">
+              {/* Navigation (Desktop only) */}
+              <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 justify-between px-4 md:px-20 z-10 pointer-events-none hidden md:flex">
                 <button 
                   onClick={(e) => { e.stopPropagation(); prevStory(); }}
                   className="p-2 bg-white/10 rounded-full text-white hover:bg-white/20 transition-colors pointer-events-auto"
@@ -422,7 +414,7 @@ export default function StoryBar() {
               {/* Content Card */}
               <div 
                 ref={cardRef}
-                className="w-full max-w-md aspect-[9/16] bg-zinc-900 rounded-3xl overflow-hidden relative shadow-2xl select-none"
+                className="w-full h-full md:h-auto md:max-w-md md:aspect-[9/16] bg-zinc-900 md:rounded-3xl overflow-hidden relative shadow-2xl select-none"
                 onMouseDown={handlePressStart}
                 onMouseUp={handlePressEnd}
                 onMouseLeave={() => setIsPaused(false)}
@@ -464,12 +456,12 @@ export default function StoryBar() {
                     <span className="text-white font-bold text-sm drop-shadow-md hover:underline">{activeStoryUser}</span>
                   </div>
                   
-                  <div className="flex items-center gap-2 pointer-events-auto">
+                  <div className="flex items-center gap-3 pointer-events-auto">
                     {/* Speaker Mute/Unmute toggle for video stories */}
                     {currentStory.mediaType === 'VIDEO' && (
                       <button 
                         onClick={toggleStoryMute}
-                        className="text-white hover:text-zinc-300 transition-colors pointer-events-auto p-1"
+                        className="text-white hover:text-zinc-300 transition-colors p-1"
                       >
                         {isStoryMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
                       </button>
@@ -478,11 +470,21 @@ export default function StoryBar() {
                     {activeStoryUser === user?.username && (
                       <button 
                         onClick={(e) => { e.stopPropagation(); handleDeleteStory(); }}
-                        className="text-white hover:text-red-500 transition-colors pointer-events-auto"
+                        className="text-white hover:text-red-500 transition-colors p-1"
+                        aria-label="Delete story"
                       >
                         <Trash2 className="w-5 h-5" />
                       </button>
                     )}
+
+                    {/* Integrated Close Button */}
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); closeStoryViewer(); }}
+                      className="text-white hover:text-zinc-300 transition-colors p-1"
+                      aria-label="Close story viewer"
+                    >
+                      <X className="w-6 h-6" />
+                    </button>
                   </div>
                 </div>
 

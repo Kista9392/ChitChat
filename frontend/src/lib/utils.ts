@@ -7,10 +7,17 @@ export function cn(...inputs: ClassValue[]) {
 
 export function getOptimizedVideoUrl(url: string | null | undefined): string {
   if (!url) return '';
-  if (url.includes('cloudinary.com') && url.includes('/video/upload/')) {
-    return url.replace('/video/upload/', '/video/upload/f_auto,q_auto/');
+  let resolvedUrl = url;
+
+  // Upgrade remote HTTP URLs to HTTPS to bypass secure context mixed content blocks
+  if (resolvedUrl.startsWith('http://') && !resolvedUrl.startsWith('http://localhost') && !resolvedUrl.startsWith('http://127.0.0.1')) {
+    resolvedUrl = resolvedUrl.replace(/^http:\/\//i, 'https://');
   }
-  return url;
+
+  if (resolvedUrl.includes('cloudinary.com') && resolvedUrl.includes('/video/upload/')) {
+    return resolvedUrl.replace('/video/upload/', '/video/upload/f_auto,q_auto/');
+  }
+  return resolvedUrl;
 }
 
 export function getOptimizedImageUrl(url: string | null | undefined): string {
@@ -32,6 +39,11 @@ export function getOptimizedImageUrl(url: string | null | undefined): string {
         resolvedUrl = url.replace(/https?:\/\/localhost:7860/, targetBase);
       }
     }
+  }
+
+  // Upgrade remote HTTP URLs to HTTPS to bypass secure context mixed content blocks
+  if (resolvedUrl.startsWith('http://') && !resolvedUrl.startsWith('http://localhost') && !resolvedUrl.startsWith('http://127.0.0.1')) {
+    resolvedUrl = resolvedUrl.replace(/^http:\/\//i, 'https://');
   }
   
   if (resolvedUrl.includes('cloudinary.com') && resolvedUrl.includes('/image/upload/')) {
