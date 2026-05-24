@@ -59,6 +59,18 @@ export default function StoryBar() {
     }
   }, [isStoryMuted, currentStoryIndex, activeStoryUser]);
 
+  // Prevent background scroll when story viewer modal is active
+  useEffect(() => {
+    if (activeStoryUser) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [activeStoryUser]);
+
   const toggleStoryMute = (e: React.MouseEvent) => {
     e.stopPropagation();
     const stored = localStorage.getItem('feedMuted');
@@ -393,7 +405,7 @@ export default function StoryBar() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/90 z-[100] flex flex-col items-center justify-center"
+              className="fixed inset-0 h-[100dvh] w-screen bg-black/90 z-[100] flex flex-col items-center justify-center overflow-hidden"
             >
               {/* Navigation (Desktop only) */}
               <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 justify-between px-4 md:px-20 z-10 pointer-events-none hidden md:flex">
@@ -414,7 +426,7 @@ export default function StoryBar() {
               {/* Content Card */}
               <div 
                 ref={cardRef}
-                className="w-full h-full md:h-auto md:max-w-md md:aspect-[9/16] bg-zinc-900 md:rounded-3xl overflow-hidden relative shadow-2xl select-none"
+                className="w-full h-[100dvh] md:h-auto md:max-w-md md:aspect-[9/16] bg-zinc-900 md:rounded-3xl overflow-hidden relative shadow-2xl select-none"
                 onMouseDown={handlePressStart}
                 onMouseUp={handlePressEnd}
                 onMouseLeave={() => setIsPaused(false)}
@@ -423,7 +435,7 @@ export default function StoryBar() {
               >
                 
                 {/* Progress Bars (Restored and Functional!) */}
-                <div className="absolute top-0 inset-x-0 flex gap-1 p-2 z-10">
+                <div className="absolute top-3 md:top-2 inset-x-0 flex gap-1 px-3 py-2 z-10">
                   {(groupedStories[activeStoryUser] || []).map((_, i) => (
                     <div key={i} className="flex-1 h-1 bg-white/30 rounded-full overflow-hidden">
                       <div 
@@ -437,7 +449,7 @@ export default function StoryBar() {
                 </div>
 
                 {/* Header */}
-                <div className="absolute top-4 left-0 right-0 px-4 flex items-center justify-between z-10 pointer-events-none">
+                <div className="absolute top-10 md:top-6 left-0 right-0 px-4 flex items-center justify-between z-10 pointer-events-none">
                   <div 
                     className="flex items-center gap-3 pointer-events-auto cursor-pointer"
                     onClick={(e) => {
