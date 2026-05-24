@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import axiosInstance from '@/lib/axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/context/AuthContext';
@@ -23,9 +24,15 @@ export default function StoryBar() {
   const [isLoading, setIsLoading] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
-  // For viewing stories
-  const [activeStoryUser, setActiveStoryUser] = useState<string | null>(null);
-  const [currentStoryIndex, setCurrentStoryIndex] = useState(0);
+  const [mounted, setMounted] = useState(false);
+  // For viewing stories (grouped to ensure atomic updates)
+  const [viewerState, setViewerState] = useState<{ username: string; index: number } | null>(null);
+  const activeStoryUser = viewerState?.username || null;
+  const currentStoryIndex = viewerState?.index ?? 0;
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   const [progress, setProgress] = useState(0); // For the time lapse/timer
   const [isPaused, setIsPaused] = useState(false);
   const [isStoryMuted, setIsStoryMuted] = useState(true);
@@ -120,15 +127,14 @@ export default function StoryBar() {
   const allStoryUsers = [myStoriesKey || user?.username, ...otherUsers].filter(u => u && groupedStories[u]) as string[];
 
   const handleViewStory = (username: string) => {
-    setActiveStoryUser(username);
-    setCurrentStoryIndex(0);
+    setViewerState({ username, index: 0 });
     elapsedMsRef.current = 0;
     setProgress(0);
     setIsPaused(false);
   };
 
   const closeStoryViewer = () => {
-    setActiveStoryUser(null);
+    setViewerState(null);
     elapsedMsRef.current = 0;
     setProgress(0);
     setIsPaused(false);
@@ -143,13 +149,12 @@ export default function StoryBar() {
     setIsPaused(false);
 
     if (currentStoryIndex < userStories.length - 1) {
-      setCurrentStoryIndex(prev => prev + 1);
+      setViewerState(prev => prev ? { ...prev, index: prev.index + 1 } : null);
     } else {
       // Go to NEXT USER's story instead of closing!
       const currentUserIdx = allStoryUsers.indexOf(activeStoryUser);
       if (currentUserIdx < allStoryUsers.length - 1) {
-        setActiveStoryUser(allStoryUsers[currentUserIdx + 1]);
-        setCurrentStoryIndex(0);
+        setViewerState({ username: allStoryUsers[currentUserIdx + 1], index: 0 });
       } else {
         closeStoryViewer();
       }
@@ -157,20 +162,20 @@ export default function StoryBar() {
   };
 
   const prevStory = () => {
+    if (!activeStoryUser) return;
     elapsedMsRef.current = 0;
     setProgress(0);
     setIsPaused(false);
 
     if (currentStoryIndex > 0) {
-      setCurrentStoryIndex(prev => prev - 1);
+      setViewerState(prev => prev ? { ...prev, index: prev.index - 1 } : null);
     } else {
       // Go to PREVIOUS USER's story
-      const currentUserIdx = allStoryUsers.indexOf(activeStoryUser!);
+      const currentUserIdx = allStoryUsers.indexOf(activeStoryUser);
       if (currentUserIdx > 0) {
         const prevUser = allStoryUsers[currentUserIdx - 1];
-        setActiveStoryUser(prevUser);
         const prevUserStories = groupedStories[prevUser] || [];
-        setCurrentStoryIndex(prevUserStories.length - 1);
+        setViewerState({ username: prevUser, index: prevUserStories.length - 1 });
       }
     }
   };
@@ -380,137 +385,139 @@ export default function StoryBar() {
         })}
       </div>
 
-      {/* Story Viewer Modal */}
-      <AnimatePresence>
-        {activeStoryUser && currentStory && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/90 z-[100] flex flex-col items-center justify-center"
-          >
-            {/* Close Button */}
-            {/* Close Button */}
-            <button 
-              onClick={(e) => { e.stopPropagation(); closeStoryViewer(); }}
-              className="absolute top-4 right-4 text-white hover:text-zinc-300 transition-colors z-[110]"
+      {/* Story Viewer Modal (using React Portal) */}
+      {mounted && typeof document !== 'undefined' && createPortal(
+        <AnimatePresence>
+          {activeStoryUser && currentStory && (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/90 z-[100] flex flex-col items-center justify-center"
             >
-              <X className="w-8 h-8" />
-            </button>
-
-            {/* Navigation */}
-            <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-between px-4 md:px-20 z-10 pointer-events-none">
+              {/* Close Button */}
               <button 
-                onClick={(e) => { e.stopPropagation(); prevStory(); }}
-                className="p-2 bg-white/10 rounded-full text-white hover:bg-white/20 transition-colors pointer-events-auto"
+                onClick={(e) => { e.stopPropagation(); closeStoryViewer(); }}
+                className="absolute top-4 right-4 text-white hover:text-zinc-300 transition-colors z-[110]"
               >
-                <ChevronLeft className="w-6 h-6" />
+                <X className="w-8 h-8" />
               </button>
-              <button 
-                onClick={(e) => { e.stopPropagation(); nextStory(); }}
-                className="p-2 bg-white/10 rounded-full text-white hover:bg-white/20 transition-colors pointer-events-auto"
-              >
-                <ChevronRight className="w-6 h-6" />
-              </button>
-            </div>
 
-            {/* Content Card */}
-            <div 
-              ref={cardRef}
-              className="w-full max-w-md aspect-[9/16] bg-zinc-900 rounded-3xl overflow-hidden relative shadow-2xl select-none"
-              onMouseDown={handlePressStart}
-              onMouseUp={handlePressEnd}
-              onMouseLeave={() => setIsPaused(false)}
-              onTouchStart={handlePressStart}
-              onTouchEnd={handlePressEnd}
-            >
-              
-              {/* Progress Bars (Restored and Functional!) */}
-              <div className="absolute top-0 inset-x-0 flex gap-1 p-2 z-10">
-                {(groupedStories[activeStoryUser] || []).map((_, i) => (
-                  <div key={i} className="flex-1 h-1 bg-white/30 rounded-full overflow-hidden">
-                    <div 
-                      className="h-full bg-white transition-none"
-                      style={{ 
-                        width: i === currentStoryIndex ? `${progress}%` : i < currentStoryIndex ? '100%' : '0%' 
-                      }}
-                    />
-                  </div>
-                ))}
+              {/* Navigation */}
+              <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-between px-4 md:px-20 z-10 pointer-events-none">
+                <button 
+                  onClick={(e) => { e.stopPropagation(); prevStory(); }}
+                  className="p-2 bg-white/10 rounded-full text-white hover:bg-white/20 transition-colors pointer-events-auto"
+                >
+                  <ChevronLeft className="w-6 h-6" />
+                </button>
+                <button 
+                  onClick={(e) => { e.stopPropagation(); nextStory(); }}
+                  className="p-2 bg-white/10 rounded-full text-white hover:bg-white/20 transition-colors pointer-events-auto"
+                >
+                  <ChevronRight className="w-6 h-6" />
+                </button>
               </div>
 
-              {/* Header */}
-              <div className="absolute top-4 left-0 right-0 px-4 flex items-center justify-between z-10 pointer-events-none">
-                <div 
-                  className="flex items-center gap-3 pointer-events-auto cursor-pointer"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    closeStoryViewer();
-                    router.push(`/${activeStoryUser}`);
-                  }}
-                >
-                  <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-xs font-bold text-black overflow-hidden hover:scale-105 transition-transform duration-200">
-                    {currentStory.authorAvatarUrl ? (
-                      <img src={getOptimizedImageUrl(currentStory.authorAvatarUrl)} className="w-full h-full object-cover" />
-                    ) : (
-                      activeStoryUser[0].toUpperCase()
+              {/* Content Card */}
+              <div 
+                ref={cardRef}
+                className="w-full max-w-md aspect-[9/16] bg-zinc-900 rounded-3xl overflow-hidden relative shadow-2xl select-none"
+                onMouseDown={handlePressStart}
+                onMouseUp={handlePressEnd}
+                onMouseLeave={() => setIsPaused(false)}
+                onTouchStart={handlePressStart}
+                onTouchEnd={handlePressEnd}
+              >
+                
+                {/* Progress Bars (Restored and Functional!) */}
+                <div className="absolute top-0 inset-x-0 flex gap-1 p-2 z-10">
+                  {(groupedStories[activeStoryUser] || []).map((_, i) => (
+                    <div key={i} className="flex-1 h-1 bg-white/30 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-white transition-none"
+                        style={{ 
+                          width: i === currentStoryIndex ? `${progress}%` : i < currentStoryIndex ? '100%' : '0%' 
+                        }}
+                      />
+                    </div>
+                  ))}
+                </div>
+
+                {/* Header */}
+                <div className="absolute top-4 left-0 right-0 px-4 flex items-center justify-between z-10 pointer-events-none">
+                  <div 
+                    className="flex items-center gap-3 pointer-events-auto cursor-pointer"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      closeStoryViewer();
+                      router.push(`/${activeStoryUser}`);
+                    }}
+                  >
+                    <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-xs font-bold text-black overflow-hidden hover:scale-105 transition-transform duration-200">
+                      {currentStory.authorAvatarUrl ? (
+                        <img src={getOptimizedImageUrl(currentStory.authorAvatarUrl)} className="w-full h-full object-cover" />
+                      ) : (
+                        activeStoryUser[0].toUpperCase()
+                      )}
+                    </div>
+                    <span className="text-white font-bold text-sm drop-shadow-md hover:underline">{activeStoryUser}</span>
+                  </div>
+                  
+                  <div className="flex items-center gap-2 pointer-events-auto">
+                    {/* Speaker Mute/Unmute toggle for video stories */}
+                    {currentStory.mediaType === 'VIDEO' && (
+                      <button 
+                        onClick={toggleStoryMute}
+                        className="text-white hover:text-zinc-300 transition-colors pointer-events-auto p-1"
+                      >
+                        {isStoryMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+                      </button>
+                    )}
+
+                    {activeStoryUser === user?.username && (
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); handleDeleteStory(); }}
+                        className="text-white hover:text-red-500 transition-colors pointer-events-auto"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </button>
                     )}
                   </div>
-                  <span className="text-white font-bold text-sm drop-shadow-md hover:underline">{activeStoryUser}</span>
                 </div>
-                
-                <div className="flex items-center gap-2 pointer-events-auto">
-                  {/* Speaker Mute/Unmute toggle for video stories */}
-                  {currentStory.mediaType === 'VIDEO' && (
-                    <button 
-                      onClick={toggleStoryMute}
-                      className="text-white hover:text-zinc-300 transition-colors pointer-events-auto p-1"
-                    >
-                      {isStoryMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
-                    </button>
-                  )}
 
-                  {activeStoryUser === user?.username && (
-                    <button 
-                      onClick={(e) => { e.stopPropagation(); handleDeleteStory(); }}
-                      className="text-white hover:text-red-500 transition-colors pointer-events-auto"
-                    >
-                      <Trash2 className="w-5 h-5" />
-                    </button>
+                {/* Media */}
+                <div className="w-full h-full flex items-center justify-center">
+                  {currentStory.mediaType === 'VIDEO' ? (
+                    <video 
+                      ref={videoElRef}
+                      src={getOptimizedImageUrl(currentStory.mediaUrl)} 
+                      className="w-full h-full object-cover" 
+                      autoPlay 
+                      muted={isStoryMuted}
+                      controls={false}
+                      onEnded={nextStory}
+                      onTimeUpdate={(e) => {
+                        if (isPaused) return;
+                        const video = e.currentTarget;
+                        const percent = (video.currentTime / video.duration) * 100;
+                        setProgress(percent);
+                      }}
+                    />
+                  ) : (
+                    <img 
+                      src={getOptimizedImageUrl(currentStory.mediaUrl)} 
+                      className="w-full h-full object-cover"
+                      alt="Story"
+                    />
                   )}
                 </div>
               </div>
-
-              {/* Media */}
-              <div className="w-full h-full flex items-center justify-center">
-                {currentStory.mediaType === 'VIDEO' ? (
-                  <video 
-                    ref={videoElRef}
-                    src={getOptimizedImageUrl(currentStory.mediaUrl)} 
-                    className="w-full h-full object-cover" 
-                    autoPlay 
-                    muted={isStoryMuted}
-                    controls={false}
-                    onEnded={nextStory}
-                    onTimeUpdate={(e) => {
-                      if (isPaused) return;
-                      const video = e.currentTarget;
-                      const percent = (video.currentTime / video.duration) * 100;
-                      setProgress(percent);
-                    }}
-                  />
-                ) : (
-                  <img 
-                    src={getOptimizedImageUrl(currentStory.mediaUrl)} 
-                    className="w-full h-full object-cover"
-                    alt="Story"
-                  />
-                )}
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            </motion.div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </>
   );
 }
