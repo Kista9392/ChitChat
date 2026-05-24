@@ -32,9 +32,19 @@ function LoginPageInner() {
       login(accessToken, refreshToken, username, avatarUrl);
     } catch (err: any) {
       const errorData = err.response?.data;
-      const errorMsg = typeof errorData === 'object' && errorData.message 
+      let errorMsg = typeof errorData === 'object' && errorData.message 
         ? errorData.message 
         : (typeof errorData === 'string' ? errorData : 'Login failed. Check your credentials.');
+      
+      // Override raw internal server errors (500) or generic exceptions with a clean user-friendly warning
+      if (
+        err.response?.status === 500 || 
+        err.response?.status === 401 ||
+        errorMsg.toLowerCase().includes('internal server error') || 
+        errorMsg.toLowerCase().includes('invalid credentials')
+      ) {
+        errorMsg = 'Invalid credentials';
+      }
       setError(errorMsg);
     }
   };
