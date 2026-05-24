@@ -56,43 +56,64 @@ export default function SettingsPage() {
   const [isIOS, setIsIOS] = useState(false);
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    // 1. Check if the prompt was already captured globally
+    if ((window as any).deferredPrompt) {
+      setDeferredPrompt((window as any).deferredPrompt);
+      setIsInstallable(true);
+    }
+
+    // 2. Listen to future prompt captures
     const handleBeforeInstallPrompt = (e: any) => {
       e.preventDefault();
       setDeferredPrompt(e);
       setIsInstallable(true);
     };
 
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-
-    if (typeof window !== 'undefined') {
-      const userAgent = window.navigator.userAgent.toLowerCase();
-      setIsIOS(/iphone|ipad|ipod/.test(userAgent));
-
-      if (window.matchMedia('(display-mode: standalone)').matches) {
-        setIsInstallable(false);
-      } else {
-        setIsInstallable('serviceWorker' in navigator);
+    // 3. Listen to our custom event dispatched by AuthContext (in case it captures it during navigation)
+    const handlePwaInstallable = (e: any) => {
+      if (e.detail) {
+        setDeferredPrompt(e.detail);
+        setIsInstallable(true);
       }
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener('pwa-installable', handlePwaInstallable);
+
+    const userAgent = window.navigator.userAgent.toLowerCase();
+    setIsIOS(/iphone|ipad|ipod/.test(userAgent));
+
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+      setIsInstallable(false);
+    } else {
+      setIsInstallable('serviceWorker' in navigator || !!(window as any).deferredPrompt);
     }
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('pwa-installable', handlePwaInstallable);
     };
   }, []);
 
   const handleInstallClick = async () => {
-    if (!deferredPrompt) {
+    const promptEvent = deferredPrompt || (typeof window !== 'undefined' ? (window as any).deferredPrompt : null);
+    if (!promptEvent) {
       setShowInstallGuide(true);
       return;
     }
     try {
-      deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
+      promptEvent.prompt();
+      const { outcome } = await promptEvent.userChoice;
       console.log(`User response to secure install prompt: ${outcome}`);
     } catch (err) {
       console.error('Failed to trigger secure PWA install', err);
     }
     setDeferredPrompt(null);
+    if (typeof window !== 'undefined') {
+      (window as any).deferredPrompt = null;
+    }
     setIsInstallable(false);
   };
 
