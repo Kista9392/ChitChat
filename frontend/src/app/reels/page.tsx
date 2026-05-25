@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axiosInstance from '@/lib/axios';
 import Sidebar from '@/components/Sidebar';
-import { Heart, MessageCircle, Send, Bookmark, Volume2, VolumeX, Play, ChevronUp, ChevronDown, Music2, X, Share2, Link as LinkIcon, Trash2 } from 'lucide-react';
+import { Heart, MessageCircle, Send, Bookmark, Volume2, VolumeX, Play, ChevronUp, ChevronDown, Music2, X, Share2, Link as LinkIcon, Trash2, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
@@ -43,6 +43,10 @@ export default function ReelsPage() {
   const [followers, setFollowers] = useState<any[]>([]);
   const videoRefs = useRef<{ [key: number]: HTMLVideoElement | null }>({});
   const activeVideoRef = useRef<HTMLVideoElement | null>(null);
+
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [reelToDelete, setReelToDelete] = useState<string | null>(null);
 
   useEffect(() => { fetchReels(0); }, []);
 
@@ -267,20 +271,25 @@ export default function ReelsPage() {
     }
   }, [user]);
 
-  const handleDeleteReel = async (reelId: string) => {
-    if (!confirm('Are you sure you want to delete this reel? This action cannot be undone.')) return;
+  const handleDeleteReel = async () => {
+    if (!reelToDelete) return;
+    setIsDeleting(true);
     try {
-      await axiosInstance.delete(`/posts/${reelId}`);
+      await axiosInstance.delete(`/posts/${reelToDelete}`);
       setReels(prev => {
-        const updated = prev.filter(r => r.id !== reelId);
+        const updated = prev.filter(r => r.id !== reelToDelete);
         if (currentIndex >= updated.length && updated.length > 0) {
           setCurrentIndex(updated.length - 1);
         }
         return updated;
       });
+      setShowDeleteConfirm(false);
+      setReelToDelete(null);
     } catch (err) {
       console.error('Failed to delete reel', err);
       alert('Failed to delete reel. Please try again.');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -417,8 +426,11 @@ export default function ReelsPage() {
                   {isAuthor && currentReel && (
                     <motion.button 
                       whileTap={{ scale: 1.4 }} 
-                      onClick={() => handleDeleteReel(currentReel.id)} 
-                      className="flex flex-col items-center gap-1 text-rose-500 hover:text-rose-600 transition-colors"
+                      onClick={() => {
+                        setReelToDelete(currentReel.id);
+                        setShowDeleteConfirm(true);
+                      }} 
+                      className="flex flex-col items-center gap-1 text-rose-500 hover:text-rose-600 transition-colors cursor-pointer"
                     >
                       <Trash2 className="w-6 h-6 drop-shadow filter drop-shadow-[0_2px_8px_rgba(244,63,94,0.4)]" />
                       <span className="text-white text-[10px] font-bold">Delete</span>
@@ -570,6 +582,75 @@ export default function ReelsPage() {
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }}
             className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-black text-white text-sm font-bold px-6 py-3 rounded-full flex items-center gap-2 shadow-xl z-50">
             <Share2 className="w-4 h-4" /> {toastMessage}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Custom Premium Deletion Confirmation Modal */}
+      <AnimatePresence>
+        {showDeleteConfirm && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[999] flex items-center justify-center p-4"
+            onClick={() => {
+              setShowDeleteConfirm(false);
+              setReelToDelete(null);
+            }}
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 20, opacity: 0 }}
+              animate={{ scale: 1, y: 0, opacity: 1 }}
+              exit={{ scale: 0.95, y: 20, opacity: 0 }}
+              transition={{ type: "spring", duration: 0.4 }}
+              className="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-3xl p-6 max-w-sm w-full shadow-2xl relative"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Close Button */}
+              <button
+                onClick={() => {
+                  setShowDeleteConfirm(false);
+                  setReelToDelete(null);
+                }}
+                className="absolute top-4 right-4 p-2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-800 rounded-full transition-all cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              <div className="flex flex-col items-center text-center mt-2">
+                <div className="w-16 h-16 rounded-2xl bg-red-50 dark:bg-red-950/40 flex items-center justify-center mb-4">
+                  <AlertTriangle className="w-8 h-8 text-red-600 dark:text-red-400 animate-bounce" />
+                </div>
+                
+                <h3 className="text-lg font-black text-black dark:text-white tracking-tight">
+                  Delete Reel?
+                </h3>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-2 px-2 leading-relaxed">
+                  Are you absolutely sure you want to delete this reel? This action is permanent and cannot be undone.
+                </p>
+              </div>
+
+              <div className="mt-6 flex flex-col gap-2">
+                <button
+                  disabled={isDeleting}
+                  onClick={handleDeleteReel}
+                  className="w-full py-3 bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white rounded-xl font-bold text-xs shadow-md hover:shadow-lg transition-all cursor-pointer flex items-center justify-center gap-2"
+                >
+                  {isDeleting ? 'Deleting...' : 'Yes, Delete Reel'}
+                </button>
+                <button
+                  disabled={isDeleting}
+                  onClick={() => {
+                    setShowDeleteConfirm(false);
+                    setReelToDelete(null);
+                  }}
+                  className="w-full py-3 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 rounded-xl font-bold text-xs transition-all cursor-pointer"
+                >
+                  Cancel
+                </button>
+              </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal, Volume2, VolumeX } from 'lucide-react';
+import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal, Volume2, VolumeX, Trash2, AlertTriangle, X } from 'lucide-react';
 import axiosInstance from '@/lib/axios';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -38,6 +38,9 @@ export default function PostCard({ post, showDelete = false, onDeleted }: PostCa
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [shareToast, setShareToast] = useState(false);
   const commentInputRef = useRef<HTMLInputElement>(null);
+  
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const [isFeedMuted, setIsFeedMuted] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -135,15 +138,20 @@ export default function PostCard({ post, showDelete = false, onDeleted }: PostCa
   };
 
   const handleDeletePost = async () => {
-    if (!confirm('Are you sure you want to delete this post? This action cannot be undone.')) return;
+    setIsDeleting(true);
     try {
       await axiosInstance.delete(`/posts/${post.id}`);
-      setShowMenu(false);
-      if (onDeleted) onDeleted(post.id);
-      else setIsHidden(true);
+      setShowDeleteConfirm(false);
+      if (onDeleted) {
+        onDeleted(post.id);
+      } else {
+        setIsHidden(true);
+      }
     } catch (err) {
       console.error('Failed to delete post', err);
       alert('Failed to delete post. Please try again.');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -290,11 +298,15 @@ export default function PostCard({ post, showDelete = false, onDeleted }: PostCa
           />
           {showMenu && (
             <div className="absolute right-0 mt-2 w-48 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl rounded-2xl border border-zinc-100 dark:border-zinc-800 shadow-xl z-20 py-2 overflow-hidden">
-              {isAuthor && showDelete ? (
+              {isAuthor ? (
                 <button 
-                  onClick={handleDeletePost} 
-                  className="w-full text-left px-4 py-2 text-sm text-red-500 font-bold hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
+                  onClick={() => {
+                    setShowMenu(false);
+                    setShowDeleteConfirm(true);
+                  }} 
+                  className="w-full text-left px-4 py-2 text-sm text-red-500 font-bold hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors flex items-center gap-2 cursor-pointer"
                 >
+                  <Trash2 className="w-4 h-4 text-red-500" />
                   Delete Post
                 </button>
               ) : (
@@ -488,6 +500,65 @@ export default function PostCard({ post, showDelete = false, onDeleted }: PostCa
           )}
         </AnimatePresence>
       </div>
+      {/* Custom Premium Deletion Confirmation Modal */}
+      <AnimatePresence>
+        {showDeleteConfirm && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[999] flex items-center justify-center p-4"
+            onClick={() => setShowDeleteConfirm(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 20, opacity: 0 }}
+              animate={{ scale: 1, y: 0, opacity: 1 }}
+              exit={{ scale: 0.95, y: 20, opacity: 0 }}
+              transition={{ type: "spring", duration: 0.4 }}
+              className="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-3xl p-6 max-w-sm w-full shadow-2xl relative"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Close Button */}
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                className="absolute top-4 right-4 p-2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-800 rounded-full transition-all cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              <div className="flex flex-col items-center text-center mt-2">
+                <div className="w-16 h-16 rounded-2xl bg-red-50 dark:bg-red-950/40 flex items-center justify-center mb-4">
+                  <AlertTriangle className="w-8 h-8 text-red-600 dark:text-red-400 animate-bounce" />
+                </div>
+                
+                <h3 className="text-lg font-black text-black dark:text-white tracking-tight">
+                  Delete Post?
+                </h3>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-2 px-2 leading-relaxed">
+                  Are you absolutely sure you want to delete this post? This action is permanent and cannot be undone.
+                </p>
+              </div>
+
+              <div className="mt-6 flex flex-col gap-2">
+                <button
+                  disabled={isDeleting}
+                  onClick={handleDeletePost}
+                  className="w-full py-3 bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white rounded-xl font-bold text-xs shadow-md hover:shadow-lg transition-all cursor-pointer flex items-center justify-center gap-2"
+                >
+                  {isDeleting ? 'Deleting...' : 'Yes, Delete Post'}
+                </button>
+                <button
+                  disabled={isDeleting}
+                  onClick={() => setShowDeleteConfirm(false)}
+                  className="w-full py-3 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 rounded-xl font-bold text-xs transition-all cursor-pointer"
+                >
+                  Cancel
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }
