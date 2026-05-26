@@ -1,169 +1,109 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
   <defs>
-    <!-- Lush warm gradient background -->
+    <!-- Vibrant sunset gradient background -->
     <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#7c3aed" />
-      <stop offset="35%" stop-color="#6d28d9" />
-      <stop offset="70%" stop-color="#4f46e5" />
-      <stop offset="100%" stop-color="#2563eb" />
+      <stop offset="0%" stop-color="#ff7e5f" />
+      <stop offset="50%" stop-color="#feb47b" />
+      <stop offset="75%" stop-color="#c655b3" />
+      <stop offset="100%" stop-color="#4c1d95" />
     </linearGradient>
 
-    <!-- Secondary accent gradient -->
-    <linearGradient id="accent-warm" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#f472b6" />
-      <stop offset="100%" stop-color="#fb923c" />
+    <!-- Orbit trail gradients -->
+    <linearGradient id="orbit1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.9" />
+      <stop offset="50%" stop-color="#fbcfe8" stop-opacity="0.3" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
     </linearGradient>
 
-    <!-- Crystal facet fills with rich translucency -->
-    <linearGradient id="f1" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.92" />
-      <stop offset="100%" stop-color="#c4b5fd" stop-opacity="0.5" />
-    </linearGradient>
-    <linearGradient id="f2" x1="100%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#fce7f3" stop-opacity="0.8" />
-      <stop offset="100%" stop-color="#818cf8" stop-opacity="0.4" />
-    </linearGradient>
-    <linearGradient id="f3" x1="0%" y1="100%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#fde68a" stop-opacity="0.55" />
-      <stop offset="50%" stop-color="#f0abfc" stop-opacity="0.4" />
-      <stop offset="100%" stop-color="#67e8f9" stop-opacity="0.5" />
-    </linearGradient>
-    <linearGradient id="f4" x1="50%" y1="0%" x2="50%" y2="100%">
-      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.6" />
-      <stop offset="100%" stop-color="#a78bfa" stop-opacity="0.2" />
+    <linearGradient id="orbit2" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.9" />
+      <stop offset="50%" stop-color="#bae6fd" stop-opacity="0.3" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
     </linearGradient>
 
-    <!-- Inner crystal rainbow shimmer -->
-    <linearGradient id="shimmer" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#f9a8d4" stop-opacity="0.4" />
-      <stop offset="33%" stop-color="#a78bfa" stop-opacity="0.3" />
-      <stop offset="66%" stop-color="#67e8f9" stop-opacity="0.35" />
-      <stop offset="100%" stop-color="#fde68a" stop-opacity="0.3" />
+    <linearGradient id="orbit3" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.9" />
+      <stop offset="50%" stop-color="#fef08a" stop-opacity="0.3" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
     </linearGradient>
 
-    <!-- Rainbow dispersion beams -->
-    <linearGradient id="beam-red" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#f43f5e" stop-opacity="0.7" />
-      <stop offset="100%" stop-color="#f43f5e" stop-opacity="0" />
-    </linearGradient>
-    <linearGradient id="beam-orange" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#fb923c" stop-opacity="0.65" />
-      <stop offset="100%" stop-color="#fb923c" stop-opacity="0" />
-    </linearGradient>
-    <linearGradient id="beam-yellow" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#facc15" stop-opacity="0.6" />
-      <stop offset="100%" stop-color="#facc15" stop-opacity="0" />
-    </linearGradient>
-    <linearGradient id="beam-green" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#4ade80" stop-opacity="0.6" />
-      <stop offset="100%" stop-color="#4ade80" stop-opacity="0" />
-    </linearGradient>
-    <linearGradient id="beam-blue" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#60a5fa" stop-opacity="0.6" />
-      <stop offset="100%" stop-color="#60a5fa" stop-opacity="0" />
-    </linearGradient>
-    <linearGradient id="beam-violet" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#a78bfa" stop-opacity="0.55" />
-      <stop offset="100%" stop-color="#a78bfa" stop-opacity="0" />
-    </linearGradient>
+    <!-- Sphere gradients (pearl-like) -->
+    <radialGradient id="sphere1" cx="30%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="70%" stop-color="#fbcfe8" />
+      <stop offset="100%" stop-color="#ec4899" />
+    </radialGradient>
 
-    <!-- Incoming light beam gradient -->
-    <linearGradient id="light-in" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#ffffff" stop-opacity="0" />
-      <stop offset="70%" stop-color="#ffffff" stop-opacity="0.5" />
-      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.7" />
-    </linearGradient>
+    <radialGradient id="sphere2" cx="30%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="70%" stop-color="#bae6fd" />
+      <stop offset="100%" stop-color="#0ea5e9" />
+    </radialGradient>
 
-    <!-- Glow effects -->
-    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
-      <feGaussianBlur stdDeviation="10" result="blur" />
+    <radialGradient id="sphere3" cx="30%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="70%" stop-color="#fef08a" />
+      <stop offset="100%" stop-color="#eab308" />
+    </radialGradient>
+
+    <!-- Glow filters -->
+    <filter id="glow-strong" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="8" result="blur" />
       <feMerge>
         <feMergeNode in="blur" />
         <feMergeNode in="SourceGraphic" />
       </feMerge>
     </filter>
-    <filter id="spark" x="-50%" y="-50%" width="200%" height="200%">
-      <feGaussianBlur stdDeviation="3" result="blur" />
-      <feMerge>
-        <feMergeNode in="blur" />
-        <feMergeNode in="SourceGraphic" />
-      </feMerge>
-    </filter>
-    <filter id="big-glow" x="-40%" y="-40%" width="180%" height="180%">
-      <feGaussianBlur stdDeviation="18" />
+
+    <filter id="glow-ambient" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="30" />
     </filter>
   </defs>
 
-  <!-- Background -->
+  <!-- Background with large rounded corners -->
   <rect width="512" height="512" rx="112" fill="url(#bg)" />
 
-  <!-- Subtle radial light behind prism -->
-  <circle cx="256" cy="246" r="140" fill="white" opacity="0.05" />
-  <circle cx="256" cy="246" r="80" fill="white" opacity="0.04" />
+  <!-- Ambient background glow behind the shapes -->
+  <circle cx="256" cy="256" r="140" fill="#ffffff" opacity="0.15" filter="url(#glow-ambient)" />
 
-  <!-- Incoming light beam -->
-  <polygon points="50,238 195,253 195,259 50,274" fill="url(#light-in)" />
+  <g filter="url(#glow-strong)">
+    <!-- Orbit 1 (Tilted left) -->
+    <g transform="translate(256, 256) rotate(30) translate(-256, -256)">
+      <ellipse cx="256" cy="256" rx="160" ry="60" fill="none" stroke="url(#orbit1)" stroke-width="8" stroke-linecap="round" stroke-dasharray="800" stroke-dashoffset="100" />
+      <!-- Sphere on orbit 1 -->
+      <circle cx="96" cy="256" r="24" fill="url(#sphere1)" />
+      <!-- Tiny trailing particles -->
+      <circle cx="130" cy="210" r="4" fill="#ffffff" opacity="0.8" />
+      <circle cx="150" cy="195" r="2" fill="#ffffff" opacity="0.5" />
+    </g>
 
-  <!-- Rainbow dispersion beams with gradient fade -->
-  <g>
-    <polygon points="318,230 462,160 462,175" fill="url(#beam-red)" />
-    <polygon points="318,238 462,180 462,195" fill="url(#beam-orange)" />
-    <polygon points="318,246 462,200 462,215" fill="url(#beam-yellow)" />
-    <polygon points="318,254 462,220 462,235" fill="url(#beam-green)" />
-    <polygon points="318,262 462,240 462,255" fill="url(#beam-blue)" />
-    <polygon points="318,270 462,260 462,275" fill="url(#beam-violet)" />
+    <!-- Orbit 2 (Tilted right) -->
+    <g transform="translate(256, 256) rotate(-45) translate(-256, -256)">
+      <ellipse cx="256" cy="256" rx="160" ry="60" fill="none" stroke="url(#orbit2)" stroke-width="8" stroke-linecap="round" stroke-dasharray="800" stroke-dashoffset="200" />
+      <!-- Sphere on orbit 2 -->
+      <circle cx="416" cy="256" r="20" fill="url(#sphere2)" />
+      <!-- Tiny trailing particles -->
+      <circle cx="380" cy="300" r="3.5" fill="#ffffff" opacity="0.8" />
+      <circle cx="360" cy="310" r="1.5" fill="#ffffff" opacity="0.5" />
+    </g>
+
+    <!-- Orbit 3 (Vertical) -->
+    <g transform="translate(256, 256) rotate(90) translate(-256, -256)">
+      <ellipse cx="256" cy="256" rx="160" ry="60" fill="none" stroke="url(#orbit3)" stroke-width="8" stroke-linecap="round" stroke-dasharray="800" stroke-dashoffset="300" />
+      <!-- Sphere on orbit 3 -->
+      <circle cx="106" cy="275" r="16" fill="url(#sphere3)" />
+      <!-- Tiny trailing particles -->
+      <circle cx="120" cy="240" r="3" fill="#ffffff" opacity="0.8" />
+      <circle cx="135" cy="225" r="1.5" fill="#ffffff" opacity="0.5" />
+    </g>
+
+    <!-- Central energy core connecting them -->
+    <circle cx="256" cy="256" r="32" fill="#ffffff" opacity="0.95" />
+    <circle cx="256" cy="256" r="45" fill="#ffffff" opacity="0.4" />
   </g>
 
-  <!-- Ambient color glow behind prism -->
-  <circle cx="256" cy="256" r="100" fill="#a78bfa" opacity="0.08" filter="url(#big-glow)" />
-
-  <!-- Main Crystal Prism -->
-  <g filter="url(#glow)">
-    <!-- Left face -->
-    <polygon points="256,108 172,365 256,310" fill="url(#f1)" />
-    <!-- Right face -->
-    <polygon points="256,108 340,365 256,310" fill="url(#f2)" />
-    <!-- Bottom face -->
-    <polygon points="172,365 340,365 256,310" fill="url(#f3)" />
-    <!-- Inner refraction highlight -->
-    <polygon points="256,140 205,295 256,278 307,295" fill="url(#shimmer)" />
-    <!-- Center vertical light catch -->
-    <polygon points="252,135 256,310 260,135" fill="white" opacity="0.12" />
-  </g>
-
-  <!-- Glass edge highlights -->
-  <g stroke="white" fill="none" stroke-linecap="round">
-    <line x1="256" y1="108" x2="172" y2="365" stroke-opacity="0.5" stroke-width="1.8" />
-    <line x1="256" y1="108" x2="340" y2="365" stroke-opacity="0.45" stroke-width="1.8" />
-    <line x1="172" y1="365" x2="340" y2="365" stroke-opacity="0.3" stroke-width="1.5" />
-    <!-- Inner structural line -->
-    <line x1="256" y1="108" x2="256" y2="310" stroke-opacity="0.15" stroke-width="1" />
-    <line x1="172" y1="365" x2="256" y2="310" stroke-opacity="0.2" stroke-width="1" />
-    <line x1="340" y1="365" x2="256" y2="310" stroke-opacity="0.18" stroke-width="1" />
-  </g>
-
-  <!-- Sparkle highlights for premium glass feel -->
-  <g filter="url(#spark)">
-    <!-- Apex sparkle -->
-    <circle cx="253" cy="118" r="4.5" fill="white" opacity="0.95" />
-    <circle cx="260" cy="112" r="2" fill="white" opacity="0.6" />
-    <!-- Left edge sparkle -->
-    <circle cx="198" cy="270" r="2.5" fill="white" opacity="0.5" />
-    <!-- Right face sparkle -->
-    <circle cx="310" cy="290" r="2" fill="#fde68a" opacity="0.55" />
-    <!-- Bottom sparkle -->
-    <circle cx="256" cy="355" r="2" fill="#67e8f9" opacity="0.4" />
-    <!-- Inner sparkle -->
-    <circle cx="240" cy="210" r="1.5" fill="#f9a8d4" opacity="0.5" />
-    <circle cx="275" cy="235" r="1.8" fill="white" opacity="0.45" />
-  </g>
-
-  <!-- Tiny floating particles for depth -->
-  <g opacity="0.25">
-    <circle cx="380" cy="180" r="1.5" fill="white" />
-    <circle cx="400" cy="210" r="1" fill="white" />
-    <circle cx="130" cy="260" r="1.2" fill="white" />
-    <circle cx="110" cy="240" r="0.8" fill="white" />
-    <circle cx="390" cy="310" r="1" fill="white" />
-  </g>
+  <!-- Highlighting sparkles overlay -->
+  <circle cx="245" cy="245" r="5" fill="#ffffff" />
+  <circle cx="88" cy="250" r="4" fill="#ffffff" transform="rotate(30 256 256)" />
+  <circle cx="408" cy="250" r="4" fill="#ffffff" transform="rotate(-45 256 256)" />
 </svg>
