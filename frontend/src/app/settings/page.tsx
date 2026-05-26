@@ -146,6 +146,8 @@ export default function SettingsPage() {
   // Full profile data fetched from API (includes email, createdAt)
   const [fullProfile, setFullProfile] = useState<{ email: string; createdAt: string } | null>(null);
 
+  const [confirmModal, setConfirmModal] = useState<{ isOpen: boolean, title: string, desc: string, onConfirm: () => void } | null>(null);
+
   useEffect(() => {
     if (activeTab === 'more') {
       fetchSuggestions();
@@ -351,15 +353,21 @@ export default function SettingsPage() {
     }
   };
 
-  const handleDeleteAccount = async () => {
-    if (!confirm('Are you absolutely sure you want to delete your account? This action cannot be undone.')) return;
-    try {
-      await axiosInstance.delete('/users/me');
-      logout();
-    } catch (err) {
-      console.error('Failed to delete account', err);
-      alert('Failed to delete account');
-    }
+  const handleDeleteAccount = () => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Delete Account',
+      desc: 'Are you absolutely sure you want to delete your account? This action cannot be undone.',
+      onConfirm: async () => {
+        try {
+          await axiosInstance.delete('/users/me');
+          logout();
+        } catch (err) {
+          console.error('Failed to delete account', err);
+          alert('Failed to delete account');
+        }
+      }
+    });
   };
 
   const tabs = [
@@ -958,6 +966,52 @@ export default function SettingsPage() {
           >
             <span className="text-sm flex-1">{toastMsg}</span>
             <X className="w-4 h-4 cursor-pointer flex-shrink-0" onClick={() => setToastMsg(null)} />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Confirm Modal */}
+      <AnimatePresence>
+        {confirmModal?.isOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[999] flex items-center justify-center p-4"
+            onClick={() => setConfirmModal(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 20, opacity: 0 }}
+              animate={{ scale: 1, y: 0, opacity: 1 }}
+              exit={{ scale: 0.95, y: 20, opacity: 0 }}
+              transition={{ type: "spring", duration: 0.4 }}
+              className="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-3xl p-6 max-w-sm w-full shadow-2xl relative"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="text-xl font-black text-black dark:text-white tracking-tight mb-2">
+                {confirmModal.title}
+              </h3>
+              <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-6 leading-relaxed">
+                {confirmModal.desc}
+              </p>
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={() => setConfirmModal(null)}
+                  className="px-5 py-2.5 rounded-xl font-bold text-sm text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    confirmModal.onConfirm();
+                    setConfirmModal(null);
+                  }}
+                  className="px-5 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-xl font-bold text-sm shadow-md transition-colors cursor-pointer"
+                >
+                  Confirm
+                </button>
+              </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

@@ -48,6 +48,8 @@ export default function ProfilePage() {
   const [isLoadingFollowList, setIsLoadingFollowList] = useState(false);
   const [followError, setFollowError] = useState<string | null>(null);
 
+  const [confirmModal, setConfirmModal] = useState<{ isOpen: boolean, title: string, desc: string, onConfirm: () => void } | null>(null);
+
   const isOwnProfile = 
     currentUser?.username && username 
       ? currentUser.username.toLowerCase() === (username as string).toLowerCase()
@@ -100,26 +102,38 @@ export default function ProfilePage() {
     }
   }, [activeTab, isOwnProfile]);
 
-  const handleDeletePost = async (postId: string) => {
-    if (!confirm('Delete this post? This cannot be undone.')) return;
-    try {
-      await axiosInstance.delete(`/posts/${postId}`);
-      setPosts(prev => prev.filter(p => p.id !== postId));
-    } catch (err) {
-      console.error('Failed to delete post', err);
-      alert('Failed to delete post.');
-    }
+  const handleDeletePost = (postId: string) => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Delete Post',
+      desc: 'Delete this post? This cannot be undone.',
+      onConfirm: async () => {
+        try {
+          await axiosInstance.delete(`/posts/${postId}`);
+          setPosts(prev => prev.filter(p => p.id !== postId));
+        } catch (err) {
+          console.error('Failed to delete post', err);
+          alert('Failed to delete post.');
+        }
+      }
+    });
   };
 
-  const handleDeleteReel = async (reelId: string) => {
-    if (!confirm('Delete this reel? This cannot be undone.')) return;
-    try {
-      await axiosInstance.delete(`/posts/${reelId}`);
-      setReels(prev => prev.filter(r => r.id !== reelId));
-    } catch (err) {
-      console.error('Failed to delete reel', err);
-      alert('Failed to delete reel.');
-    }
+  const handleDeleteReel = (reelId: string) => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Delete Reel',
+      desc: 'Delete this reel? This cannot be undone.',
+      onConfirm: async () => {
+        try {
+          await axiosInstance.delete(`/posts/${reelId}`);
+          setReels(prev => prev.filter(r => r.id !== reelId));
+        } catch (err) {
+          console.error('Failed to delete reel', err);
+          alert('Failed to delete reel.');
+        }
+      }
+    });
   };
 
   const fetchCollections = async () => {
@@ -150,13 +164,19 @@ export default function ProfilePage() {
     } finally { setIsCreating(false); }
   };
 
-  const deleteCollection = async (colId: string) => {
-    if (!confirm('Delete this collection?')) return;
-    try {
-      await axiosInstance.delete(`/collections/${colId}`);
-      setCollections(prev => prev.filter(c => c.id !== colId));
-      if (selectedCollection?.id === colId) setSelectedCollection(null);
-    } catch (err: any) { alert(err?.response?.data?.message || 'Failed to delete collection'); }
+  const deleteCollection = (colId: string) => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Delete Collection',
+      desc: 'Are you sure you want to delete this collection?',
+      onConfirm: async () => {
+        try {
+          await axiosInstance.delete(`/collections/${colId}`);
+          setCollections(prev => prev.filter(c => c.id !== colId));
+          if (selectedCollection?.id === colId) setSelectedCollection(null);
+        } catch (err: any) { alert(err?.response?.data?.message || 'Failed to delete collection'); }
+      }
+    });
   };
 
   const handleFollow = async () => {
@@ -754,6 +774,51 @@ export default function ProfilePage() {
                   setCollectionPosts(prev => prev.filter(p => p.id !== deletedId));
                 }}
               />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      {/* Confirm Modal */}
+      <AnimatePresence>
+        {confirmModal?.isOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[999] flex items-center justify-center p-4"
+            onClick={() => setConfirmModal(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 20, opacity: 0 }}
+              animate={{ scale: 1, y: 0, opacity: 1 }}
+              exit={{ scale: 0.95, y: 20, opacity: 0 }}
+              transition={{ type: "spring", duration: 0.4 }}
+              className="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-3xl p-6 max-w-sm w-full shadow-2xl relative"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="text-xl font-black text-black dark:text-white tracking-tight mb-2">
+                {confirmModal.title}
+              </h3>
+              <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-6 leading-relaxed">
+                {confirmModal.desc}
+              </p>
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={() => setConfirmModal(null)}
+                  className="px-5 py-2.5 rounded-xl font-bold text-sm text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    confirmModal.onConfirm();
+                    setConfirmModal(null);
+                  }}
+                  className="px-5 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-xl font-bold text-sm shadow-md transition-colors cursor-pointer"
+                >
+                  Confirm
+                </button>
+              </div>
             </motion.div>
           </motion.div>
         )}
