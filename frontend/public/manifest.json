@@ -1,8 +1,8 @@
 {
   "id": "/",
   "scope": "/",
-  "name": "Vibely",
-  "short_name": "Vibely",
+  "name": "Pacely",
+  "short_name": "Pacely",
   "description": "A premium social experience",
   "start_url": "/",
   "display": "standalone",

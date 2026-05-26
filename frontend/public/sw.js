@@ -37,7 +37,7 @@ self.addEventListener('push', (event) => {
   };
 
   event.waitUntil(
-    self.registration.showNotification(data.title || 'Vibely Alert', options)
+    self.registration.showNotification(data.title || 'Pacely Alert', options)
   );
 });
 
