@@ -52,8 +52,7 @@ export default function SettingsPage() {
   
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [isInstallable, setIsInstallable] = useState(false);
-  const [showInstallGuide, setShowInstallGuide] = useState(false);
-  const [isIOS, setIsIOS] = useState(false);
+
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -105,11 +104,8 @@ export default function SettingsPage() {
     window.addEventListener('pwa-installable', handlePwaInstallable);
     window.addEventListener('appinstalled', handleAppInstalled);
 
-    const userAgent = window.navigator.userAgent.toLowerCase();
-    setIsIOS(/iphone|ipad|ipod/.test(userAgent));
-
     if (!isStandalone) {
-      setIsInstallable('serviceWorker' in navigator || !!(window as any).deferredPrompt);
+      setIsInstallable(!!(window as any).deferredPrompt);
     }
 
     return () => {
@@ -121,10 +117,7 @@ export default function SettingsPage() {
 
   const handleInstallClick = async () => {
     const promptEvent = deferredPrompt || (typeof window !== 'undefined' ? (window as any).deferredPrompt : null);
-    if (!promptEvent) {
-      setShowInstallGuide(true);
-      return;
-    }
+    if (!promptEvent) return;
     try {
       promptEvent.prompt();
       const { outcome } = await promptEvent.userChoice;
@@ -142,11 +135,7 @@ export default function SettingsPage() {
     setIsInstallable(false);
   };
 
-  const handleDismissInstallGuide = () => {
-    setShowInstallGuide(false);
-    safeStorage.setItem('pwa-install-dismissed', 'true');
-    setIsInstallable(false);
-  };
+
 
   // Full profile data fetched from API (includes email, createdAt)
   const [fullProfile, setFullProfile] = useState<{ email: string; createdAt: string } | null>(null);
@@ -954,118 +943,6 @@ export default function SettingsPage() {
         )}
       </AnimatePresence>
 
-      {/* Custom PWA Install Guide Modal */}
-      <AnimatePresence>
-        {showInstallGuide && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[999] flex items-center justify-center p-4"
-            onClick={() => setShowInstallGuide(false)}
-          >
-            <motion.div
-              initial={{ scale: 0.95, y: 20, opacity: 0 }}
-              animate={{ scale: 1, y: 0, opacity: 1 }}
-              exit={{ scale: 0.95, y: 20, opacity: 0 }}
-              transition={{ type: "spring", duration: 0.4 }}
-              className="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-3xl p-6 max-w-md w-full shadow-2xl relative"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Close Button */}
-              <button
-                onClick={handleDismissInstallGuide}
-                className="absolute top-4 right-4 p-2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-800 rounded-full transition-all cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-
-              <div className="flex flex-col items-center text-center mt-2">
-                <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4 overflow-hidden shadow-sm border border-zinc-100 dark:border-zinc-800">
-                  <img src="/icon-512x512.png" alt="Relay Logo" className="w-full h-full object-cover" />
-                </div>
-                
-                <h3 className="text-xl font-black text-black dark:text-white tracking-tight">
-                  Install Relay App
-                </h3>
-                <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-2 px-2 leading-relaxed">
-                  To securely install Relay on your device, follow these quick steps:
-                </p>
-              </div>
-
-              {/* Step list based on device */}
-              <div className="mt-6 space-y-4">
-                {isIOS ? (
-                  <>
-                    <div className="flex items-start gap-4 p-3 bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-100 dark:border-zinc-800/50 rounded-2xl">
-                      <div className="w-8 h-8 rounded-xl bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex-shrink-0 flex items-center justify-center text-xs font-bold text-indigo-600 dark:text-indigo-400">
-                        1
-                      </div>
-                      <div className="text-left">
-                        <p className="text-sm font-bold text-black dark:text-white">Tap Share Button</p>
-                        <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5 leading-relaxed">
-                          Tap the Share icon <span className="inline-block px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded mx-0.5">
-                            <svg className="w-3.5 h-3.5 inline text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                            </svg>
-                          </span> in your Safari browser navigation bar.
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-start gap-4 p-3 bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-100 dark:border-zinc-800/50 rounded-2xl">
-                      <div className="w-8 h-8 rounded-xl bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex-shrink-0 flex items-center justify-center text-xs font-bold text-indigo-600 dark:text-indigo-400">
-                        2
-                      </div>
-                      <div className="text-left">
-                        <p className="text-sm font-bold text-black dark:text-white">Add to Home Screen</p>
-                        <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5 leading-relaxed">
-                          Scroll down the options menu and select <strong className="text-black dark:text-white">"Add to Home Screen"</strong>.
-                        </p>
-                      </div>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div className="flex items-start gap-4 p-3 bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-100 dark:border-zinc-800/50 rounded-2xl">
-                      <div className="w-8 h-8 rounded-xl bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex-shrink-0 flex items-center justify-center text-xs font-bold text-indigo-600 dark:text-indigo-400">
-                        1
-                      </div>
-                      <div className="text-left">
-                        <p className="text-sm font-bold text-black dark:text-white">Open Browser Menu</p>
-                        <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5 leading-relaxed">
-                          Tap your browser's menu (three dots <span className="font-bold">⋮</span> in top-right or browser icon).
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-start gap-4 p-3 bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-100 dark:border-zinc-800/50 rounded-2xl">
-                      <div className="w-8 h-8 rounded-xl bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex-shrink-0 flex items-center justify-center text-xs font-bold text-indigo-600 dark:text-indigo-400">
-                        2
-                      </div>
-                      <div className="text-left">
-                        <p className="text-sm font-bold text-black dark:text-white">Install App</p>
-                        <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5 leading-relaxed">
-                          Select <strong className="text-black dark:text-white">"Install App"</strong> or <strong className="text-black dark:text-white">"Add to Home Screen"</strong>.
-                        </p>
-                      </div>
-                    </div>
-                  </>
-                )}
-              </div>
-
-              <div className="mt-8 flex gap-3">
-                <button
-                  onClick={handleDismissInstallGuide}
-                  className="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-bold text-sm shadow-md hover:shadow-lg transition-all cursor-pointer"
-                >
-                  Got It
-                </button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }
