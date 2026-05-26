@@ -1,2 +1,5 @@
+# Standard Git LFS tracking for binary image assets to satisfy HuggingFace Spaces requirements
 *.png filter=lfs diff=lfs merge=lfs -text
 *.jpg filter=lfs diff=lfs merge=lfs -text
+*.ico filter=lfs diff=lfs merge=lfs -text
+*.gif filter=lfs diff=lfs merge=lfs -text
