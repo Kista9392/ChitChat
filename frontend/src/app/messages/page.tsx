@@ -56,6 +56,7 @@ function MessagesPageInner() {
   const [contextMenuPos, setContextMenuPos] = useState<{ x: number, y: number } | null>(null);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [confirmModal, setConfirmModal] = useState<{ isOpen: boolean, title: string, desc: string, onConfirm: () => void } | null>(null);
 
   const stompClient = useRef<Client | null>(null);
   const searchParams = useSearchParams();
@@ -365,13 +366,19 @@ function MessagesPageInner() {
 
   const clearChat = async () => {
     if (!selectedUser) return;
-    if (!confirm('Are you sure you want to clear all messages in this conversation? This action is permanent!')) return;
-    try {
-      await axiosInstance.delete(`/messages/${selectedUser}/clear`);
-      setMessages([]);
-    } catch (err) {
-      console.error('Failed to clear chat', err);
-    }
+    setConfirmModal({
+      isOpen: true,
+      title: 'Clear Conversation',
+      desc: 'Are you sure you want to clear all messages in this conversation? This action is permanent!',
+      onConfirm: async () => {
+        try {
+          await axiosInstance.delete(`/messages/${selectedUser}/clear`);
+          setMessages([]);
+        } catch (err) {
+          console.error('Failed to clear chat', err);
+        }
+      }
+    });
   };
 
   const deleteSingleMessage = async (messageId: string) => {
@@ -399,15 +406,21 @@ function MessagesPageInner() {
 
   const deleteBulkMessages = async () => {
     if (!selectedUser || selectedIds.length === 0) return;
-    if (!confirm(`Are you sure you want to delete these ${selectedIds.length} selected messages?`)) return;
-    try {
-      await axiosInstance.post(`/messages/delete/bulk?otherUsername=${selectedUser}`, selectedIds);
-      setMessages(prev => prev.filter(m => !selectedIds.includes(m.id)));
-      setIsSelectionMode(false);
-      setSelectedIds([]);
-    } catch (err) {
-      console.error('Failed to delete bulk messages', err);
-    }
+    setConfirmModal({
+      isOpen: true,
+      title: 'Delete Messages',
+      desc: `Are you sure you want to delete these ${selectedIds.length} selected messages?`,
+      onConfirm: async () => {
+        try {
+          await axiosInstance.post(`/messages/delete/bulk?otherUsername=${selectedUser}`, selectedIds);
+          setMessages(prev => prev.filter(m => !selectedIds.includes(m.id)));
+          setIsSelectionMode(false);
+          setSelectedIds([]);
+        } catch (err) {
+          console.error('Failed to delete bulk messages', err);
+        }
+      }
+    });
   };
 
   const sendMessage = async (e: React.FormEvent) => {
@@ -978,10 +991,55 @@ function MessagesPageInner() {
               initial={{ opacity: 0, y: 50, scale: 0.9 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 50, scale: 0.9 }}
-              className="fixed bottom-20 left-1/2 -translate-x-1/2 bg-red-500 text-white px-6 py-3 rounded-full shadow-2xl font-medium flex items-center gap-2 z-50"
+              className="fixed bottom-20 left-1/2 -translate-x-1/2 bg-red-500 text-white px-6 py-3 rounded-full shadow-2xl font-medium flex items-center gap-2 z-[100]"
             >
               <span className="text-sm">{errorMsg}</span>
               <X className="w-4 h-4 cursor-pointer" onClick={() => setErrorMsg('')} />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {confirmModal?.isOpen && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[999] flex items-center justify-center p-4"
+              onClick={() => setConfirmModal(null)}
+            >
+              <motion.div
+                initial={{ scale: 0.95, y: 20, opacity: 0 }}
+                animate={{ scale: 1, y: 0, opacity: 1 }}
+                exit={{ scale: 0.95, y: 20, opacity: 0 }}
+                transition={{ type: "spring", duration: 0.4 }}
+                className="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-3xl p-6 max-w-sm w-full shadow-2xl relative"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <h3 className="text-xl font-black text-black dark:text-white tracking-tight mb-2">
+                  {confirmModal.title}
+                </h3>
+                <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-6 leading-relaxed">
+                  {confirmModal.desc}
+                </p>
+                <div className="flex justify-end gap-3">
+                  <button
+                    onClick={() => setConfirmModal(null)}
+                    className="px-5 py-2.5 rounded-xl font-bold text-sm text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => {
+                      confirmModal.onConfirm();
+                      setConfirmModal(null);
+                    }}
+                    className="px-5 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-xl font-bold text-sm shadow-md transition-colors cursor-pointer"
+                  >
+                    Confirm
+                  </button>
+                </div>
+              </motion.div>
             </motion.div>
           )}
         </AnimatePresence>
