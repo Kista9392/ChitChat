@@ -1,56 +1,109 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
   <defs>
-    <!-- Rich Dark Backplate Gradient -->
-    <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#09090b" />
-      <stop offset="50%" stop-color="#111119" />
-      <stop offset="100%" stop-color="#030305" />
+    <!-- Background: Coral-Pink → Purple → Indigo gradient -->
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f472b6" />
+      <stop offset="40%" stop-color="#a855f7" />
+      <stop offset="100%" stop-color="#4f46e5" />
     </linearGradient>
 
-    <!-- Neon Gradients representing Relay Flow -->
-    <linearGradient id="relay-cyan" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#00f2fe" />
-      <stop offset="100%" stop-color="#4facfe" />
+    <!-- Prism facet fills -->
+    <linearGradient id="facet-left" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.85" />
+      <stop offset="100%" stop-color="#c4b5fd" stop-opacity="0.55" />
     </linearGradient>
-    <linearGradient id="relay-magenta" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#ff0844" />
-      <stop offset="100%" stop-color="#ffb199" />
+    <linearGradient id="facet-right" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#fbcfe8" stop-opacity="0.7" />
+      <stop offset="100%" stop-color="#818cf8" stop-opacity="0.45" />
     </linearGradient>
-    <linearGradient id="relay-purple" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#b180ff" />
-      <stop offset="100%" stop-color="#7209b7" />
+    <linearGradient id="facet-top" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95" />
+      <stop offset="100%" stop-color="#e9d5ff" stop-opacity="0.6" />
+    </linearGradient>
+    <linearGradient id="facet-inner" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fde68a" stop-opacity="0.5" />
+      <stop offset="50%" stop-color="#f0abfc" stop-opacity="0.35" />
+      <stop offset="100%" stop-color="#93c5fd" stop-opacity="0.5" />
     </linearGradient>
 
-    <!-- Deep Multi-Layer Neon Glow -->
-    <filter id="super-glow" x="-30%" y="-30%" width="160%" height="160%">
-      <feDropShadow dx="0" dy="16" stdDeviation="20" flood-color="#4facfe" flood-opacity="0.25" />
-      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#ff0844" flood-opacity="0.3" />
+    <!-- Rainbow refraction beam -->
+    <linearGradient id="rainbow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ef4444" stop-opacity="0.6" />
+      <stop offset="20%" stop-color="#f59e0b" stop-opacity="0.5" />
+      <stop offset="40%" stop-color="#22c55e" stop-opacity="0.5" />
+      <stop offset="60%" stop-color="#3b82f6" stop-opacity="0.5" />
+      <stop offset="80%" stop-color="#8b5cf6" stop-opacity="0.5" />
+      <stop offset="100%" stop-color="#ec4899" stop-opacity="0.4" />
+    </linearGradient>
+
+    <!-- Subtle glow filter -->
+    <filter id="glow" x="-25%" y="-25%" width="150%" height="150%">
+      <feGaussianBlur stdDeviation="8" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+
+    <!-- Sparkle glow -->
+    <filter id="sparkle" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="4" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
     </filter>
   </defs>
 
-  <!-- Background Backplate -->
-  <rect width="512" height="512" rx="140" fill="url(#bg-grad)" />
+  <!-- Full-bleed background for maskable (no border radius) -->
+  <rect width="512" height="512" rx="0" fill="url(#bg)" />
 
-  <!-- Highly Unique Two-Way Interlocking Signal Relay Wave Emblem (scaled down for safe-area maskable compliance) -->
-  <g filter="url(#super-glow)" transform="translate(51, 51) scale(0.8)">
-    <!-- Set A: Signals Radiating from Bottom-Left -->
-    <!-- Wave A2 (Outer Cyan Wave) -->
-    <path d="M 150 192 A 170 170 0 0 1 320 362" fill="none" stroke="url(#relay-cyan)" stroke-width="26" stroke-linecap="round" />
-    
-    <!-- Wave A1 (Inner Purple Wave) -->
-    <path d="M 150 272 A 90 90 0 0 1 240 362" fill="none" stroke="url(#relay-purple)" stroke-width="26" stroke-linecap="round" />
-    
-    <!-- Seed Node A (Bottom-Left Glowing Circle) -->
-    <circle cx="150" cy="362" r="28" fill="url(#relay-magenta)" />
+  <!-- Subtle ambient light circle behind prism -->
+  <circle cx="256" cy="240" r="120" fill="white" opacity="0.06" />
 
-    <!-- Set B: Signals Radiating from Top-Right -->
-    <!-- Wave B2 (Outer Magenta Wave) -->
-    <path d="M 362 320 A 170 170 0 0 1 192 150" fill="none" stroke="url(#relay-magenta)" stroke-width="26" stroke-linecap="round" />
-    
-    <!-- Wave B1 (Inner Purple Wave) -->
-    <path d="M 362 240 A 90 90 0 0 1 272 150" fill="none" stroke="url(#relay-purple)" stroke-width="26" stroke-linecap="round" />
-    
-    <!-- Seed Node B (Top-Right Glowing Circle) -->
-    <circle cx="362" cy="150" r="28" fill="url(#relay-cyan)" />
+  <!-- Prism and effects scaled down for maskable safe zone -->
+  <g transform="translate(51, 51) scale(0.8)">
+    <!-- Rainbow refraction beam emerging from prism right side -->
+    <g opacity="0.7">
+      <polygon points="310,250 440,200 440,220" fill="#ef4444" opacity="0.4" />
+      <polygon points="310,255 440,220 440,238" fill="#f59e0b" opacity="0.35" />
+      <polygon points="310,260 440,238 440,256" fill="#fbbf24" opacity="0.35" />
+      <polygon points="310,265 440,256 440,274" fill="#22c55e" opacity="0.35" />
+      <polygon points="310,270 440,274 440,292" fill="#3b82f6" opacity="0.35" />
+      <polygon points="310,275 440,292 440,310" fill="#8b5cf6" opacity="0.35" />
+      <polygon points="310,280 440,310 440,328" fill="#ec4899" opacity="0.3" />
+    </g>
+
+    <!-- Incoming light beam from left -->
+    <polygon points="72,248 200,256 200,264 72,272" fill="white" opacity="0.35" />
+
+    <!-- Main Prism Shape -->
+    <g filter="url(#glow)">
+      <!-- Left facet -->
+      <polygon points="256,120 180,340 256,300" fill="url(#facet-left)" stroke="white" stroke-opacity="0.3" stroke-width="1.5" />
+
+      <!-- Right facet -->
+      <polygon points="256,120 332,340 256,300" fill="url(#facet-right)" stroke="white" stroke-opacity="0.25" stroke-width="1.5" />
+
+      <!-- Bottom facet (visible base) -->
+      <polygon points="180,340 332,340 256,300" fill="url(#facet-inner)" stroke="white" stroke-opacity="0.2" stroke-width="1.5" />
+
+      <!-- Top highlight facet (inner refraction) -->
+      <polygon points="256,145 212,280 256,265 300,280" fill="url(#facet-top)" opacity="0.3" />
+    </g>
+
+    <!-- Edge highlight lines for premium glass feel -->
+    <line x1="256" y1="120" x2="180" y2="340" stroke="white" stroke-opacity="0.4" stroke-width="1.2" />
+    <line x1="256" y1="120" x2="332" y2="340" stroke="white" stroke-opacity="0.35" stroke-width="1.2" />
+    <line x1="180" y1="340" x2="332" y2="340" stroke="white" stroke-opacity="0.25" stroke-width="1.2" />
+    <line x1="256" y1="120" x2="256" y2="300" stroke="white" stroke-opacity="0.12" stroke-width="0.8" />
+
+    <!-- Small sparkle highlights -->
+    <g filter="url(#sparkle)">
+      <circle cx="248" cy="152" r="3.5" fill="white" opacity="0.9" />
+      <circle cx="200" cy="280" r="2.5" fill="white" opacity="0.5" />
+      <circle cx="310" cy="300" r="2" fill="white" opacity="0.45" />
+      <circle cx="268" cy="200" r="2" fill="#fde68a" opacity="0.6" />
+    </g>
   </g>
 </svg>
