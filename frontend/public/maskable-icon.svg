@@ -7,16 +7,16 @@
       <stop offset="100%" stop-color="#030305" />
     </linearGradient>
 
-    <!-- Neon Gradients representing Drift Flow -->
-    <linearGradient id="drift-cyan" x1="0%" y1="0%" x2="100%" y2="100%">
+    <!-- Neon Gradients representing Relay Flow -->
+    <linearGradient id="relay-cyan" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#00f2fe" />
       <stop offset="100%" stop-color="#4facfe" />
     </linearGradient>
-    <linearGradient id="drift-magenta" x1="0%" y1="0%" x2="100%" y2="100%">
+    <linearGradient id="relay-magenta" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#ff0844" />
       <stop offset="100%" stop-color="#ffb199" />
     </linearGradient>
-    <linearGradient id="drift-purple" x1="0%" y1="0%" x2="100%" y2="100%">
+    <linearGradient id="relay-purple" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#b180ff" />
       <stop offset="100%" stop-color="#7209b7" />
     </linearGradient>
@@ -31,15 +31,15 @@
   <!-- Background Backplate -->
   <rect width="512" height="512" rx="140" fill="url(#bg-grad)" />
 
-  <!-- Highly Unique Interlocking 3D Drift Emblem (scaled down for safe-area maskable compliance) -->
+  <!-- Highly Unique Interlocking 3D Relay Emblem (scaled down for safe-area maskable compliance) -->
   <g filter="url(#super-glow)" transform="translate(51, 51) scale(0.8)">
-    <!-- Outer Curved Ribbon Loop (forms the loop of the D) -->
-    <path d="M 290 120 C 370 120 410 170 410 256 C 410 342 370 392 290 392 C 250 392 210 370 180 340 L 225 295 C 245 315 270 325 290 325 C 330 325 345 290 345 256 C 345 222 330 187 290 187 C 270 187 245 197 225 217 L 180 172 C 210 142 250 120 290 120 Z" fill="url(#drift-cyan)" />
+    <!-- Outer Curved Ribbon Loop (forms the loop of the R) -->
+    <path d="M 210 100 H 290 C 360 100 395 140 395 220 C 395 300 360 320 290 320 H 210 L 210 260 H 280 C 320 260 335 245 335 220 C 335 195 320 160 280 160 H 210 Z" fill="url(#relay-cyan)" />
     
     <!-- Left Vertical Pillar (forms the solid left backbone) -->
-    <path d="M 140 150 C 140 135 152 120 170 120 H 210 L 210 392 H 170 C 152 392 140 377 140 362 Z" fill="url(#drift-magenta)" opacity="0.95" />
+    <path d="M 145 130 C 145 115 157 100 175 100 H 210 V 412 H 175 C 157 412 145 397 145 382 Z" fill="url(#relay-magenta)" opacity="0.95" />
     
-    <!-- Central Overlapping Neon Purple Wave Bridging Blade -->
-    <path d="M 170 220 L 290 220 C 305 220 315 230 315 245 L 315 267 C 315 282 305 292 290 292 L 170 292 Z" fill="url(#drift-purple)" opacity="0.9" />
+    <!-- Sweeping Diagonal Ribbon Leg (forms the leg of the R) -->
+    <path d="M 245 285 L 340 397 C 350 409 365 412 385 412 H 400 C 410 412 415 400 405 390 L 295 280 Z" fill="url(#relay-purple)" opacity="0.9" />
   </g>
 </svg>

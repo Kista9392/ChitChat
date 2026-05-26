@@ -14,10 +14,10 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Drift | A Premium Social Network",
-  description: "Connect, share stories, chat in real-time, and scroll through premium reels on Drift - the ultimate next-gen social experience.",
+  title: "Relay | A Premium Social Network",
+  description: "Connect, share stories, chat in real-time, and scroll through premium reels on Relay - the ultimate next-gen social experience.",
   manifest: "/manifest.json",
-  keywords: ["Drift", "social network", "real-time chat", "stories", "reels", "premium social networking", "Drift App"],
+  keywords: ["Relay", "social network", "real-time chat", "stories", "reels", "premium social networking", "Relay App"],
   metadataBase: new URL("https://chit-chat-beta-seven.vercel.app"),
   robots: "index, follow",
   icons: {
@@ -31,15 +31,15 @@ export const metadata: Metadata = {
   },
   openGraph: {
     type: "website",
-    title: "Drift | A Premium Social Network",
-    description: "Connect, share stories, chat in real-time, and scroll through premium reels on Drift.",
-    siteName: "Drift",
+    title: "Relay | A Premium Social Network",
+    description: "Connect, share stories, chat in real-time, and scroll through premium reels on Relay.",
+    siteName: "Relay",
     url: "https://chit-chat-beta-seven.vercel.app"
   },
   twitter: {
     card: "summary_large_image",
-    title: "Drift | A Premium Social Network",
-    description: "Connect, share stories, chat in real-time, and scroll through premium reels on Drift."
+    title: "Relay | A Premium Social Network",
+    description: "Connect, share stories, chat in real-time, and scroll through premium reels on Relay."
   },
   verification: {
     google: "google-site-verification-placeholder"
@@ -63,9 +63,9 @@ export default function RootLayout({
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "WebApplication",
-    "name": "Drift",
-    "url": "https://drift.social",
-    "description": "Connect, share stories, chat in real-time, and scroll through premium reels on Drift - the ultimate next-gen social experience.",
+    "name": "Relay",
+    "url": "https://relay.social",
+    "description": "Connect, share stories, chat in real-time, and scroll through premium reels on Relay - the ultimate next-gen social experience.",
     "applicationCategory": "SocialNetworkingApplication",
     "operatingSystem": "All",
     "browserRequirements": "Requires JavaScript. Requires HTML5."

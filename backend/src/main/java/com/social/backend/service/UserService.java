@@ -122,12 +122,12 @@ public class UserService {
                     // Notify user via email so they know what happened
                     emailService.sendEmail(
                         user.getEmail(),
-                        "Drift Account Temporarily Locked",
+                        "Relay Account Temporarily Locked",
                         "<div style='font-family:sans-serif;max-width:480px;margin:auto;padding:24px;" +
                         "border-radius:12px;border:1px solid #e5e7eb;'>" +
                         "<h2 style='color:#DC2626;'>&#128274; Account Locked</h2>" +
                         "<p>Hi <strong>" + user.getUsername() + "</strong>,</p>" +
-                        "<p>Your Drift account has been <strong>temporarily locked for 15 minutes</strong> " +
+                        "<p>Your Relay account has been <strong>temporarily locked for 15 minutes</strong> " +
                         "after 5 consecutive failed login attempts.</p>" +
                         "<p>If this wasn't you, your account may be under attack. " +
                         "We recommend resetting your password immediately.</p>" +
@@ -136,7 +136,7 @@ public class UserService {
                         "border-radius:8px;text-decoration:none;font-weight:bold;margin-top:12px;'>" +
                         "Reset Password</a>" +
                         "<hr style='border:none;border-top:1px solid #e5e7eb;margin:16px 0;'/>" +
-                        "<p style='color:#9ca3af;font-size:11px;'>Drift Security Team</p>" +
+                        "<p style='color:#9ca3af;font-size:11px;'>Relay Security Team</p>" +
                         "</div>"
                     );
                     throw new RuntimeException(

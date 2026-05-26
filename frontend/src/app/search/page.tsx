@@ -110,7 +110,7 @@ export default function SearchPage() {
                     </div>
                     <div>
                       <p className="font-bold text-sm text-black dark:text-white">{user.username}</p>
-                      <p className="text-xs text-zinc-400">{user.bio || 'Official Drift User'}</p>
+                      <p className="text-xs text-zinc-400">{user.bio || 'Official Relay User'}</p>
                     </div>
                     <div className="ml-auto text-xs font-bold text-indigo-600 dark:text-indigo-400">
                       View Profile
@@ -157,7 +157,7 @@ export default function SearchPage() {
             {!isLoading && query.trim() === '' && (
               <div className="text-center py-20 text-zinc-300 dark:text-zinc-700">
                 <Search className="w-16 h-16 mx-auto mb-4 opacity-30" />
-                <p className="text-lg font-bold text-zinc-800 dark:text-zinc-200">Search Drift</p>
+                <p className="text-lg font-bold text-zinc-800 dark:text-zinc-200">Search Relay</p>
                 <p className="text-sm text-zinc-400 dark:text-zinc-500">Find your friends and interests</p>
               </div>
             )}

@@ -1,8 +1,8 @@
 {
   "id": "/",
   "scope": "/",
-  "name": "Drift",
-  "short_name": "Drift",
+  "name": "Relay",
+  "short_name": "Relay",
   "description": "A premium social experience",
   "start_url": "/",
   "display": "standalone",

@@ -89,7 +89,7 @@ export default function HomePage() {
             animate={{ opacity: 1, y: 0 }}
             className="max-w-xs text-center bg-white dark:bg-zinc-900 border border-zinc-100/50 dark:border-zinc-800/50 rounded-2xl p-5 shadow-xl"
           >
-            <p className="text-xs font-bold text-zinc-800 dark:text-zinc-200">🚀 Waking up drift. secure cloud...</p>
+            <p className="text-xs font-bold text-zinc-800 dark:text-zinc-200">🚀 Waking up relay. secure cloud...</p>
             <p className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-1 leading-relaxed">
               Our free-tier servers sleep after inactivity. It will load instantly in about 20-30 seconds!
             </p>
@@ -110,7 +110,7 @@ export default function HomePage() {
         <Link href="/create" className="p-2 text-zinc-700 dark:text-zinc-300 hover:text-indigo-600 transition-colors duration-200" title="Create Post">
           <PlusSquare className="w-6 h-6" />
         </Link>
-        <span className="font-black text-xl tracking-tighter italic bg-gradient-to-r from-rose-500 to-indigo-600 text-transparent bg-clip-text">drift.</span>
+        <span className="font-black text-xl tracking-tighter italic bg-gradient-to-r from-rose-500 to-indigo-600 text-transparent bg-clip-text">relay.</span>
         <Link href="/notifications" className="p-2 text-zinc-700 dark:text-zinc-300 hover:text-indigo-600 transition-colors duration-200" title="Notifications">
           <Heart className="w-6 h-6" />
         </Link>
