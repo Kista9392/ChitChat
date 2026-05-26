@@ -1,8 +1,8 @@
 {
   "id": "/",
   "scope": "/",
-  "name": "Pacely",
-  "short_name": "Pacely",
+  "name": "Drift",
+  "short_name": "Drift",
   "description": "A premium social experience",
   "start_url": "/",
   "display": "standalone",

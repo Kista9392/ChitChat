@@ -227,7 +227,7 @@ export default function PostCard({ post, showDelete = false, onDeleted }: PostCa
   const handleShare = async () => {
     const postUrl = `${window.location.origin}/post/${post.id}`;
     const shareData = {
-      title: `Post by @${post.authorUsername} on Pacely`,
+      title: `Post by @${post.authorUsername} on Drift`,
       text: post.content ? post.content.slice(0, 100) : `Check out this post by @${post.authorUsername}!`,
       url: postUrl,
     };

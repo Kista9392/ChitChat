@@ -723,10 +723,10 @@ export default function SettingsPage() {
           <div className="space-y-1">
             <h3 className="font-bold text-sm text-indigo-950 dark:text-indigo-300 flex items-center gap-2">
               <Shield className="w-4 h-4 text-indigo-500 animate-pulse" />
-              Install Pacely App
+              Install Drift App
             </h3>
             <p className="text-xs text-zinc-500 dark:text-zinc-400 max-w-sm leading-relaxed">
-              Install Pacely on your home screen for full background thread notifications. Safe, sandboxed, and respects your data privacy.
+              Install Drift on your home screen for full background thread notifications. Safe, sandboxed, and respects your data privacy.
             </p>
           </div>
           <button
@@ -734,7 +734,7 @@ export default function SettingsPage() {
             className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-xs shadow-sm hover:shadow transition-all duration-200 flex items-center justify-center gap-2 whitespace-nowrap self-start md:self-center cursor-pointer"
           >
             <PlusSquare className="w-4 h-4" />
-            Install Pacely App
+            Install Drift App
           </button>
         </div>
       </div>
@@ -742,7 +742,7 @@ export default function SettingsPage() {
       {/* Contact Us */}
       <div className="border-t border-zinc-100 dark:border-zinc-800 pt-6">
         <h3 className="font-bold text-sm text-black dark:text-white mb-3">Contact Us</h3>
-        <p className="text-xs text-zinc-400 dark:text-zinc-500 mb-3">For any queries, reach out to us at support@pacely.app</p>
+        <p className="text-xs text-zinc-400 dark:text-zinc-500 mb-3">For any queries, reach out to us at support@drift.social</p>
       </div>
     </div>
   );
@@ -955,10 +955,10 @@ export default function SettingsPage() {
                 </div>
                 
                 <h3 className="text-xl font-black text-black dark:text-white tracking-tight">
-                  Install Pacely App
+                  Install Drift App
                 </h3>
                 <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-2 px-2 leading-relaxed">
-                  To securely install Pacely on your device, follow these quick steps:
+                  To securely install Drift on your device, follow these quick steps:
                 </p>
               </div>
 

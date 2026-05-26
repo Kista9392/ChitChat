@@ -14,10 +14,10 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Pacely | A Premium Social Network",
-  description: "Connect, share stories, chat in real-time, and scroll through premium reels on Pacely - the ultimate next-gen social experience.",
+  title: "Drift | A Premium Social Network",
+  description: "Connect, share stories, chat in real-time, and scroll through premium reels on Drift - the ultimate next-gen social experience.",
   manifest: "/manifest.json",
-  keywords: ["Pacely", "social network", "real-time chat", "stories", "reels", "premium social networking", "Pacely App"],
+  keywords: ["Drift", "social network", "real-time chat", "stories", "reels", "premium social networking", "Drift App"],
   metadataBase: new URL("https://chit-chat-beta-seven.vercel.app"),
   robots: "index, follow",
   icons: {
@@ -31,15 +31,15 @@ export const metadata: Metadata = {
   },
   openGraph: {
     type: "website",
-    title: "Pacely | A Premium Social Network",
-    description: "Connect, share stories, chat in real-time, and scroll through premium reels on Pacely.",
-    siteName: "Pacely",
+    title: "Drift | A Premium Social Network",
+    description: "Connect, share stories, chat in real-time, and scroll through premium reels on Drift.",
+    siteName: "Drift",
     url: "https://chit-chat-beta-seven.vercel.app"
   },
   twitter: {
     card: "summary_large_image",
-    title: "Pacely | A Premium Social Network",
-    description: "Connect, share stories, chat in real-time, and scroll through premium reels on Pacely."
+    title: "Drift | A Premium Social Network",
+    description: "Connect, share stories, chat in real-time, and scroll through premium reels on Drift."
   },
   verification: {
     google: "google-site-verification-placeholder"
@@ -63,9 +63,9 @@ export default function RootLayout({
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "WebApplication",
-    "name": "Pacely",
-    "url": "https://pacely.app",
-    "description": "Connect, share stories, chat in real-time, and scroll through premium reels on Pacely - the ultimate next-gen social experience.",
+    "name": "Drift",
+    "url": "https://drift.social",
+    "description": "Connect, share stories, chat in real-time, and scroll through premium reels on Drift - the ultimate next-gen social experience.",
     "applicationCategory": "SocialNetworkingApplication",
     "operatingSystem": "All",
     "browserRequirements": "Requires JavaScript. Requires HTML5."

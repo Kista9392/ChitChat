@@ -17,8 +17,8 @@
   <!-- Background Card -->
   <rect width="512" height="512" rx="128" fill="url(#bg-grad)" />
 
-  <!-- Stylized Brand P Emblem (scaled down for safe-area maskable compliance) -->
+  <!-- Stylized Brand D Emblem (scaled down for safe-area maskable compliance) -->
   <g filter="url(#glow)" transform="translate(51, 51) scale(0.8)">
-    <path d="M170 120 L300 120 Q370 120 370 205 Q370 290 300 290 L215 290 L215 410 Q215 425 200 425 L185 425 Q170 425 170 410 Z M215 165 L215 245 L300 245 Q325 245 325 205 Q325 165 300 165 Z" fill="#ffffff" />
+    <path fill-rule="evenodd" d="M170 120 H290 C360 120 385 170 385 256 C385 342 360 392 290 392 H170 C155 392 145 382 145 367 V145 C145 130 155 120 170 120 Z M210 170 V342 H280 C325 342 335 310 335 256 C335 202 325 170 280 170 H210 Z" fill="#ffffff" />
   </g>
 </svg>

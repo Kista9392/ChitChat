@@ -56,7 +56,7 @@ public class BackendApplication {
 			System.setProperty("app.upload.dir", "uploads");
 		} else {
 			String tempDir = System.getProperty("java.io.tmpdir");
-			String fallbackPath = tempDir + java.io.File.separator + "pacely-uploads";
+			String fallbackPath = tempDir + java.io.File.separator + "drift-uploads";
 			java.io.File fallbackDir = new java.io.File(fallbackPath);
 			fallbackDir.mkdirs();
 			System.setProperty("app.upload.dir", fallbackDir.getAbsolutePath());
