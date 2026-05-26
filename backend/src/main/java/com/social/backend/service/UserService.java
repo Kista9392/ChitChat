@@ -131,7 +131,7 @@ public class UserService {
                         "after 5 consecutive failed login attempts.</p>" +
                         "<p>If this wasn't you, your account may be under attack. " +
                         "We recommend resetting your password immediately.</p>" +
-                        "<a href='https://chit-chat-beta-seven.vercel.app/forgot-password' " +
+                        "<a href='https://relayeverything-seven.vercel.app/forgot-password' " +
                         "style='display:inline-block;background:#4F46E5;color:#fff;padding:10px 20px;" +
                         "border-radius:8px;text-decoration:none;font-weight:bold;margin-top:12px;'>" +
                         "Reset Password</a>" +

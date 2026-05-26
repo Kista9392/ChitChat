@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   description: "Connect, share stories, chat in real-time, and scroll through premium reels on Relay - the ultimate next-gen social experience.",
   manifest: "/manifest.json",
   keywords: ["Relay", "social network", "real-time chat", "stories", "reels", "premium social networking", "Relay App"],
-  metadataBase: new URL("https://chit-chat-beta-seven.vercel.app"),
+  metadataBase: new URL("https://relayeverything-seven.vercel.app"),
   robots: "index, follow",
   icons: {
     icon: [
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
     title: "Relay | A Premium Social Network",
     description: "Connect, share stories, chat in real-time, and scroll through premium reels on Relay.",
     siteName: "Relay",
-    url: "https://chit-chat-beta-seven.vercel.app"
+    url: "https://relayeverything-seven.vercel.app"
   },
   twitter: {
     card: "summary_large_image",
