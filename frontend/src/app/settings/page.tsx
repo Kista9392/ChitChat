@@ -115,9 +115,15 @@ export default function SettingsPage() {
     };
   }, []);
 
+  const [toastMsg, setToastMsg] = useState<string | null>(null);
+
   const handleInstallClick = async () => {
     const promptEvent = deferredPrompt || (typeof window !== 'undefined' ? (window as any).deferredPrompt : null);
-    if (!promptEvent) return;
+    if (!promptEvent) {
+      setToastMsg('Native install is not supported by your browser or the app is already installed. Use the browser menu to "Add to Home Screen".');
+      setTimeout(() => setToastMsg(null), 5000);
+      return;
+    }
     try {
       promptEvent.prompt();
       const { outcome } = await promptEvent.userChoice;
@@ -738,28 +744,26 @@ export default function SettingsPage() {
       </div>
 
       {/* Secure PWA App Installation */}
-      {isInstallable && (
-        <div className="border-t border-zinc-100 dark:border-zinc-800 pt-6">
-          <div className="p-5 bg-gradient-to-br from-indigo-50/50 to-purple-50/50 dark:from-indigo-950/20 dark:to-purple-950/20 rounded-2xl border border-indigo-100/50 dark:border-indigo-500/10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="space-y-1">
-              <h3 className="font-bold text-sm text-indigo-950 dark:text-indigo-300 flex items-center gap-2">
-                <img src="/icon-512x512.png" alt="Relay Logo" className="w-5 h-5 rounded-md" />
-                Install Relay App
-              </h3>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 max-w-sm leading-relaxed">
-                Install Relay on your home screen for full background thread notifications. Safe, sandboxed, and respects your data privacy.
-              </p>
-            </div>
-            <button
-              onClick={handleInstallClick}
-              className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-xs shadow-sm hover:shadow transition-all duration-200 flex items-center justify-center gap-2 whitespace-nowrap self-start md:self-center cursor-pointer"
-            >
-              <PlusSquare className="w-4 h-4" />
+      <div className="border-t border-zinc-100 dark:border-zinc-800 pt-6">
+        <div className="p-5 bg-gradient-to-br from-indigo-50/50 to-purple-50/50 dark:from-indigo-950/20 dark:to-purple-950/20 rounded-2xl border border-indigo-100/50 dark:border-indigo-500/10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <h3 className="font-bold text-sm text-indigo-950 dark:text-indigo-300 flex items-center gap-2">
+              <img src="/icon-512x512.png" alt="Relay Logo" className="w-5 h-5 rounded-md" />
               Install Relay App
-            </button>
+            </h3>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 max-w-sm leading-relaxed">
+              Install Relay on your home screen for full background thread notifications. Safe, sandboxed, and respects your data privacy.
+            </p>
           </div>
+          <button
+            onClick={handleInstallClick}
+            className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-xs shadow-sm hover:shadow transition-all duration-200 flex items-center justify-center gap-2 whitespace-nowrap self-start md:self-center cursor-pointer"
+          >
+            <PlusSquare className="w-4 h-4" />
+            Install Relay App
+          </button>
         </div>
-      )}
+      </div>
 
       {/* Contact Us */}
       <div className="border-t border-zinc-100 dark:border-zinc-800 pt-6">
@@ -941,6 +945,19 @@ export default function SettingsPage() {
                 )}
               </div>
             </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {toastMsg && (
+          <motion.div
+            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 50, scale: 0.9 }}
+            className="fixed bottom-20 left-1/2 -translate-x-1/2 bg-zinc-900 text-white px-6 py-3 rounded-full shadow-2xl font-medium flex items-center gap-2 z-[100] max-w-sm w-full text-center"
+          >
+            <span className="text-sm flex-1">{toastMsg}</span>
+            <X className="w-4 h-4 cursor-pointer flex-shrink-0" onClick={() => setToastMsg(null)} />
           </motion.div>
         )}
       </AnimatePresence>
