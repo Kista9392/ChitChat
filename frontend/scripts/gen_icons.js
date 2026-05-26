@@ -4,29 +4,32 @@ const fs = require('fs');
 
 async function generatePngs() {
     try {
-        const svgBuffer = fs.readFileSync(path.join(__dirname, '../public/maskable-icon.svg'));
+        const sourceImage = 'C:\\Users\\dell\\.gemini\\antigravity-ide\\brain\\b38d84e5-672f-4061-81c7-14f34c01f721\\relay_concept_orbit_1779797362103.png';
+        const imageBuffer = fs.readFileSync(sourceImage);
         
-        await sharp(svgBuffer)
+        // Ensure square by cropping if necessary or just resizing (the generated image should be 1024x1024 square already)
+        
+        await sharp(imageBuffer)
             .resize(192, 192)
             .png()
             .toFile(path.join(__dirname, '../public/icon-192x192.png'));
             
         console.log('Created icon-192x192.png');
         
-        await sharp(svgBuffer)
+        await sharp(imageBuffer)
             .resize(512, 512)
             .png()
             .toFile(path.join(__dirname, '../public/icon-512x512.png'));
             
         console.log('Created icon-512x512.png');
         
-        const svgBufferNonMask = fs.readFileSync(path.join(__dirname, '../public/icon.svg'));
-        await sharp(svgBufferNonMask)
+        await sharp(imageBuffer)
             .resize(512, 512)
             .png()
-            .toFile(path.join(__dirname, '../public/maskable-icon-512x512.png')); // Using non-mask for this just to overwrite it
+            .toFile(path.join(__dirname, '../public/maskable-icon-512x512.png'));
             
         console.log('Created maskable-icon-512x512.png');
+        
     } catch (e) {
         console.error(e);
     }

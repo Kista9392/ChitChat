@@ -982,7 +982,7 @@ export default function SettingsPage() {
 
               <div className="flex flex-col items-center text-center mt-2">
                 <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4 overflow-hidden shadow-sm border border-zinc-100 dark:border-zinc-800">
-                  <img src="/icon.svg" alt="Relay Logo" className="w-full h-full object-cover" />
+                  <img src="/icon-512x512.png" alt="Relay Logo" className="w-full h-full object-cover" />
                 </div>
                 
                 <h3 className="text-xl font-black text-black dark:text-white tracking-tight">
