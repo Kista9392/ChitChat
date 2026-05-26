@@ -34,4 +34,7 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
            "(m.sender = :userA AND m.receiver = :userB) OR " +
            "(m.sender = :userB AND m.receiver = :userA)")
     java.util.List<Message> findAllMessagesBetweenUsers(@Param("userA") User userA, @Param("userB") User userB);
+
+    void deleteBySender(User sender);
+    void deleteByReceiver(User receiver);
 }

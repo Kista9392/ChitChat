@@ -25,6 +25,24 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class UserService {
 
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.social.backend.repository.CommentLikeRepository commentLikeRepository;
+
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.social.backend.repository.MessageRepository messageRepository;
+
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.social.backend.repository.NotificationRepository notificationRepository;
+
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.social.backend.repository.SavedCollectionRepository savedCollectionRepository;
+
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.social.backend.repository.StoryRepository storyRepository;
+
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.social.backend.repository.SuggestionRepository suggestionRepository;
+
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
@@ -378,21 +396,39 @@ public class UserService {
         followRepository.deleteByFollower(user);
         followRepository.deleteByFollowing(user);
 
-        // 2. Delete post likes
+        // 2. Delete post likes & comment likes by this user
         postLikeRepository.deleteByUser(user);
+        commentLikeRepository.deleteByUser(user);
 
-        // 3. Delete comments
+        // 3. Delete comments & comment likes on user's own comments
+        commentLikeRepository.deleteByCommentAuthor(user);
         commentRepository.deleteByAuthor(user);
 
-        // 4. Delete posts and their relations
+        // 4. Delete stories & suggestions
+        storyRepository.deleteByUser(user);
+        suggestionRepository.deleteByUser(user);
+
+        // 5. Delete notifications (as recipient or actor)
+        notificationRepository.deleteByRecipient(user);
+        notificationRepository.deleteByActor(user);
+
+        // 6. Delete messages (as sender or receiver)
+        messageRepository.deleteBySender(user);
+        messageRepository.deleteByReceiver(user);
+
+        // 7. Delete saved collections (which cascade deletes saved posts)
+        savedCollectionRepository.deleteByUser(user);
+
+        // 8. Delete posts and their relations
         List<Post> posts = postRepository.findByAuthorOrderByCreatedAtDesc(user);
         for (Post post : posts) {
+            commentLikeRepository.deleteByCommentPost(post);
             postLikeRepository.deleteByPost(post);
             commentRepository.deleteByPost(post);
             postRepository.delete(post);
         }
 
-        // 5. Delete user
+        // 9. Delete user
         userRepository.delete(user);
     }
 

@@ -33,4 +33,6 @@ public interface StoryRepository extends JpaRepository<Story, UUID> {
     @Modifying
     @Query("DELETE FROM Story s WHERE s.createdAt < :cutoff")
     void deleteExpiredStories(@Param("cutoff") LocalDateTime cutoff);
+
+    void deleteByUser(com.social.backend.entity.User user);
 }

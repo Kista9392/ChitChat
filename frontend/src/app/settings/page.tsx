@@ -428,6 +428,29 @@ export default function SettingsPage() {
           disabled
         />
       </div>
+
+      <div className="border-t border-zinc-100 dark:border-zinc-800 my-6 pt-6">
+        <h3 className="text-red-500 dark:text-red-400 text-sm font-black flex items-center gap-2 mb-2 uppercase tracking-wide">
+          <Trash2 className="w-4 h-4" />
+          Danger Zone
+        </h3>
+        <div className="p-4 rounded-2xl border border-red-500/20 dark:border-red-500/10 bg-red-500/5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <p className="text-xs font-bold text-zinc-850 dark:text-zinc-150">Delete Account</p>
+            <p className="text-[11px] text-zinc-500 dark:text-zinc-400 leading-relaxed max-w-xs">
+              Permanently delete your account and all associated posts, reels, comments, and messages. This action is irreversible.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={handleDeleteAccount}
+            className="px-4 py-2.5 bg-red-500 hover:bg-red-600 active:scale-[0.98] text-white rounded-xl font-bold text-xs shadow-sm hover:shadow transition-all flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer"
+          >
+            <UserX className="w-4 h-4" />
+            Delete Account
+          </button>
+        </div>
+      </div>
     </div>
   );
 

@@ -11,4 +11,5 @@ import java.util.UUID;
 public interface SavedCollectionRepository extends JpaRepository<SavedCollection, UUID> {
     List<SavedCollection> findByUserOrderByCreatedAtAsc(User user);
     Optional<SavedCollection> findByUserAndName(User user, String name);
+    void deleteByUser(User user);
 }

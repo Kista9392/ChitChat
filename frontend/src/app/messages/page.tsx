@@ -41,6 +41,8 @@ function MessagesPageInner() {
   const [filteredContacts, setFilteredContacts] = useState<Contact[]>([]);
   const [editingMessage, setEditingMessage] = useState<Message | null>(null);
   const [contactSearch, setContactSearch] = useState('');
+  const [globalSearchResults, setGlobalSearchResults] = useState<Contact[]>([]);
+  const [isSearchingGlobal, setIsSearchingGlobal] = useState(false);
   const [selectedUser, setSelectedUser] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
@@ -179,24 +181,52 @@ function MessagesPageInner() {
     return () => clearInterval(interval);
   }, [user?.username]);
 
-  // Local followers search (debounced at 300ms)
+  // Local + Global search logic (debounced at 400ms)
   useEffect(() => {
     if (!contactSearch.trim()) {
       setFilteredContacts(contacts);
+      setGlobalSearchResults([]);
+      setIsSearchingGlobal(false);
       return;
     }
 
-    const delayDebounce = setTimeout(() => {
-      const query = contactSearch.toLowerCase();
-      // Search ONLY within followers!
-      const followersMatches = followers.filter(c =>
-        c.username.toLowerCase().includes(query)
-      );
-      setFilteredContacts(followersMatches);
-    }, 300);
+    // 1. Instantly filter locally for snappy UI response
+    const query = contactSearch.toLowerCase();
+    const localMatches = contacts.filter(c =>
+      c.username.toLowerCase().includes(query)
+    );
+    setFilteredContacts(localMatches);
+
+    // 2. Debounce global backend API query
+    const delayDebounce = setTimeout(async () => {
+      setIsSearchingGlobal(true);
+      try {
+        const res = await axiosInstance.get(`/search/users?query=${encodeURIComponent(query)}`);
+        const searchData = res.data || [];
+        
+        // Map backend UserResponse to Contact structure
+        const mappedData: Contact[] = searchData.map((u: any) => ({
+          username: u.username,
+          avatarUrl: u.avatarUrl,
+          isOnline: u.isOnline,
+          showActivityStatus: u.showActivityStatus
+        }));
+
+        // Filter out duplicates (users already present in contacts)
+        const filteredGlobal = mappedData.filter(
+          g => !contacts.some(c => c.username.toLowerCase() === g.username.toLowerCase())
+        );
+
+        setGlobalSearchResults(filteredGlobal);
+      } catch (err) {
+        console.error('Global contact search failed', err);
+      } finally {
+        setIsSearchingGlobal(false);
+      }
+    }, 400);
 
     return () => clearTimeout(delayDebounce);
-  }, [contactSearch, contacts, followers]);
+  }, [contactSearch, contacts]);
 
   // Connect WebSocket once on mount
   useEffect(() => {
@@ -609,34 +639,93 @@ function MessagesPageInner() {
 
           {/* Contact List */}
           <div className="flex-1 overflow-y-auto no-scrollbar">
-            {filteredContacts.length === 0 ? (
+            {filteredContacts.length === 0 && globalSearchResults.length === 0 && !isSearchingGlobal && (
               <p className="text-center text-zinc-400 text-sm mt-8 italic">No users found</p>
-            ) : filteredContacts.map(c => (
-              <div
-                key={c.username}
-                onClick={() => selectUser(c.username)}
-                className={cn(
-                  'w-full flex items-center gap-3 px-4 py-3 transition-colors text-left cursor-pointer',
-                  selectedUser === c.username
-                    ? 'bg-zinc-50 dark:bg-zinc-800 border-r-2 border-black dark:border-white'
-                    : 'hover:bg-zinc-50/80 dark:hover:bg-zinc-800/50'
-                )}
-              >
-                <div className="relative flex-shrink-0">
-                  <div className="w-11 h-11 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-white font-bold text-sm">
-                    {c.username[0].toUpperCase()}
-                  </div>
-                  {c.showActivityStatus && c.isOnline && (
-                    <span className="absolute bottom-0 right-0 block h-3.5 w-3.5 rounded-full ring-2 ring-white dark:ring-zinc-900 bg-green-500 animate-pulse" title="Active Now" />
-                  )}
-                </div>
-                <div className="flex-1 overflow-hidden">
-                  <p className="font-bold text-sm text-black dark:text-white truncate">{c.username}</p>
-                  <p className="text-xs text-zinc-400 truncate">Tap to chat</p>
-                </div>
+            )}
 
+            {filteredContacts.length > 0 && (
+              <div className="space-y-0.5">
+                {contactSearch.trim() && (
+                  <p className="text-[10px] font-bold text-zinc-400 uppercase px-4 pt-3 pb-1 tracking-wider">Chats & Followers</p>
+                )}
+                {filteredContacts.map(c => (
+                  <div
+                    key={c.username}
+                    onClick={() => selectUser(c.username)}
+                    className={cn(
+                      'w-full flex items-center gap-3 px-4 py-3 transition-colors text-left cursor-pointer',
+                      selectedUser === c.username
+                        ? 'bg-zinc-50 dark:bg-zinc-800 border-r-2 border-black dark:border-white'
+                        : 'hover:bg-zinc-50/80 dark:hover:bg-zinc-800/50'
+                    )}
+                  >
+                    <div className="relative flex-shrink-0">
+                      <div className="w-11 h-11 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-white font-bold text-sm">
+                        {c.username[0].toUpperCase()}
+                      </div>
+                      {c.showActivityStatus && c.isOnline && (
+                        <span className="absolute bottom-0 right-0 block h-3.5 w-3.5 rounded-full ring-2 ring-white dark:ring-zinc-900 bg-green-500 animate-pulse" title="Active Now" />
+                      )}
+                    </div>
+                    <div className="flex-1 overflow-hidden">
+                      <p className="font-bold text-sm text-black dark:text-white truncate">{c.username}</p>
+                      <p className="text-xs text-zinc-400 truncate">Tap to chat</p>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
+            )}
+
+            {/* Global Search Results */}
+            {globalSearchResults.length > 0 && (
+              <div className="space-y-0.5 border-t border-zinc-100/50 dark:border-zinc-800/20 mt-3 pt-2">
+                <p className="text-[10px] font-bold text-indigo-500 dark:text-indigo-400 uppercase px-4 py-1.5 tracking-wider flex items-center gap-1.5">
+                  <span className="inline-block w-1 h-1 bg-indigo-500 rounded-full animate-ping" />
+                  Global Search
+                </p>
+                {globalSearchResults.map(c => (
+                  <div
+                    key={`global-${c.username}`}
+                    onClick={() => {
+                      // Select user and dynamically append them to contacts list so they show in sidebar
+                      selectUser(c.username);
+                      setContacts(prev => {
+                        if (!prev.find(x => x.username === c.username)) {
+                          return [c, ...prev];
+                        }
+                        return prev;
+                      });
+                    }}
+                    className={cn(
+                      'w-full flex items-center gap-3 px-4 py-3 transition-colors text-left cursor-pointer',
+                      selectedUser === c.username
+                        ? 'bg-zinc-50 dark:bg-zinc-800 border-r-2 border-black dark:border-white'
+                        : 'hover:bg-zinc-50/80 dark:hover:bg-zinc-800/50'
+                    )}
+                  >
+                    <div className="relative flex-shrink-0">
+                      <div className="w-11 h-11 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-white font-bold text-sm">
+                        {c.username[0].toUpperCase()}
+                      </div>
+                      {c.showActivityStatus && c.isOnline && (
+                        <span className="absolute bottom-0 right-0 block h-3.5 w-3.5 rounded-full ring-2 ring-white dark:ring-zinc-900 bg-green-500" title="Active Now" />
+                      )}
+                    </div>
+                    <div className="flex-1 overflow-hidden">
+                      <p className="font-bold text-sm text-black dark:text-white truncate">{c.username}</p>
+                      <p className="text-xs text-indigo-500 dark:text-indigo-400 truncate">Global search match • Chat now</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {isSearchingGlobal && (
+              <div className="flex items-center gap-2 px-6 py-4 text-xs text-zinc-400 dark:text-zinc-500 italic">
+                <div className="w-3.5 h-3.5 border border-zinc-300 border-t-zinc-600 dark:border-zinc-700 dark:border-t-zinc-400 rounded-full animate-spin flex-shrink-0" />
+                Searching all users globally...
+              </div>
+            )}
           </div>
         </div>
 
