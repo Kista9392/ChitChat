@@ -1,21 +1,18 @@
-const CACHE_NAME = 'relay-pwa-cache-v2';
-
-// Add core assets you want to cache
-const urlsToCache = [
-  '/',
-  '/manifest.json',
-  '/icon-192x192.png',
-  '/icon-512x512.png',
-  '/favicon.ico',
-];
+const CACHE_NAME = 'relay-pwa-cache-v3';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
+  // Bulletproof install: don't fail if caching fails
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => {
-        return cache.addAll(urlsToCache);
-      })
+    caches.open(CACHE_NAME).then((cache) => {
+      // Optional cache, ignore errors
+      return cache.addAll([
+        '/manifest.json',
+        '/icon-192x192.png',
+        '/icon-512x512.png',
+        '/favicon.ico'
+      ]).catch((err) => console.log('Optional cache failed, continuing', err));
+    })
   );
 });
 
@@ -35,31 +32,11 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // Only handle GET requests
-  if (event.request.method !== 'GET') {
-    return;
-  }
+  if (event.request.method !== 'GET') return;
   
-  // For navigation requests (like HTML pages), try network first, then cache
-  if (event.request.mode === 'navigate') {
-    event.respondWith(
-      fetch(event.request)
-        .catch(() => caches.match(event.request))
-    );
-    return;
-  }
-
-  // For other requests, try cache first, then network
+  // Try network first, fallback to cache
   event.respondWith(
-    caches.match(event.request)
-      .then((response) => {
-        if (response) {
-          return response;
-        }
-        return fetch(event.request).then((networkResponse) => {
-          // Optional: cache dynamic responses here if desired
-          return networkResponse;
-        });
-      })
+    fetch(event.request)
+      .catch(() => caches.match(event.request))
   );
 });
