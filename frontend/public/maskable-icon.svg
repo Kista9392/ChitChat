@@ -1,24 +1,45 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
   <defs>
-    <!-- Premium Gradient Background -->
+    <!-- Rich Dark Backplate Gradient -->
     <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#4f46e5" />
-      <stop offset="50%" stop-color="#7c3aed" />
-      <stop offset="100%" stop-color="#c084fc" />
+      <stop offset="0%" stop-color="#09090b" />
+      <stop offset="50%" stop-color="#111119" />
+      <stop offset="100%" stop-color="#030305" />
     </linearGradient>
-    
-    <!-- Glow Effect -->
-    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000" flood-opacity="0.3" />
-      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#7c3aed" flood-opacity="0.4" />
+
+    <!-- Neon Gradients representing Drift Flow -->
+    <linearGradient id="drift-cyan" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00f2fe" />
+      <stop offset="100%" stop-color="#4facfe" />
+    </linearGradient>
+    <linearGradient id="drift-magenta" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff0844" />
+      <stop offset="100%" stop-color="#ffb199" />
+    </linearGradient>
+    <linearGradient id="drift-purple" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#b180ff" />
+      <stop offset="100%" stop-color="#7209b7" />
+    </linearGradient>
+
+    <!-- Deep Multi-Layer Neon Glow -->
+    <filter id="super-glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="16" stdDeviation="20" flood-color="#4facfe" flood-opacity="0.25" />
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#ff0844" flood-opacity="0.3" />
     </filter>
   </defs>
 
-  <!-- Background Card -->
-  <rect width="512" height="512" rx="128" fill="url(#bg-grad)" />
+  <!-- Background Backplate -->
+  <rect width="512" height="512" rx="140" fill="url(#bg-grad)" />
 
-  <!-- Stylized Brand D Emblem (scaled down for safe-area maskable compliance) -->
-  <g filter="url(#glow)" transform="translate(51, 51) scale(0.8)">
-    <path fill-rule="evenodd" d="M170 120 H290 C360 120 385 170 385 256 C385 342 360 392 290 392 H170 C155 392 145 382 145 367 V145 C145 130 155 120 170 120 Z M210 170 V342 H280 C325 342 335 310 335 256 C335 202 325 170 280 170 H210 Z" fill="#ffffff" />
+  <!-- Highly Unique Interlocking 3D Drift Emblem (scaled down for safe-area maskable compliance) -->
+  <g filter="url(#super-glow)" transform="translate(51, 51) scale(0.8)">
+    <!-- Outer Curved Ribbon Loop (forms the loop of the D) -->
+    <path d="M 290 120 C 370 120 410 170 410 256 C 410 342 370 392 290 392 C 250 392 210 370 180 340 L 225 295 C 245 315 270 325 290 325 C 330 325 345 290 345 256 C 345 222 330 187 290 187 C 270 187 245 197 225 217 L 180 172 C 210 142 250 120 290 120 Z" fill="url(#drift-cyan)" />
+    
+    <!-- Left Vertical Pillar (forms the solid left backbone) -->
+    <path d="M 140 150 C 140 135 152 120 170 120 H 210 L 210 392 H 170 C 152 392 140 377 140 362 Z" fill="url(#drift-magenta)" opacity="0.95" />
+    
+    <!-- Central Overlapping Neon Purple Wave Bridging Blade -->
+    <path d="M 170 220 L 290 220 C 305 220 315 230 315 245 L 315 267 C 315 282 305 292 290 292 L 170 292 Z" fill="url(#drift-purple)" opacity="0.9" />
   </g>
 </svg>
