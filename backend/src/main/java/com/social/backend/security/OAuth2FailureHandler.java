@@ -21,6 +21,9 @@ public class OAuth2FailureHandler implements AuthenticationFailureHandler {
     @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException, ServletException {
         String cleanUrl = frontendUrl.replaceAll("[\\r\\n]", "").trim();
+        if (!cleanUrl.startsWith("http://") && !cleanUrl.startsWith("https://")) {
+            cleanUrl = "https://" + cleanUrl;
+        }
         String errorMessage = exception.getLocalizedMessage();
         if (errorMessage == null) {
             errorMessage = "OAuth2 authentication failed";

@@ -35,8 +35,11 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
         
         String email = oAuth2User.getAttribute("email");
-        // Sanitize frontendUrl to remove any CR/LF characters
+        // Sanitize frontendUrl to remove any CR/LF characters and ensure https:// prefix
         String cleanFrontendUrl = frontendUrl.replaceAll("[\\r\\n]", "").trim();
+        if (!cleanFrontendUrl.startsWith("http://") && !cleanFrontendUrl.startsWith("https://")) {
+            cleanFrontendUrl = "https://" + cleanFrontendUrl;
+        }
 
         // 1. Check if user exists. If not, register them automatically!
         java.util.Optional<User> userOpt = userRepository.findByEmail(email);

@@ -101,7 +101,11 @@ public class SecurityConfig {
             "https://relay.social"
         ));
         if (frontendUrl != null && !frontendUrl.isBlank()) {
-            origins.add(frontendUrl.replaceAll("[\\r\\n]", "").trim());
+            String cleanFrontend = frontendUrl.replaceAll("[\\r\\n]", "").trim();
+            if (!cleanFrontend.startsWith("http://") && !cleanFrontend.startsWith("https://")) {
+                cleanFrontend = "https://" + cleanFrontend;
+            }
+            origins.add(cleanFrontend);
         }
         configuration.setAllowedOrigins(origins);
         configuration.setAllowedMethods(java.util.Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));

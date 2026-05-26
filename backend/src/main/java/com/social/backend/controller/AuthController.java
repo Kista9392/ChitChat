@@ -79,6 +79,10 @@ public class AuthController {
     public void loginRedirect(jakarta.servlet.http.HttpServletResponse response) throws java.io.IOException {
         String frontendUrl = System.getenv("FRONTEND_URL");
         if (frontendUrl == null || frontendUrl.isBlank()) frontendUrl = "http://localhost:3000";
+        frontendUrl = frontendUrl.replaceAll("[\\r\\n]", "").trim();
+        if (!frontendUrl.startsWith("http://") && !frontendUrl.startsWith("https://")) {
+            frontendUrl = "https://" + frontendUrl;
+        }
         response.sendRedirect(frontendUrl + "/login");
     }
 
