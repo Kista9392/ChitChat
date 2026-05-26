@@ -153,18 +153,38 @@ public class AuthController {
     public ResponseEntity<?> fixUsernames() {
         java.util.List<User> users = userRepository.findAll();
         int fixedCount = 0;
+        java.util.List<String> fixedUsers = new java.util.ArrayList<>();
         for (User u : users) {
-            String trimmed = u.getUsername() != null ? u.getUsername().trim() : null;
-            if (trimmed != null && !trimmed.equals(u.getUsername())) {
-                u.setUsername(trimmed);
+            String original = u.getUsername();
+            if (original == null) continue;
+            // Remove all invalid characters (only keep letters, numbers, underscores, dots)
+            String sanitized = original.trim().replaceAll("[^a-zA-Z0-9._]", "").toLowerCase();
+            // Remove leading/trailing dots and consecutive dots
+            sanitized = sanitized.replaceAll("^\\.", "").replaceAll("\\.$", "").replaceAll("\\.{2,}", ".");
+            if (sanitized.isEmpty()) {
+                sanitized = "user" + System.currentTimeMillis();
+            }
+            if (sanitized.length() < 3) {
+                sanitized = sanitized + "user";
+            }
+            // Ensure uniqueness
+            String finalUsername = sanitized;
+            int counter = 1;
+            while (!finalUsername.equals(original) && userRepository.findByUsername(finalUsername).isPresent()) {
+                finalUsername = sanitized + counter++;
+            }
+            if (!finalUsername.equals(original)) {
+                fixedUsers.add(original + " -> " + finalUsername);
+                u.setUsername(finalUsername);
                 userRepository.save(u);
                 fixedCount++;
             }
         }
         return ResponseEntity.ok(Map.of(
             "status", "success",
-            "message", "Successfully fixed trailing/leading spaces in usernames",
-            "fixedCount", fixedCount
+            "message", "Fixed invalid usernames (spaces, special chars, etc.)",
+            "fixedCount", fixedCount,
+            "details", fixedUsers
         ));
     }
 }

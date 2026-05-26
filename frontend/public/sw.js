@@ -1,13 +1,11 @@
-const CACHE_NAME = 'relay-pwa-cache-v3';
+const CACHE_NAME = 'relay-pwa-cache-v4';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
-  // Bulletproof install: don't fail if caching fails
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      // Optional cache, ignore errors
+      // Only precache static assets — never cache dynamic Next.js routes like '/'
       return cache.addAll([
-        '/',
         '/manifest.json',
         '/icon-192x192.png',
         '/icon-512x512.png',
@@ -18,24 +16,25 @@ self.addEventListener('install', (event) => {
 });
 
 self.addEventListener('activate', (event) => {
-  event.waitUntil(self.clients.claim());
+  // Single waitUntil with both clients.claim() and old cache cleanup
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME) {
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    })
+    Promise.all([
+      self.clients.claim(),
+      caches.keys().then((cacheNames) => {
+        return Promise.all(
+          cacheNames
+            .filter((name) => name !== CACHE_NAME)
+            .map((name) => caches.delete(name))
+        );
+      })
+    ])
   );
 });
 
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
   
-  // Try network first, fallback to cache
+  // Network-first strategy: try network, fall back to cache
   event.respondWith(
     fetch(event.request)
       .catch(() => caches.match(event.request))

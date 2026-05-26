@@ -90,9 +90,10 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         }
 
         // 3. Redirect back to the Frontend with the tokens and username
+        String encodedUsername = java.net.URLEncoder.encode(user.getUsername(), java.nio.charset.StandardCharsets.UTF_8);
         String redirectUrl = cleanFrontendUrl + "/oauth2/redirect?accessToken=" + accessToken
                 + "&refreshToken=" + refreshToken
-                + "&username=" + user.getUsername();
+                + "&username=" + encodedUsername;
         
         getRedirectStrategy().sendRedirect(request, response, redirectUrl);
     }

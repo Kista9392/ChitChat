@@ -23,11 +23,20 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },
-      { url: "/icon-512x512.png", type: "image/png" }
+      { url: "/icon-192x192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512x512.png", sizes: "512x512", type: "image/png" }
     ],
     apple: [
-      { url: "/icon-512x512.png", type: "image/png" }
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }
     ]
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Relay"
+  },
+  other: {
+    "mobile-web-app-capable": "yes"
   },
   openGraph: {
     type: "website",
@@ -77,20 +86,10 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <head>
+        <meta name="theme-color" content="#a855f7" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-        />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              window.addEventListener('beforeinstallprompt', (e) => {
-                e.preventDefault();
-                window.deferredPrompt = e;
-                window.dispatchEvent(new CustomEvent('pwa-installable', { detail: e }));
-              });
-            `
-          }}
         />
       </head>
       <body className="min-h-full flex flex-col bg-white text-black dark:bg-zinc-950 dark:text-white">

@@ -40,8 +40,28 @@ function RegisterPageInner() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    // Client-side username validation
+    const trimmedUsername = formData.username.trim();
+    if (trimmedUsername.length < 3) {
+      setError('Username must be at least 3 characters');
+      return;
+    }
+    if (trimmedUsername.length > 30) {
+      setError('Username must be at most 30 characters');
+      return;
+    }
+    if (!/^[a-zA-Z0-9._]+$/.test(trimmedUsername)) {
+      setError('Username can only contain letters, numbers, underscores, and dots (no spaces)');
+      return;
+    }
+    if (trimmedUsername.startsWith('.') || trimmedUsername.endsWith('.') || trimmedUsername.includes('..')) {
+      setError('Username cannot start or end with a dot, or have consecutive dots');
+      return;
+    }
+
     try {
-      await axiosInstance.post('/auth/register', formData);
+      await axiosInstance.post('/auth/register', { ...formData, username: trimmedUsername });
       router.push('/login');
     } catch (err: any) {
       const errorData = err.response?.data;

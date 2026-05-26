@@ -67,6 +67,23 @@ public class UserService {
         String trimmedUsername = username != null ? username.trim() : null;
         String trimmedEmail = email != null ? email.trim() : null;
 
+        // Validate username format: only letters, numbers, underscores, dots; 3-30 chars; no spaces
+        if (trimmedUsername == null || trimmedUsername.isEmpty()) {
+            throw new RuntimeException("Username is required");
+        }
+        if (trimmedUsername.length() < 3) {
+            throw new RuntimeException("Username must be at least 3 characters");
+        }
+        if (trimmedUsername.length() > 30) {
+            throw new RuntimeException("Username must be at most 30 characters");
+        }
+        if (!trimmedUsername.matches("^[a-zA-Z0-9._]+$")) {
+            throw new RuntimeException("Username can only contain letters, numbers, underscores, and dots (no spaces)");
+        }
+        if (trimmedUsername.startsWith(".") || trimmedUsername.endsWith(".") || trimmedUsername.contains("..")) {
+            throw new RuntimeException("Username cannot start or end with a dot, or have consecutive dots");
+        }
+
         if (userRepository.findByEmail(trimmedEmail).isPresent()) {
             throw new com.social.backend.exception.UserAlreadyExistsException("Email is already taken!");
         }

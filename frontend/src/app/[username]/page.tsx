@@ -50,9 +50,11 @@ export default function ProfilePage() {
 
   const [confirmModal, setConfirmModal] = useState<{ isOpen: boolean, title: string, desc: string, onConfirm: () => void } | null>(null);
 
+  const decodedUsername = username ? decodeURIComponent(username as string) : '';
+
   const isOwnProfile = 
-    currentUser?.username && username 
-      ? currentUser.username.toLowerCase() === (username as string).toLowerCase()
+    currentUser?.username && decodedUsername 
+      ? currentUser.username.toLowerCase() === decodedUsername.toLowerCase()
       : false;
   const isLocked = profile?.isPrivateAccount && !isOwnProfile && !isFollowing;
 
