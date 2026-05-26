@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   description: "Connect, share stories, chat in real-time, and scroll through premium reels on Vibely - the ultimate next-gen social experience.",
   manifest: "/manifest.json",
   keywords: ["Vibely", "social network", "real-time chat", "stories", "reels", "premium social networking", "Vibely App"],
-  metadataBase: new URL("https://vibely-social.vercel.app"),
+  metadataBase: new URL("https://chit-chat-beta-seven.vercel.app"),
   robots: "index, follow",
   icons: {
     icon: [
@@ -34,12 +34,15 @@ export const metadata: Metadata = {
     title: "Vibely | A Premium Social Network",
     description: "Connect, share stories, chat in real-time, and scroll through premium reels on Vibely.",
     siteName: "Vibely",
-    url: "https://vibely-social.vercel.app"
+    url: "https://chit-chat-beta-seven.vercel.app"
   },
   twitter: {
     card: "summary_large_image",
     title: "Vibely | A Premium Social Network",
     description: "Connect, share stories, chat in real-time, and scroll through premium reels on Vibely."
+  },
+  verification: {
+    google: "google-site-verification-placeholder"
   }
 };
 

@@ -69,10 +69,32 @@ export default function HomePage() {
     }
   };
 
+  const [takingLong, setTakingLong] = useState(false);
+
+  useEffect(() => {
+    if (!isLoading) return;
+    const timer = setTimeout(() => {
+      setTakingLong(true);
+    }, 3500);
+    return () => clearTimeout(timer);
+  }, [isLoading]);
+
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+      <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex flex-col items-center justify-center p-4">
+        <div className="w-10 h-10 border-3 border-indigo-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+        {takingLong && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="max-w-xs text-center bg-white dark:bg-zinc-900 border border-zinc-100/50 dark:border-zinc-800/50 rounded-2xl p-5 shadow-xl"
+          >
+            <p className="text-xs font-bold text-zinc-800 dark:text-zinc-200">🚀 Waking up Vibely secure cloud...</p>
+            <p className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-1 leading-relaxed">
+              Our free-tier servers sleep after inactivity. It will load instantly in about 20-30 seconds!
+            </p>
+          </motion.div>
+        )}
       </div>
     );
   }
