@@ -65,13 +65,6 @@ export default function SettingsPage() {
       return;
     }
 
-    // If user previously dismissed or installed, don't show again
-    const dismissed = safeStorage.getItem('pwa-install-dismissed');
-    if (dismissed === 'true') {
-      setIsInstallable(false);
-      return;
-    }
-
     // 1. Check if the prompt was already captured globally
     if ((window as any).deferredPrompt) {
       setDeferredPrompt((window as any).deferredPrompt);
@@ -121,9 +114,9 @@ export default function SettingsPage() {
     if (!promptEvent) {
       setConfirmModal({
         isOpen: true,
-        title: 'Already Installed / Unavailable',
-        desc: 'Native installation is not available right now. This usually means you have already installed Relay on your device! If you are on an unsupported browser like Safari, please use the "Add to Home Screen" option in your browser menu.',
-        confirmText: 'Okay',
+        title: 'PWA Installation',
+        desc: "To install Relay as a native WebAPK on your device, please open your browser's menu (the three dots icon in Chrome, or the Share button in Safari) and select 'Install app' or 'Add to Home Screen'.",
+        confirmText: 'Got it',
         hideCancel: true,
         onConfirm: () => {} // Just closes
       });

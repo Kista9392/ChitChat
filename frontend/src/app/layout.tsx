@@ -81,6 +81,17 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                window.deferredPrompt = e;
+                window.dispatchEvent(new CustomEvent('pwa-installable', { detail: e }));
+              });
+            `
+          }}
+        />
       </head>
       <body className="min-h-full flex flex-col bg-white text-black dark:bg-zinc-950 dark:text-white">
         <AuthProvider>
