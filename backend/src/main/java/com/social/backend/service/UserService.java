@@ -322,11 +322,41 @@ public class UserService {
     }
 
     @org.springframework.transaction.annotation.Transactional
-    public UserResponse updateBio(String email, String bio) {
+    public UserResponse updateProfile(String email, String username, String bio) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        user.setBio(bio);
+
+        if (username != null) {
+            String trimmedUsername = username.trim();
+            if (!trimmedUsername.equals(user.getUsername())) {
+                if (trimmedUsername.isEmpty()) {
+                    throw new RuntimeException("Username cannot be empty");
+                }
+                if (trimmedUsername.length() < 3) {
+                    throw new RuntimeException("Username must be at least 3 characters");
+                }
+                if (trimmedUsername.length() > 30) {
+                    throw new RuntimeException("Username must be at most 30 characters");
+                }
+                if (!trimmedUsername.matches("^[a-zA-Z0-9._]+$")) {
+                    throw new RuntimeException("Username can only contain letters, numbers, underscores, and dots (no spaces)");
+                }
+                if (trimmedUsername.startsWith(".") || trimmedUsername.endsWith(".") || trimmedUsername.contains("..")) {
+                    throw new RuntimeException("Username cannot start or end with a dot, or have consecutive dots");
+                }
+                if (userRepository.findByUsername(trimmedUsername).isPresent()) {
+                    throw new RuntimeException("Username is already taken");
+                }
+                user.setUsername(trimmedUsername);
+            }
+        }
+
+        if (bio != null) {
+            user.setBio(bio);
+        }
+
         userRepository.save(user);
+
         return new UserResponse(user.getId(), user.getUsername(), user.getEmail(), user.getBio(), user.getAvatarUrl(),
                 (int) followRepository.countByFollowing(user), (int) followRepository.countByFollower(user), user.isShowActivityStatus(), false,
                 user.isPrivateAccount(), true, user.getCreatedAt());

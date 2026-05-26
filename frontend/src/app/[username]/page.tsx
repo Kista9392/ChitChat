@@ -11,6 +11,7 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/context/AuthContext';
 import { cn } from '@/lib/utils';
+import { safeStorage } from '@/lib/storage';
 
 export default function ProfilePage() {
   const { username } = useParams();
@@ -36,6 +37,8 @@ export default function ProfilePage() {
   // Edit profile state
   const [showEditModal, setShowEditModal] = useState(false);
   const [editBio, setEditBio] = useState('');
+  const [editUsername, setEditUsername] = useState('');
+  const [editError, setEditError] = useState('');
   const [isSavingBio, setIsSavingBio] = useState(false);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
@@ -84,6 +87,7 @@ export default function ProfilePage() {
         ]);
         setProfile(profileRes.data);
         setEditBio(profileRes.data?.bio || '');
+        setEditUsername(profileRes.data?.username || '');
         const allPosts: any[] = postsRes.data;
         setPosts(allPosts.filter((p: any) => p.mediaType !== 'VIDEO'));
         setReels(allPosts.filter((p: any) => p.mediaType === 'VIDEO'));
@@ -195,9 +199,38 @@ export default function ProfilePage() {
   };
 
   const saveEditProfile = async () => {
+    setEditError('');
     setIsSavingBio(true);
+    
+    const trimmedUsername = editUsername.trim();
+    if (!trimmedUsername) {
+      setEditError('Username is required');
+      setIsSavingBio(false);
+      return;
+    }
+    if (trimmedUsername.length < 3) {
+      setEditError('Username must be at least 3 characters');
+      setIsSavingBio(false);
+      return;
+    }
+    if (trimmedUsername.length > 30) {
+      setEditError('Username must be at most 30 characters');
+      setIsSavingBio(false);
+      return;
+    }
+    if (!/^[a-zA-Z0-9._]+$/.test(trimmedUsername)) {
+      setEditError('Username can only contain letters, numbers, underscores, and dots (no spaces)');
+      setIsSavingBio(false);
+      return;
+    }
+    if (trimmedUsername.startsWith('.') || trimmedUsername.endsWith('.') || trimmedUsername.includes('..')) {
+      setEditError('Username cannot start or end with a dot, or have consecutive dots');
+      setIsSavingBio(false);
+      return;
+    }
+
     try {
-      // Upload avatar first if selected
+      // 1. Upload avatar first if selected
       if (avatarFile) {
         setIsUploadingAvatar(true);
         const formData = new FormData();
@@ -206,17 +239,41 @@ export default function ProfilePage() {
           headers: { 'Content-Type': 'multipart/form-data' }
         });
         setProfile((prev: any) => ({ ...prev, avatarUrl: avatarRes.data.avatarUrl }));
+        if (typeof window !== 'undefined') {
+          safeStorage.setItem('avatarUrl', avatarRes.data.avatarUrl);
+        }
         setIsUploadingAvatar(false);
       }
-      // Then save bio
-      await axiosInstance.put('/users/me', { bio: editBio });
-      setProfile((prev: any) => ({ ...prev, bio: editBio }));
+
+      // 2. Save both username and bio
+      const isUsernameChanged = profile?.username && trimmedUsername.toLowerCase() !== profile.username.toLowerCase();
+      
+      const profileUpdateRes = await axiosInstance.put('/users/me', { 
+        username: trimmedUsername, 
+        bio: editBio 
+      });
+
+      setProfile((prev: any) => ({ 
+        ...prev, 
+        username: profileUpdateRes.data.username,
+        bio: profileUpdateRes.data.bio 
+      }));
+
       setAvatarFile(null);
       setAvatarPreview(null);
       setShowEditModal(false);
-    } catch (err) {
+
+      if (isUsernameChanged) {
+        if (typeof window !== 'undefined') {
+          safeStorage.setItem('username', profileUpdateRes.data.username);
+          // Redirect to the new profile page to re-sync Context session
+          window.location.href = `/${profileUpdateRes.data.username}`;
+        }
+      }
+    } catch (err: any) {
       console.error('Failed to update profile', err);
-      alert('Failed to update profile. Please try again.');
+      const errMsg = err?.response?.data?.message || err?.response?.data || 'Failed to update profile. Username might be already taken.';
+      setEditError(errMsg);
     } finally {
       setIsSavingBio(false);
       setIsUploadingAvatar(false);
@@ -653,9 +710,30 @@ export default function ProfilePage() {
                 <p className="text-xs text-zinc-400 mt-2">Click to change photo</p>
               </div>
 
+              {/* Username */}
+              <div className="mb-4">
+                <label className="text-xs font-bold text-zinc-500 dark:text-zinc-400 mb-1 block uppercase">Username</label>
+                <input
+                  type="text"
+                  placeholder="Enter username..."
+                  className="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10 focus:border-black dark:focus:border-white text-black dark:text-white"
+                  value={editUsername}
+                  onChange={e => {
+                    setEditUsername(e.target.value);
+                    setEditError('');
+                  }}
+                />
+              </div>
+
+              {editError && (
+                <div className="mb-4 p-3 bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-400 text-xs font-bold rounded-2xl border border-red-100/10 flex items-center gap-1.5 leading-relaxed">
+                  <span>⚠️</span> {editError}
+                </div>
+              )}
+
               {/* Bio */}
               <div className="mb-4">
-                <label className="text-xs font-bold text-zinc-500 dark:text-zinc-400 mb-1 block">BIO</label>
+                <label className="text-xs font-bold text-zinc-500 dark:text-zinc-400 mb-1 block uppercase">Bio</label>
                 <textarea
                   rows={4}
                   placeholder="Write your bio..."

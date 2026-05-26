@@ -31,13 +31,13 @@ public class UserController {
         return ResponseEntity.ok(result);
     }
 
-    // Update bio
+    // Update profile
     @PutMapping("/me")
     public ResponseEntity<UserResponse> updateProfile(
             @RequestBody Map<String, String> body,
             Authentication authentication
     ) {
-        UserResponse updated = userService.updateBio(authentication.getName(), body.get("bio"));
+        UserResponse updated = userService.updateProfile(authentication.getName(), body.get("username"), body.get("bio"));
         return ResponseEntity.ok(updated);
     }
 
