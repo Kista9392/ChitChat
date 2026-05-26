@@ -115,15 +115,10 @@ export default function SettingsPage() {
     };
   }, []);
 
-  const [toastMsg, setToastMsg] = useState<string | null>(null);
 
   const handleInstallClick = async () => {
     const promptEvent = deferredPrompt || (typeof window !== 'undefined' ? (window as any).deferredPrompt : null);
-    if (!promptEvent) {
-      setToastMsg('Native install is not supported by your browser or the app is already installed. Use the browser menu to "Add to Home Screen".');
-      setTimeout(() => setToastMsg(null), 5000);
-      return;
-    }
+    if (!promptEvent) return;
     try {
       promptEvent.prompt();
       const { outcome } = await promptEvent.userChoice;
@@ -956,20 +951,6 @@ export default function SettingsPage() {
           </motion.div>
         )}
       </AnimatePresence>
-      <AnimatePresence>
-        {toastMsg && (
-          <motion.div
-            initial={{ opacity: 0, y: 50, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 50, scale: 0.9 }}
-            className="fixed bottom-20 left-1/2 -translate-x-1/2 bg-zinc-900 text-white px-6 py-3 rounded-full shadow-2xl font-medium flex items-center gap-2 z-[100] max-w-sm w-full text-center"
-          >
-            <span className="text-sm flex-1">{toastMsg}</span>
-            <X className="w-4 h-4 cursor-pointer flex-shrink-0" onClick={() => setToastMsg(null)} />
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       {/* Confirm Modal */}
       <AnimatePresence>
         {confirmModal?.isOpen && (
