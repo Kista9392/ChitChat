@@ -60,7 +60,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setIsLoading(false);
     }
   }, []);
-
   // Register service worker on mount
   useEffect(() => {
     if ('serviceWorker' in navigator && typeof window !== 'undefined') {
@@ -78,7 +77,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     }
   }, []);
-
   // Capture beforeinstallprompt globally to persist across page navigations
   useEffect(() => {
     if (typeof window === 'undefined') return;
