@@ -58,6 +58,21 @@ export default function SettingsPage() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
+    // If already running as installed PWA, never show install UI
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+      || (window.navigator as any).standalone === true;
+    if (isStandalone) {
+      setIsInstallable(false);
+      return;
+    }
+
+    // If user previously dismissed or installed, don't show again
+    const dismissed = safeStorage.getItem('pwa-install-dismissed');
+    if (dismissed === 'true') {
+      setIsInstallable(false);
+      return;
+    }
+
     // 1. Check if the prompt was already captured globally
     if ((window as any).deferredPrompt) {
       setDeferredPrompt((window as any).deferredPrompt);
@@ -71,7 +86,7 @@ export default function SettingsPage() {
       setIsInstallable(true);
     };
 
-    // 3. Listen to our custom event dispatched by AuthContext (in case it captures it during navigation)
+    // 3. Listen to our custom event dispatched by AuthContext
     const handlePwaInstallable = (e: any) => {
       if (e.detail) {
         setDeferredPrompt(e.detail);
@@ -79,21 +94,28 @@ export default function SettingsPage() {
       }
     };
 
+    // 4. Listen for successful install
+    const handleAppInstalled = () => {
+      setIsInstallable(false);
+      setDeferredPrompt(null);
+      safeStorage.setItem('pwa-install-dismissed', 'true');
+    };
+
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     window.addEventListener('pwa-installable', handlePwaInstallable);
+    window.addEventListener('appinstalled', handleAppInstalled);
 
     const userAgent = window.navigator.userAgent.toLowerCase();
     setIsIOS(/iphone|ipad|ipod/.test(userAgent));
 
-    if (window.matchMedia('(display-mode: standalone)').matches) {
-      setIsInstallable(false);
-    } else {
+    if (!isStandalone) {
       setIsInstallable('serviceWorker' in navigator || !!(window as any).deferredPrompt);
     }
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
       window.removeEventListener('pwa-installable', handlePwaInstallable);
+      window.removeEventListener('appinstalled', handleAppInstalled);
     };
   }, []);
 
@@ -107,6 +129,9 @@ export default function SettingsPage() {
       promptEvent.prompt();
       const { outcome } = await promptEvent.userChoice;
       console.log(`User response to secure install prompt: ${outcome}`);
+      if (outcome === 'accepted') {
+        safeStorage.setItem('pwa-install-dismissed', 'true');
+      }
     } catch (err) {
       console.error('Failed to trigger secure PWA install', err);
     }
@@ -114,6 +139,12 @@ export default function SettingsPage() {
     if (typeof window !== 'undefined') {
       (window as any).deferredPrompt = null;
     }
+    setIsInstallable(false);
+  };
+
+  const handleDismissInstallGuide = () => {
+    setShowInstallGuide(false);
+    safeStorage.setItem('pwa-install-dismissed', 'true');
     setIsInstallable(false);
   };
 
@@ -943,15 +974,15 @@ export default function SettingsPage() {
             >
               {/* Close Button */}
               <button
-                onClick={() => setShowInstallGuide(false)}
+                onClick={handleDismissInstallGuide}
                 className="absolute top-4 right-4 p-2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-800 rounded-full transition-all cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
 
               <div className="flex flex-col items-center text-center mt-2">
-                <div className="w-16 h-16 rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 flex items-center justify-center mb-4">
-                  <Shield className="w-8 h-8 text-indigo-600 dark:text-indigo-400 animate-pulse" />
+                <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4 overflow-hidden shadow-sm border border-zinc-100 dark:border-zinc-800">
+                  <img src="/icon.svg" alt="Relay Logo" className="w-full h-full object-cover" />
                 </div>
                 
                 <h3 className="text-xl font-black text-black dark:text-white tracking-tight">
@@ -1025,7 +1056,7 @@ export default function SettingsPage() {
 
               <div className="mt-8 flex gap-3">
                 <button
-                  onClick={() => setShowInstallGuide(false)}
+                  onClick={handleDismissInstallGuide}
                   className="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-bold text-sm shadow-md hover:shadow-lg transition-all cursor-pointer"
                 >
                   Got It
